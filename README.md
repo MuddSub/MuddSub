@@ -22,6 +22,9 @@ You'll need to install a few dependencies to get everything working:
 sudo apt-get install ros-melodic-uwsim
 sudo apt-get install python2.7-dev
 sudo apt-get install python-catkin-tools
+sudo apt-get install ros-melodic-tf
+sudo apt-get install ros-melodic-urdf
+sudo apt-get install libeigen3-dev
 ```
 
 The first is optional, and provides the tools we use for simulation. The second is a dependency for a library we use for controls. The third gives an alternate build tool to the one which comes standard with ROS. We build with `catkin build` instead of `catkin_make` because it allows standard CMake projects to be compiled within our workspace.
