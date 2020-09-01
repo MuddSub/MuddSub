@@ -1,3 +1,0 @@
-- ROSify tuning
-- linear MPC
-- trajectories
