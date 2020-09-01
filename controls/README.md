@@ -64,7 +64,7 @@ roslaunch controls DynamicSimulation.launch
 Then, you can set the setpoint by publishing to the `/robot_setpoint` topic.
 
 Currently, this is not a very streamlined experience, and you're unfortunately likely to run into bugs getting the simulator running. UWSim is great, but very picky,
-and this has only been tested on two machines. Please do not hesitate to email me (sisaacson AT hmc DOT edu) with any questions, and I'm happy to help you debug! 
+and this has only been tested on two machines. Please do not hesitate to email Seth with any questions, and I'm happy to help you debug! 
 
 ## Known Limitations
 - Currently, the tuning abilility of the control systems is very limited, as it must be hardcoded. This will be a good project for a new member in the fall.
