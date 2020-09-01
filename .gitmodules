@@ -1,0 +1,9 @@
+[submodule "thirdparty/control-toolbox"]
+	path = thirdparty/control-toolbox
+	url = https://github.com/muddsub/control-toolbox
+[submodule "thirdparty/kindr"]
+	path = thirdparty/kindr
+	url = https://github.com/ANYbotics/kindr.git
+[submodule "thirdparty/pigpio"]
+	path = thirdparty/pigpio
+	url = https://github.com/joan2937/pigpio

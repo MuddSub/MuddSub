@@ -1,0 +1,22 @@
+<package>
+  <name>muddsub_primary</name>
+  <version>3.0.2</version>
+  <description>
+    Main autonomy stack for MuddSub
+  </description>
+  <maintainer email="sisaacson@hmc.edu">Seth Isaacson</maintainer>
+  <license>BSD-2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend> ct_core </run_depend>
+  <run_depend> ct_optcon </run_depend>
+  <run_depend>controls</run_depend>
+  <run_depend>core</run_depend>
+  <run_depend>motion_planning</run_depend>
+  <run_depend> slam </run_depend>
+  <run_depend> vision </run_depend>
+  <export>
+   	  <metapackage />
+   </export>
+</package>
