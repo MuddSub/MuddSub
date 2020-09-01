@@ -1,0 +1,271 @@
+<!ELEMENT UWSimScene (oceanState?,simParams?,camera?, nedOrigin?, netTracingScript?, (CustomCommsChannel*)?,(AcousticCommsChannel*)?,vehicle*,object*,rosInterfaces?)>
+<!ATTLIST UWSimScene xmlns:xacro CDATA #IMPLIED>
+
+<!-- elementos oceanScene -->
+<!ELEMENT oceanState (windx?,windy?,windSpeed?,depth?,reflectionDamping?,waveScale?,isNotChoppy?,choppyFactor?,crestFoamHeight?,oceanSurfaceHeight?,fog?,color?,attenuation?)>
+<!ELEMENT simParams (disableShaders?,resw?,resh?,offsetp?,offsetr?,enablePhysics?,gravity?,physicsFrequency?,physicsSubSteps?, physicsSolver?,showTrajectory*,lightRate?)>
+<!ELEMENT vehicle (name,file, fdm?, tf?, vr?, jointValues?,position?,orientation?,scaleFactor?,virtualCamera*, structuredLightProjector*, rangeSensor*, objectPicker*, imu*, pressureSensor*, gpsSensor*, dvlSensor*, virtualRangeImage*,multibeamSensor*, simulatedDevices?, echo*, ForceSensor*, DredgeTool*, CustomCommsDevice*, AcousticCommsDevice*, LedArray?)>
+<!ELEMENT virtualCamera (name,relativeTo,resw?,resh?,position?,orientation?,baseline?,frameId?,fovy?, parameters?, showpath?,grayscale?,std?)>
+<!ELEMENT virtualRangeImage (name,relativeTo,resw?,resh?,position?,orientation?,frameId?,fovy?,parameters?)>
+<!ELEMENT structuredLightProjector (name,relativeTo,fov,image_name,laser?,position?,orientation?)>
+<!ELEMENT rangeSensor (name,relativeTo,range,visible?,position?,orientation?)>
+<!ELEMENT objectPicker (name,relativeTo,range,position?,orientation?)>
+<!ELEMENT imu (name,relativeTo,position?,orientation?, std?)>
+<!ELEMENT pressureSensor (name,relativeTo,position?,orientation?, std?)>
+<!ELEMENT gpsSensor (name,relativeTo,position?,orientation?, std?)>
+<!ELEMENT dvlSensor (name,relativeTo,position?,orientation?, std?)>
+<!ELEMENT multibeamSensor (name,relativeTo,visible?,position?,orientation?, initAngle,finalAngle, angleIncr,range)>
+<!ELEMENT camera (freeMotion?,objectToTrack?,fov?,aspectRatio?,near?,far?,position?,lookAt?) >
+<!ELEMENT object (name,file,position,orientation,scaleFactor?,offsetp?,offsetr?,physics?)>
+<!ELEMENT rosInterfaces ((ROSOdomToPAT*)?, (PATToROSOdom*)?, (WorldToROSTF*)?, (ArmToROSJointState*)?, (ROSJointStateToArm*)?, (VirtualCameraToROSImage*)?, (ROSImageToHUD*)?,(ROSTwistToPAT*)?, (RangeSensorToROSRange*)?, (ROSPoseToPAT*)?, (ImuToROSImu*)?, (PressureSensorToROS*)?, (GPSSensorToROS*)?, (DVLSensorToROS*)?, (RangeImageSensorToROSImage*)?,(multibeamSensorToLaserScan*)?, (SimulatedDeviceROS*)?,(contactSensorToROS*)?,(echoROS*)?,(ForceSensorROS*)?,(ROSPointCloudLoader*)?,(RangeCameraToPCL*)?, (CustomCommsDeviceROS*)?, (AcousticCommsDeviceROS*)?)>
+
+<!-- elementos comunes -->
+<!ELEMENT position (x,y,z)>
+<!ELEMENT orientation (r,p,y)>
+<!ELEMENT scaleFactor (x,y,z)>
+<!ELEMENT offsetp (x,y,z)>
+<!ELEMENT offsetr (x,y,z)>
+<!ELEMENT lookAt (x,y,z)>
+<!ELEMENT color (r,g,b)>
+
+<!ELEMENT x (#PCDATA)>
+<!ELEMENT y (#PCDATA)>
+<!ELEMENT z (#PCDATA)>
+<!ELEMENT r (#PCDATA)>
+<!ELEMENT g (#PCDATA)>
+<!ELEMENT b (#PCDATA)>
+<!ELEMENT p (#PCDATA)>
+<!ELEMENT std (#PCDATA)>
+<!ELEMENT target (#PCDATA)>
+
+
+<!-- elementos oceanState -->
+<!ELEMENT windx (#PCDATA)>
+<!ELEMENT windy (#PCDATA)>
+<!ELEMENT windSpeed (#PCDATA)>
+<!ELEMENT depth (#PCDATA)>
+<!ELEMENT reflectionDamping (#PCDATA)>
+<!ELEMENT waveScale (#PCDATA)>
+<!ELEMENT isNotChoppy (#PCDATA)>
+<!ELEMENT choppyFactor (#PCDATA)>
+<!ELEMENT crestFoamHeight (#PCDATA)>
+<!ELEMENT oceanSurfaceHeight (#PCDATA)>
+<!ELEMENT fog (density,color)>
+<!ELEMENT attenuation (r,g,b)>
+
+<!ELEMENT density (#PCDATA)>
+
+<!-- elementos simParams -->
+<!ELEMENT disableShaders (#PCDATA)>
+<!ELEMENT eye_in_hand (#PCDATA)>
+<!ELEMENT resw (#PCDATA)>
+<!ELEMENT resh (#PCDATA)>
+<!ELEMENT showTrajectory (target,color?,lineStyle?,timeWindow?)>
+<!ELEMENT lineStyle (#PCDATA)>
+<!ELEMENT timeWindow (#PCDATA)>
+<!ELEMENT enablePhysics (#PCDATA)>
+<!ELEMENT physicsFrequency (#PCDATA)>
+<!ELEMENT physicsSubSteps (#PCDATA)>
+<!ELEMENT physicsSolver (#PCDATA)>
+<!ELEMENT gravity (x,y,z)>
+<!ELEMENT lightRate (#PCDATA)>
+
+<!--elementos camera -->
+<!ELEMENT freeMotion (#PCDATA)>
+<!ELEMENT fov (#PCDATA)>
+<!ELEMENT aspectRatio (#PCDATA)>
+<!ELEMENT near (#PCDATA)>
+<!ELEMENT far (#PCDATA)>
+
+<!ELEMENT objectToTrack (#PCDATA)>
+
+<!-- elementos virtualCamera -->
+<!ATTLIST virtualRangeImage underwaterParticles (true|false) #IMPLIED>
+<!ELEMENT relativeTo (#PCDATA)>
+<!ELEMENT parameters (fx,fy,x0,y0,f,n,k)>
+<!ELEMENT fovy (#PCDATA)>
+
+<!ELEMENT fx (#PCDATA)>
+<!ELEMENT fy (#PCDATA)>
+<!ELEMENT x0 (#PCDATA)>
+<!ELEMENT y0 (#PCDATA)>
+<!ELEMENT f (#PCDATA)>
+<!ELEMENT n (#PCDATA)>
+<!ELEMENT k (#PCDATA)>
+<!ELEMENT baseline (#PCDATA)>
+<!ELEMENT frameId (#PCDATA)>
+<!ELEMENT showpath (#PCDATA)>
+<!ELEMENT grayscale (#PCDATA)>
+
+<!--elementos rangeSensor -->
+<!ELEMENT range (#PCDATA)>
+<!ELEMENT visible (#PCDATA)>
+
+<!--elementos structuredLightProjector -->
+<!ELEMENT image_name (#PCDATA)>
+<!ELEMENT laser (#PCDATA)>
+
+<!--elementos multibeamSensor -->
+<!ATTLIST multibeamSensor underwaterParticles (true|false) #IMPLIED>
+<!ELEMENT initAngle (#PCDATA)>
+<!ELEMENT finalAngle (#PCDATA)>
+<!ELEMENT angleIncr (#PCDATA)>
+
+<!-- elementos vehicle -->
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT file (#PCDATA)>
+<!ELEMENT jointValues (joint+)>
+
+<!ELEMENT joint (#PCDATA)>
+
+<!-- elementos rosinterfaces -->
+<!ELEMENT ROSOdomToPAT (topic,vehicleName)>
+<!ELEMENT PATToROSOdom  (topic, vehicleName, rate?)>
+<!ELEMENT WorldToROSTF  (rootName, enableObjects?, rate?)>
+<!ELEMENT ArmToROSJointState  (topic, vehicleName, rate?)>
+<!ELEMENT ROSJointStateToArm  (topic,vehicleName)>
+<!ELEMENT VirtualCameraToROSImage (cameraName,imageTopic,infoTopic,rate?,depth?)>
+<!ELEMENT RangeImageSensorToROSImage (cameraName,imageTopic,infoTopic,rate?)>
+<!ELEMENT RangeSensorToROSRange (name,topic,rate?)>
+<!ELEMENT ROSImageToHUD (width,height,posx?,posy?,scale?,blackWhite?,imageTopic,infoTopic?)>
+<!ELEMENT ROSTwistToPAT (topic,vehicleName)>
+<!ELEMENT ROSPoseToPAT (topic,vehicleName)>
+<!ELEMENT ImuToROSImu (name, topic, rate?)>
+<!ELEMENT PressureSensorToROS (name, topic, rate?)>
+<!ELEMENT GPSSensorToROS (name, topic, rate?)>
+<!ELEMENT DVLSensorToROS (name, topic, rate?)>
+<!ELEMENT multibeamSensorToLaserScan (name, topic, rate?)>
+<!ELEMENT contactSensorToROS (name, topic, rate?)>
+<!ELEMENT ROSPointCloudLoader (topic)>
+<!ATTLIST ROSPointCloudLoader delLastPCD (true|false) #IMPLIED>
+<!ELEMENT RangeCameraToPCL (cameraName, topic, rate?)>
+<!ELEMENT CustomCommsDeviceROS (name, topic, rate?)>
+<!ELEMENT AcousticCommsDeviceROS (name, topic, rate?)>
+
+<!ELEMENT width (#PCDATA)>
+<!ELEMENT height (#PCDATA)>
+<!ELEMENT posx (#PCDATA)>
+<!ELEMENT posy (#PCDATA)>
+<!ELEMENT blackWhite (#PCDATA)>
+<!ELEMENT scale (#PCDATA)>
+<!ELEMENT topic (#PCDATA)>
+<!ELEMENT vehicleName (#PCDATA)>
+<!ELEMENT rate (#PCDATA)>
+<!ELEMENT cameraName (#PCDATA)>
+<!ELEMENT imageTopic (#PCDATA)>
+<!ELEMENT infoTopic (#PCDATA)>
+<!ELEMENT rootName (#PCDATA)>
+<!ELEMENT enableObjects (#PCDATA)>
+
+<!-- elementos vcamtoROSImage -->
+<!ELEMENT cam (#PCDATA)>
+<!ELEMENT info (#PCDATA)>
+
+<!-- elementos physics -->
+<!ATTLIST object buried CDATA #IMPLIED>
+<!ELEMENT physics (mass?,inertia?,collisionShapeType?,collisionShape?,linearDamping?,angularDamping?,isKinematic? , minLinearLimit?, maxLinearLimit?,minAngularLimit?,maxAngularLimit?)>
+<!ELEMENT mass (#PCDATA)>
+<!ELEMENT inertia (x,y,z)>
+<!ELEMENT collisionShapeType (#PCDATA)>
+<!ELEMENT collisionShape (#PCDATA)>
+<!ELEMENT linearDamping (#PCDATA)>
+<!ELEMENT angularDamping (#PCDATA)>
+<!ELEMENT minLinearLimit (x,y,z)>
+<!ELEMENT maxLinearLimit (x,y,z)>
+<!ELEMENT isKinematic (#PCDATA)>
+<!ELEMENT minAngularLimit (x,y,z)>
+<!ELEMENT maxAngularLimit (x,y,z)>
+
+
+<!-- simulatedDevices -->
+<!ELEMENT simulatedDevices (
+echo*
+)>
+<!ELEMENT SimulatedDeviceROS (
+echoROS?
+)>
+
+<!ELEMENT echo (name, info )>
+<!ELEMENT echoROS (name, topic, rate?)>
+
+<!ELEMENT ForceSensor (name, target, offsetp, offsetr)>
+<!ELEMENT ForceSensorROS (name, topic, rate?)>
+
+<!ELEMENT DredgeTool (name, target, offsetp, offsetr)>
+
+<!-- *Comms* items -->
+<!ELEMENT id (#PCDATA)>
+<!ELEMENT channelId (#PCDATA)>
+<!ELEMENT txChannelId (#PCDATA)>
+<!ELEMENT rxChannelId (#PCDATA)>
+<!ELEMENT propTimeIncPerMeter (#PCDATA)>
+<!ELEMENT minPropTime (#PCDATA)>
+<!ELEMENT tfId (#PCDATA)>
+<!ELEMENT dccommsId (#PCDATA)>
+<!ELEMENT relativeTfId (#PCDATA)>
+<!ELEMENT mac (#PCDATA)>
+<!ELEMENT maxBitRate (#PCDATA)>
+<!ELEMENT intrinsicDelay (#PCDATA)>
+<!ELEMENT prTimeIncPerMeter (#PCDATA)>
+<!ELEMENT bitrate (#PCDATA)>
+<!ELEMENT maxDistance (#PCDATA)>
+<!ELEMENT minDistance (#PCDATA)>
+<!ELEMENT mesh (path, scaleFactor?)>
+<!ELEMENT path (#PCDATA)>
+<!ELEMENT txFifoSize (#PCDATA)>
+<!ELEMENT bandwidth (#PCDATA)>
+<!ELEMENT temperature (#PCDATA)>
+<!ELEMENT salinity (#PCDATA)>
+<!ELEMENT noiseLvl (#PCDATA)>
+<!ELEMENT pT (#PCDATA)>
+<!ELEMENT frequency (#PCDATA)>
+<!ELEMENT L (#PCDATA)>
+<!ELEMENT K (#PCDATA)>
+<!ELEMENT turnOnEnergy (#PCDATA)>
+<!ELEMENT turnOffEnergy (#PCDATA)>
+<!ELEMENT preamble (#PCDATA)>
+<!ELEMENT pTConsume (#PCDATA)>
+<!ELEMENT pRConsume (#PCDATA)>
+<!ELEMENT pIdle (#PCDATA)>
+<!ELEMENT symbolsPerSecond (#PCDATA)>
+<!ELEMENT codingEff (#PCDATA)>
+<!ELEMENT bitErrorRate (#PCDATA)>
+<!ELEMENT energyLevel (#PCDATA)>
+<!ELEMENT errorUnit (#PCDATA)>
+<!ELEMENT errorRateExpr (#PCDATA)>
+<!ELEMENT logLevel (#PCDATA)>
+<!ELEMENT disable (#PCDATA)>
+<!ELEMENT fdm (#PCDATA)>
+<!ELEMENT lat (#PCDATA)>
+<!ELEMENT lon (#PCDATA)>
+<!ELEMENT tx (#PCDATA)>
+<!ELEMENT rx (#PCDATA)>
+<!ELEMENT vr (#PCDATA)>
+<!ELEMENT logToFile (#PCDATA)>
+<!ELEMENT logToConsole (#PCDATA)>
+<!ELEMENT asyncLog (#PCDATA)>
+<!ELEMENT maxBackoffSlots (#PCDATA)>
+
+<!ELEMENT macProtocol (name, maxDistance?, maxBackoffSlots?)>
+<!ELEMENT nedOrigin (lat, lon)>
+<!ELEMENT rateErrorModel (errorUnit, errorRateExpr)>
+<!ELEMENT tf (tfId, position?, orientation?)>
+<!ELEMENT jitter (tx?, rx)>
+<!ELEMENT className (#PCDATA)>
+<!ELEMENT libPath (#PCDATA)>
+<!ELEMENT txPacketBuilder (className, libPath?)>
+<!ELEMENT rxPacketBuilder (className, libPath?)>
+<!ELEMENT netTracingScript (className, libPath?, logToFile?, logToConsole?, asyncLog?)>
+<!ELEMENT energyModel (energyLevel, turnOnEnergy, turnOffEnergy, pTConsume, pRConsume, pIdle, pT)>
+
+<!ELEMENT AcousticCommsChannel (id, bandwidth?, temperature?, salinity?, noiseLvl?, logLevel?)>
+<!ELEMENT AcousticCommsDevice (dccommsId, channelId, relativeTo, mac, symbolsPerSecond, codingEff?, bitErrorRate?, txFifoSize?, tfId?, relativeTfId?, position?, orientation?, mesh?, range?, frequency?, L?, K?, energyModel?, preamble?, macProtocol?, txPacketBuilder, rxPacketBuilder, logLevel?, disable?)>
+<!ELEMENT CustomCommsChannel (id,propTimeIncPerMeter?,minPropTime?, logLevel?)>
+<!ELEMENT CustomCommsDevice (dccommsId, txChannelId, rxChannelId, relativeTo, mac, macProtocol?, bitrate, txFifoSize?, tfId?, relativeTfId?, position?, orientation?, mesh?, intrinsicDelay?, prTimeIncPerMeter?, jitter?, maxDistance?, minDistance?, rateErrorModel?, txPacketBuilder, rxPacketBuilder, logLevel?, disable?)>
+<!-- *Comms* items end-->
+
+<!-- Utils -->
+<!ELEMENT radio (#PCDATA)>
+<!ELEMENT space (#PCDATA)>
+<!ELEMENT LedArray (name, relativeTo, position, orientation, radio?, space?)>
+<!-- Utils end -->

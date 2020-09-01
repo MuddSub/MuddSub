@@ -1,0 +1,17 @@
+<launch>
+
+  <param name="robot_description"
+    command="xacro '$(find core)/descriptions/alfie.urdf.xacro'" />
+
+  <param name="robot_properties" textfile="$(find core)/descriptions/alfie.urdf"/>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
+
+  <node name="parse_robot" pkg="core" type="ParseDynamicsToParams.py" output="screen">
+    <param name="~urdf_name" value="robot_description"/>
+    <param name="~base_link" value="base_link"/>
+  </node>
+
+
+  <!-- <node name="state_publisher" pkg="core" type="state_publisher" output="screen"/> -->
+</launch>

@@ -1,0 +1,16 @@
+<package>
+  <name>muddsub_raspi</name>
+  <version>3.0.2</version>
+  <description>
+    MuddSub code which ONLY runs on the raspberry pi (firmware).
+  </description>
+  <maintainer email="sisaacson@hmc.edu">Seth Isaacson</maintainer>
+  <license>BSD-2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>hydrophones</run_depend>
+
+  <export>
+   	  <metapackage />
+   </export>
+</package>
