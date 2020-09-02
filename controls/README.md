@@ -35,7 +35,7 @@ For more details on PID, see: https://en.wikipedia.org/wiki/PID_controller
 
 For details on LQR, see: https://www.mathworks.com/videos/state-space-part-4-what-is-lqr-control-1551955957637.html
 
-Or, just ask Seth! I'm happy to explain more about controls and how you can get involved to anyone on the team. 
+Or, just ask Seth! I'm happy to explain more about controls and how you can contribute.
 
 ## Simulator
 
@@ -68,6 +68,7 @@ and this has only been tested on two machines. Please do not hesitate to email S
 
 ## Known Limitations
 - Currently, the tuning abilility of the control systems is very limited, as it must be hardcoded. This will be a good project for a new member in the fall.
+- Since thus far this has only been used in simulation, we need a thruster allocation system. This should be easy to reconfigure in the case of motor failure. Yet another good project for new members!
 
 ## Future Work
 
