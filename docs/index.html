@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.18"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MuddSub Software: Main Page</title>
+<title>MuddSub Software: MuddSub Softwware</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -60,11 +60,44 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">MuddSub Software Documentation</div>  </div>
+<div class="title">MuddSub Softwware </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><p>MuddSub is a student-lead team which competes in the international <a href="http://robosub.org">robosub</a> competition. This repository represents a fresh start on the code base, and is thus incomplete. Further, the documentation is equally incomplete. If you have question about code which has not yet been migrated to this repo, or about any missing documentation, contact Seth Isaacson at <a href="#" onclick="location.href='mai'+'lto:'+'sis'+'aa'+'cso'+'n@'+'hmc'+'.e'+'du'; return false;">sisaa<span style="display: none;">.nosp@m.</span>cson<span style="display: none;">.nosp@m.</span>@hmc.<span style="display: none;">.nosp@m.</span>edu</a>. Our software is partitioned as follows: </p>
+<h3><a class="anchor" id="autotoc_md7"></a>
+Core</h3>
+<p>The Core repository provides simple tools for sharing information, managing the robot's state, and other utilitites. It also holds the URDF descirptions of the robot. </p>
+<h3><a class="anchor" id="autotoc_md8"></a>
+Vision</h3>
+<p>Vision holds all of our commputer vision tools. </p>
+<h3><a class="anchor" id="autotoc_md9"></a>
+controls</h3>
+<p>Controls provides the vehicle dynamics and control systems. </p>
+<h3><a class="anchor" id="autotoc_md10"></a>
+hydrophones</h3>
+<p>The Hydrophones repository provides the firmware and software for processing acoustic signals. The overall goal is to find the direction-of-arrival of an acoustic signal by receiving it on four hydrophones. </p>
+<h3><a class="anchor" id="autotoc_md11"></a>
+motion planning</h3>
+<p>Motion planning generates abstract trajectories which the robot follows. </p>
+<h3><a class="anchor" id="autotoc_md12"></a>
+sim</h3>
+<p>Sim holds packages to interface with our simulator, which is based on the open-source UWSim. The controls repository also contains code to simulate vehicle dynamics. </p>
+<h3><a class="anchor" id="autotoc_md13"></a>
+slam</h3>
+<p>SLAM will eventually hold code to conduct simulataneous localization and mapping. </p>
+<h3><a class="anchor" id="autotoc_md14"></a>
+thirdparty</h3>
+<p>We use various third-party tools to service our autonomy stack. Notably, we use the wonderful controls toolbox, which provides interfaces for system linearization and optimal controllers. </p>
+<h3><a class="anchor" id="autotoc_md15"></a>
+builds</h3>
+<p>Builds holds three metapackages which are used for building different configurations.</p><ul>
+<li>muddsub_primary builds code which is run on the robot.</li>
+<li>muddsub_sim builds muddsub_primary, plus simulation-related code.</li>
+<li>muddsub_raspi builds the code which runs raspberry pis. </li>
+</ul>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

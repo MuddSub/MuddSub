@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['qmatrix_5ft_28',['QMatrix_t',['../classMuddSub_1_1Controls_1_1LQRController.html#a6f2705e061804a1256122779aa403e3f',1,'MuddSub::Controls::LQRController']]]
+  ['qmatrix_5ft_29',['QMatrix_t',['../classMuddSub_1_1Controls_1_1LQRController.html#a6f2705e061804a1256122779aa403e3f',1,'MuddSub::Controls::LQRController']]]
 ];
