@@ -1,0 +1,26 @@
+\hypertarget{namespaceMuddSub_1_1Controls}{}\doxysection{Mudd\+Sub\+::Controls Namespace Reference}
+\label{namespaceMuddSub_1_1Controls}\index{MuddSub::Controls@{MuddSub::Controls}}
+
+
+The controls package contains code related to vehicle dynamics and motion controls.  
+
+
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR}{Decoupled\+L\+QR}}
+\begin{DoxyCompactList}\small\item\em a 12D\+OF optimal controller, using L\+QR and P\+ID. This decoupled controller implements 8D\+OF L\+QR control, handling position and velocity in surge, sway, heave, and yaw. This is what is needed for path following and primary navigation. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classMuddSub_1_1Controls_1_1LQRController}{L\+Q\+R\+Controller}}
+\begin{DoxyCompactList}\small\item\em \mbox{\hyperlink{classMuddSub_1_1Controls_1_1LQRController}{L\+Q\+R\+Controller}} is a simple wrapper for the control toolbox L\+QR solver. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classMuddSub_1_1Controls_1_1SimulationDynamics}{Simulation\+Dynamics}}
+\begin{DoxyCompactList}\small\item\em Simulates vehicle dynamics and control systems. \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classMuddSub_1_1Controls_1_1StateToOdomPublisher}{State\+To\+Odom\+Publisher}}
+\begin{DoxyCompactList}\small\item\em transforms 12-\/vector state to nav\+\_\+msgs/\+Odometry message \end{DoxyCompactList}\item 
+class \mbox{\hyperlink{classMuddSub_1_1Controls_1_1VehicleDynamics}{Vehicle\+Dynamics}}
+\begin{DoxyCompactList}\small\item\em Implements Fossen\textquotesingle{}s equations of motion for 12D\+OF underwater vehicle. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The controls package contains code related to vehicle dynamics and motion controls. 
+
+The primary controller implemented is 8D\+OF L\+QR with 2D\+OF P\+ID. We also implement fossen\textquotesingle{}s equations of motion for both simulation and optimal controls. 
