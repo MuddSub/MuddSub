@@ -1,4 +1,4 @@
-/*! \mainpage MuddSub Softwware
+/*! \mainpage MuddSub Software
 MuddSub is a student-lead team which competes in the international [robosub](http://robosub.org) competition.
 This repository represents a fresh start on the code base, and is thus incomplete. Further, the documentation is equally incomplete.
 If you have question about code which has not yet been migrated to this repo, or about any missing documentation, contact
