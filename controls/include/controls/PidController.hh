@@ -1,12 +1,13 @@
 #pragma once
 
-/** Simple PID controller with a first-order filter on the derivative term,
+/** @brief Simple PID controller
+
+  This PID controller has a first-order filter on the derivative term,
    and windup limits. Since this is only used on our roll and pitch, this
    is sufficient. If to be used on other, less stable axes, filters should
    be reconsidered.
    Notably, if this needs to accomodate changes in setpoint, then the integral
    term needs to be fixed. */
-
 class PidController
 {
   /// Gains for proportional, integral, and derivative terms.

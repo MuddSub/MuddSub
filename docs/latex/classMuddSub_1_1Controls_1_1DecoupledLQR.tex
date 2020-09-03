@@ -1,0 +1,117 @@
+\hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR}{}\doxysection{Mudd\+Sub\+::Controls\+::Decoupled\+L\+QR Class Reference}
+\label{classMuddSub_1_1Controls_1_1DecoupledLQR}\index{MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}}
+
+
+a 12D\+OF optimal controller, using L\+QR and P\+ID. This decoupled controller implements 8D\+OF L\+QR control, handling position and velocity in surge, sway, heave, and yaw. This is what is needed for path following and primary navigation.  
+
+
+
+
+{\ttfamily \#include $<$Decoupled\+L\+Q\+R.\+hh$>$}
+
+Inheritance diagram for Mudd\+Sub\+::Controls\+::Decoupled\+L\+QR\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classMuddSub_1_1Controls_1_1DecoupledLQR}
+\end{center}
+\end{figure}
+\doxysubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+using \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} = ct\+::core\+::\+State\+Vector$<$ \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a44c99a4a628c2e7203a4bf03b6db8f7d}{state\+Dim}}, double $>$
+\item 
+using \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a3f452e3fb9cf07b61670ee10ab9f1cde}{control\+Vector\+\_\+t}} = ct\+::core\+::\+Control\+Vector$<$ \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a937b04023e940179dfff94b235cc80b1}{control\+Dim}}, double $>$
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_ae806f24deec83625ae1e9afd6b0c19e2}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_ae806f24deec83625ae1e9afd6b0c19e2}} 
+using \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_ae806f24deec83625ae1e9afd6b0c19e2}{ct\+Time\+\_\+t}} = ct\+::core\+::\+Controlled\+System$<$ \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a44c99a4a628c2e7203a4bf03b6db8f7d}{state\+Dim}}, \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a937b04023e940179dfff94b235cc80b1}{control\+Dim}}, double $>$\+::time\+\_\+t
+\begin{DoxyCompactList}\small\item\em The control toolbox has their own time type, which we use for properness. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a693190022323ba2313a52d329de960b8}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a693190022323ba2313a52d329de960b8}} 
+{\bfseries Decoupled\+L\+QR} (const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR}{Decoupled\+L\+QR}} \&)=default
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a0cf7b20cf4ea60174a7bdb2b3cb5a9d6}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a0cf7b20cf4ea60174a7bdb2b3cb5a9d6}} 
+\mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR}{Decoupled\+L\+QR}} $\ast$ \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a0cf7b20cf4ea60174a7bdb2b3cb5a9d6}{clone}} () const
+\begin{DoxyCompactList}\small\item\em Clone the object. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a93c6617e63a1c2c1da331279d118f452}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a93c6617e63a1c2c1da331279d118f452}} 
+\mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a93c6617e63a1c2c1da331279d118f452}{compute\+Error}} (const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \&state, const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \&setpoint) const
+\begin{DoxyCompactList}\small\item\em Given the state and setpoint, compute the error. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a4e61f04df141be1d39155e893244730a}{compute\+Control}} (const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \&state, const double \&, \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a3f452e3fb9cf07b61670ee10ab9f1cde}{control\+Vector\+\_\+t}} \&control\+Action)
+\item 
+void \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a21c896126258db1e696539df7bd02a9b}{set\+Setpoint}} (const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \&setpoint)
+\item 
+void \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a660773304b1a2ba3f065afb0a5e4ef49}{set\+Dynamics}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classMuddSub_1_1Controls_1_1VehicleDynamics}{Vehicle\+Dynamics}} $>$ dynamics\+Ptr)
+\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a44c99a4a628c2e7203a4bf03b6db8f7d}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a44c99a4a628c2e7203a4bf03b6db8f7d}} 
+constexpr static unsigned int \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a44c99a4a628c2e7203a4bf03b6db8f7d}{state\+Dim}} = 12
+\begin{DoxyCompactList}\small\item\em Dimension of A\+UV state\+: \mbox{[}x,y,z,roll,pitch,yaw,x\textquotesingle{},y\textquotesingle{},z\textquotesingle{},roll\textquotesingle{},pitch\textquotesingle{},yaw\textquotesingle{}\mbox{]}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a937b04023e940179dfff94b235cc80b1}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a937b04023e940179dfff94b235cc80b1}} 
+constexpr static unsigned int \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a937b04023e940179dfff94b235cc80b1}{control\+Dim}} = 6
+\begin{DoxyCompactList}\small\item\em Dimension of control\+: 6D\+OF wrench. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a589a1f6d066a3e791fa2144a459f7721}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a589a1f6d066a3e791fa2144a459f7721}} 
+static constexpr unsigned int \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a589a1f6d066a3e791fa2144a459f7721}{state\+Dim\+L\+QR}} = 8
+\begin{DoxyCompactList}\small\item\em L\+QR has state \mbox{[}x,y,z,yaw, x\textquotesingle{}, y\textquotesingle{}, z\textquotesingle{}, yaw\textquotesingle{}\mbox{]}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a54c8eb5e2cc1c0196cc37613bc1c4ede}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a54c8eb5e2cc1c0196cc37613bc1c4ede}} 
+static constexpr unsigned int \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a54c8eb5e2cc1c0196cc37613bc1c4ede}{control\+Dim\+L\+QR}} = 4
+\begin{DoxyCompactList}\small\item\em L\+QR control is 4D\+OF wrench\+: \mbox{[}x,y,z,yaw\mbox{]}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+a 12D\+OF optimal controller, using L\+QR and P\+ID. This decoupled controller implements 8D\+OF L\+QR control, handling position and velocity in surge, sway, heave, and yaw. This is what is needed for path following and primary navigation. 
+
+Roll and pitch is handled with simple P\+ID controllers, which are generally inactive as the robot is quite stable in those axes (+1 for good mechanical design making software easier). 
+
+\doxysubsection{Member Typedef Documentation}
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a3f452e3fb9cf07b61670ee10ab9f1cde}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a3f452e3fb9cf07b61670ee10ab9f1cde}} 
+\index{MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}!controlVector\_t@{controlVector\_t}}
+\index{controlVector\_t@{controlVector\_t}!MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}}
+\doxysubsubsection{\texorpdfstring{controlVector\_t}{controlVector\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a3f452e3fb9cf07b61670ee10ab9f1cde}{Mudd\+Sub\+::\+Controls\+::\+Decoupled\+L\+Q\+R\+::control\+Vector\+\_\+t}} =  ct\+::core\+::\+Control\+Vector$<$\mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a937b04023e940179dfff94b235cc80b1}{control\+Dim}}, double$>$}
+
+The control vector is a 6-\/vector, which is just the wrench (forces/torques) in 6D\+OF \mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}} 
+\index{MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}!stateVector\_t@{stateVector\_t}}
+\index{stateVector\_t@{stateVector\_t}!MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}}
+\doxysubsubsection{\texorpdfstring{stateVector\_t}{stateVector\_t}}
+{\footnotesize\ttfamily using \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{Mudd\+Sub\+::\+Controls\+::\+Decoupled\+L\+Q\+R\+::state\+Vector\+\_\+t}} =  ct\+::core\+::\+State\+Vector$<$\mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a44c99a4a628c2e7203a4bf03b6db8f7d}{state\+Dim}}, double$>$}
+
+The state vector is by default a 12D vector, representing the position and attitude in 6D\+OF, and all of those velocities. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a4e61f04df141be1d39155e893244730a}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a4e61f04df141be1d39155e893244730a}} 
+\index{MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}!computeControl@{computeControl}}
+\index{computeControl@{computeControl}!MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}}
+\doxysubsubsection{\texorpdfstring{computeControl()}{computeControl()}}
+{\footnotesize\ttfamily void Mudd\+Sub\+::\+Controls\+::\+Decoupled\+L\+Q\+R\+::compute\+Control (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \&}]{state,  }\item[{const double \&}]{t,  }\item[{\mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a3f452e3fb9cf07b61670ee10ab9f1cde}{control\+Vector\+\_\+t}} \&}]{control\+Action }\end{DoxyParamCaption})}
+
+Given the current error, find the control action (6D\+OF wrench.) This implements the described controller. \mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a660773304b1a2ba3f065afb0a5e4ef49}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a660773304b1a2ba3f065afb0a5e4ef49}} 
+\index{MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}!setDynamics@{setDynamics}}
+\index{setDynamics@{setDynamics}!MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}}
+\doxysubsubsection{\texorpdfstring{setDynamics()}{setDynamics()}}
+{\footnotesize\ttfamily void Mudd\+Sub\+::\+Controls\+::\+Decoupled\+L\+Q\+R\+::set\+Dynamics (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classMuddSub_1_1Controls_1_1VehicleDynamics}{Vehicle\+Dynamics}} $>$}]{dynamics\+Ptr }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+The controller needs knowledge of the vehicle dynaics to solve the optimal control problem 
+\begin{DoxyParams}{Parameters}
+{\em dynamics\+Ptr} & shared\+\_\+ptr to instance of vehicle dynamics. Only one such instance should be present at a time. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1DecoupledLQR_a21c896126258db1e696539df7bd02a9b}\label{classMuddSub_1_1Controls_1_1DecoupledLQR_a21c896126258db1e696539df7bd02a9b}} 
+\index{MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}!setSetpoint@{setSetpoint}}
+\index{setSetpoint@{setSetpoint}!MuddSub::Controls::DecoupledLQR@{MuddSub::Controls::DecoupledLQR}}
+\doxysubsubsection{\texorpdfstring{setSetpoint()}{setSetpoint()}}
+{\footnotesize\ttfamily void Mudd\+Sub\+::\+Controls\+::\+Decoupled\+L\+Q\+R\+::set\+Setpoint (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classMuddSub_1_1Controls_1_1DecoupledLQR_a7063007cf0ce8c11a1926918f24e745a}{state\+Vector\+\_\+t}} \&}]{setpoint }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Set the 12D\+OF vehicle setpoint 
+\begin{DoxyParams}{Parameters}
+{\em setpoint} & Desired location of robot \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+controls/include/controls/Decoupled\+L\+Q\+R.\+hh\item 
+controls/src/Decoupled\+L\+Q\+R.\+cc\end{DoxyCompactItemize}

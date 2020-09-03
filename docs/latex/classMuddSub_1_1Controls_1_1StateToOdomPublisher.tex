@@ -1,0 +1,43 @@
+\hypertarget{classMuddSub_1_1Controls_1_1StateToOdomPublisher}{}\doxysection{Mudd\+Sub\+::Controls\+::State\+To\+Odom\+Publisher Class Reference}
+\label{classMuddSub_1_1Controls_1_1StateToOdomPublisher}\index{MuddSub::Controls::StateToOdomPublisher@{MuddSub::Controls::StateToOdomPublisher}}
+
+
+transforms 12-\/vector state to nav\+\_\+msgs/\+Odometry message  
+
+
+
+
+{\ttfamily \#include $<$State\+To\+Odom\+Publisher.\+hh$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1StateToOdomPublisher_a467c474e148030141acffa815ad5b01a}\label{classMuddSub_1_1Controls_1_1StateToOdomPublisher_a467c474e148030141acffa815ad5b01a}} 
+\mbox{\hyperlink{classMuddSub_1_1Controls_1_1StateToOdomPublisher_a467c474e148030141acffa815ad5b01a}{State\+To\+Odom\+Publisher}} (const std\+::string \&topic, size\+\_\+t buffer\+Size=10)
+\begin{DoxyCompactList}\small\item\em Set the advertised topic to topic, and adjust the publisher\textquotesingle{}s buffer. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMuddSub_1_1Controls_1_1StateToOdomPublisher_a191a3e3bda9a71bbc0afb75beeb25842}{operator()}} (Eigen\+::\+Matrix$<$ double, 12, 1 $>$ \&state)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+transforms 12-\/vector state to nav\+\_\+msgs/\+Odometry message 
+
+A simple header-\/only class to take a 12-\/vector state and publish it as a nav\+\_\+msgs/\+Odometry message. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1StateToOdomPublisher_a191a3e3bda9a71bbc0afb75beeb25842}\label{classMuddSub_1_1Controls_1_1StateToOdomPublisher_a191a3e3bda9a71bbc0afb75beeb25842}} 
+\index{MuddSub::Controls::StateToOdomPublisher@{MuddSub::Controls::StateToOdomPublisher}!operator()@{operator()}}
+\index{operator()@{operator()}!MuddSub::Controls::StateToOdomPublisher@{MuddSub::Controls::StateToOdomPublisher}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}}
+{\footnotesize\ttfamily void Mudd\+Sub\+::\+Controls\+::\+State\+To\+Odom\+Publisher\+::operator() (\begin{DoxyParamCaption}\item[{Eigen\+::\+Matrix$<$ double, 12, 1 $>$ \&}]{state }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Convert and publish a 12-\/vector 
+\begin{DoxyParams}{Parameters}
+{\em state} & the 12D\+OF state to be turned into an odometry message and published \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+controls/include/controls/State\+To\+Odom\+Publisher.\+hh\end{DoxyCompactItemize}

@@ -1,0 +1,50 @@
+\hypertarget{classMuddSub_1_1Controls_1_1SimulationDynamics}{}\doxysection{Mudd\+Sub\+::Controls\+::Simulation\+Dynamics Class Reference}
+\label{classMuddSub_1_1Controls_1_1SimulationDynamics}\index{MuddSub::Controls::SimulationDynamics@{MuddSub::Controls::SimulationDynamics}}
+
+
+Simulates vehicle dynamics and control systems.  
+
+
+
+
+{\ttfamily \#include $<$Simulation\+Dynamics.\+hh$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classMuddSub_1_1Controls_1_1SimulationDynamics_a5afcdcff979763b2674c721f3ffc9bbf}{setpoint\+CB}} (const controls\+::\+State \&state)
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1SimulationDynamics_ac945804c2407504e88f4c3260a042679}\label{classMuddSub_1_1Controls_1_1SimulationDynamics_ac945804c2407504e88f4c3260a042679}} 
+void \mbox{\hyperlink{classMuddSub_1_1Controls_1_1SimulationDynamics_ac945804c2407504e88f4c3260a042679}{run\+Once}} ()
+\begin{DoxyCompactList}\small\item\em Propogates the dynamics and computes the next state derivative. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1SimulationDynamics_a4dcbb4486ca4f6be0b8632317513f6d4}\label{classMuddSub_1_1Controls_1_1SimulationDynamics_a4dcbb4486ca4f6be0b8632317513f6d4}} 
+double \mbox{\hyperlink{classMuddSub_1_1Controls_1_1SimulationDynamics_a4dcbb4486ca4f6be0b8632317513f6d4}{rate\+\_\+}} \{10\}
+\begin{DoxyCompactList}\small\item\em Updates per second. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Simulates vehicle dynamics and control systems. 
+
+\mbox{\hyperlink{classMuddSub_1_1Controls_1_1SimulationDynamics}{Simulation\+Dynamics}} implements the decoupled L\+QR controller to control a nonlinear system described by Fossen\textquotesingle{}s equations of motion for an underwater vehicle. At each time step, the control action is computed and applied to the system. Then, the results are propogated forward to compute the new state. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMuddSub_1_1Controls_1_1SimulationDynamics_a5afcdcff979763b2674c721f3ffc9bbf}\label{classMuddSub_1_1Controls_1_1SimulationDynamics_a5afcdcff979763b2674c721f3ffc9bbf}} 
+\index{MuddSub::Controls::SimulationDynamics@{MuddSub::Controls::SimulationDynamics}!setpointCB@{setpointCB}}
+\index{setpointCB@{setpointCB}!MuddSub::Controls::SimulationDynamics@{MuddSub::Controls::SimulationDynamics}}
+\doxysubsubsection{\texorpdfstring{setpointCB()}{setpointCB()}}
+{\footnotesize\ttfamily void Mudd\+Sub\+::\+Controls\+::\+Simulation\+Dynamics\+::setpoint\+CB (\begin{DoxyParamCaption}\item[{const controls\+::\+State \&}]{state }\end{DoxyParamCaption})}
+
+Subscribes to a R\+OS message setting the setpoint (as a 12-\/vector) 
+\begin{DoxyParams}{Parameters}
+{\em state} & the desired state of the robot \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+controls/include/controls/Simulation\+Dynamics.\+hh\item 
+controls/src/Simulation\+Dynamics.\+cc\end{DoxyCompactItemize}
