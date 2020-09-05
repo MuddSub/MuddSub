@@ -7,8 +7,10 @@
 namespace MuddSub::Controls
 {
 
-/** LQRController is a simple wrapper for the control toolbox LQR solver.
-It modifies the behavior such that computeControl() solves the control problem,
+/** @brief LQRController is a simple wrapper for the control toolbox LQR solver.
+
+This class implements an LQR solver by modifying the behavior of control toolbox's
+LQR class such that computeControl() solves the control problem,
 and returns the result. Hence, the interface more closely resembles a class
 derived from ct::core::Controller.
 

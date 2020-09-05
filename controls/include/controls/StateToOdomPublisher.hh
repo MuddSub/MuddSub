@@ -10,7 +10,9 @@
 namespace MuddSub::Controls
 {
 
-/** A simple header-only class to take a 12-vector state and publish
+/** @brief transforms 12-vector state to nav_msgs/Odometry message
+ 
+A simple header-only class to take a 12-vector state and publish
 it as a nav_msgs/Odometry message.
 */
 class StateToOdomPublisher

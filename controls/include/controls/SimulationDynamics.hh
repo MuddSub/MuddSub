@@ -10,7 +10,9 @@
 namespace MuddSub::Controls
 {
 
-/** SimulationDynamics implements the decoupled LQR controller
+/** @brief Simulates vehicle dynamics and control systems.
+ 
+SimulationDynamics implements the decoupled LQR controller
 to control a nonlinear system described by Fossen's equations of motion
 for an underwater vehicle. At each time step, the control action is computed
 and applied to the system. Then, the results are propogated forward to compute
@@ -23,7 +25,7 @@ public:
   SimulationDynamics();
 
   /// Subscribes to a ROS message setting the setpoint (as a 12-vector)
-  /// @param state: the desired state of the robot 
+  /// @param state: the desired state of the robot
   void setpointCB(const controls::State& state);
 
   /// Propogates the dynamics and computes the next state derivative

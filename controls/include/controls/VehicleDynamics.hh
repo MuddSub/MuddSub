@@ -12,7 +12,8 @@
 namespace MuddSub::Controls
 {
 
-/**
+/** @brief Implements Fossen's equations of motion for 12DOF underwater vehicle.
+
 This class implements the 12DOF robot dynamics primarily described by
 Fossen, 2011: Handbook of Marine Craft Hydrodynamics and Motion Control,
 and made clearer by Chin, 2013: Computer Aided Control Systems Design (beware, the Chin book has errors).
