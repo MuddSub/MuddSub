@@ -28,7 +28,7 @@ generate_messages(
 
 catkin_package(
 	INCLUDE_DIRS include
-	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime
+	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs ct_core ct_optcon message_runtime
 	DEPENDS system_lib
 )
 
@@ -45,7 +45,11 @@ add_executable(simulation_dynamics
               src/VehicleDynamics.cc
               src/DecoupledLQR.cc
               src/SimulationDynamics.cc)
-add_dependencies(simulation_dynamics ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(simulation_dynamics 
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${catkin_EXPORTED_TARGETS}
+	ct_core
+	ct_optcon)
 target_link_libraries(simulation_dynamics
   ${catkin_LIBRARIES}
 )
