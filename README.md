@@ -32,6 +32,6 @@ The first is optional, and provides the tools we use for simulation. The second 
 With that said, this is a good opportunity to build!
 
 ```
-catkin build muddsub_primary
+catkin build muddsub_sim
 ```
 This may take a few minutes! 
