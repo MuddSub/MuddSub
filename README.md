@@ -37,8 +37,6 @@ The first is optional, and provides the tools we use for simulation. The second 
 With that said, this is a good opportunity to build!
 
 ```
-catkin build ct_core
-catkin build ct_optcon
-catkin build muddsub_primary
+catkin build muddsub_sim
 ```
 This may take a few minutes! 
