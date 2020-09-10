@@ -11,7 +11,7 @@ namespace MuddSub::Controls
 {
 
 /** @brief Simulates vehicle dynamics and control systems.
- 
+
 SimulationDynamics implements the decoupled LQR controller
 to control a nonlinear system described by Fossen's equations of motion
 for an underwater vehicle. At each time step, the control action is computed
