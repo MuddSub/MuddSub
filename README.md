@@ -7,7 +7,12 @@ This all needs to be in Ubuntu, preferably 18.04. Other linux distributions can 
 
 Start by following [these instructions](http://wiki.ros.org/melodic/Installation/Ubuntu) to install ros melodic. 
 
-You'll need a catkin workspace, which can be created by opening a terminal and running `mkdir -p ~/catkin_ws/src`.
+You'll need a catkin workspace, which can be created by opening a terminal and running 
+```
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws
+catkin build
+```
 
 Enter the directory and clone this repository:
 

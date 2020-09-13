@@ -71,7 +71,7 @@
   </camera>
   <vehicle>
     <name>Alfie</name>
-    <file>/home/seth/catkin_ws/src/MuddSub/core/descriptions/alfie.urdf</file>
+    <file>/home/seth/catkin_ws/src/muddsub/core/descriptions/alfie.urdf</file>
     <position>
       <x> 0</x>
       <y> 0 </y>
@@ -183,7 +183,7 @@
       <y>0</y>
     </orientation>
   </object>
-  <object>
+  <!-- <object>
     <name> gate </name>
     <file> sim/scenes/meshes/gate.osg  </file>
     <position>
@@ -196,7 +196,7 @@
       <p>3.1415</p>
       <y>0</y>
     </orientation>
-  </object>
+  </object> -->
   <rosInterfaces>
     <ROSOdomToPAT>
       <topic> /robot_state </topic>

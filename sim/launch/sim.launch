@@ -1,0 +1,3 @@
+<launch>
+  <node name="uwsim" pkg="uwsim" type="uwsim" output="screen" args="--configfile $(find sim)/scenes/GateScene.xml" respawn="false" />
+</launch>

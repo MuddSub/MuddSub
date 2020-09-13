@@ -12,13 +12,20 @@
 #include <algorithm>
 #include <cmath>
 
+//**
+
+/** @brief The controls package contains code related to vehicle dynamics and motion controls.
+
+The primary controller implemented is 8DOF LQR with 2DOF PID.
+We also implement fossen's equations of motion for both simulation and optimal controls.
+*/
 namespace MuddSub::Controls
 {
 
 /// 12DOF coupled nonlinear vehicle dynamics
 class VehicleDynamics;
 
-/**
+/** @brief a 12DOF optimal controller, using LQR and PID.
 This decoupled controller implements 8DOF LQR control, handling position and velocity
 in surge, sway, heave, and yaw. This is what is needed for path following and primary
 navigation.
