@@ -113,7 +113,7 @@ Now, we need to make it executable. You can do this with `chmod u+x ~/catkin_ws/
 
 Finally, you can run everything together with `roslaunch tutorials DynamicsSim.launch`. This will run the simulator, and your code.
 
-### Tuning the PID Loops.
+## Part 4: Tuning the PID Loops.
 
 Now, on to the fun part! We want to 'tune' the PID loop so it performs as well as possible. A well-tuned loop will go to the exact position you specify, 
 quickly, and without any unwanted oscillations. To tune the loops, we modify the gains, `kP`, `kI`, and `kD`. For our purposes, `kI` will always be zero.
