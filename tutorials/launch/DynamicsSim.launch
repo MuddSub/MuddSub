@@ -1,0 +1,8 @@
+<launch>
+
+  <arg name="scene" default="$(find sim)/scenes/GateScene.xml"/>
+  <node name="uwsim" pkg="uwsim" type="uwsim" output="screen" args="--configfile $(find sim)/scenes/GateScene.xml" respawn="false" />
+  <node name="state_repub" pkg="controls" type="state_publisher" output="screen" respawn="false" />
+
+  <node name="vehicle_dynamics" pkg="tutorials" type="Controller.py" output="screen" />
+</launch>

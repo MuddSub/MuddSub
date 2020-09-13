@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+
 import numpy as np
+import rospy
+import controls.msg
 
 class LocalState:
     def __init__(self, state = [0, 0, 0]):
@@ -17,9 +21,15 @@ class WorldState:
         self.zDot = state[6]
         self.thetaDot = state[7]
 
+
+    def getStateVector(self):
+        return [self.x, self.y, self.z, self.theta, self.xDot, self.yDot, self.zDot, self.thetaDot]
+
+    def get12StateVector(self):
+        return  [self.x, self.y, self.z, 0, 0, self.theta, self.xDot, self.yDot, self.zDot, 0, 0, self.thetaDot]
+
     def __repr__(self):
-        vector = [self.x, self.y, self.z, self.theta, self.xDot, self.yDot, self.zDot, self.thetaDot]
-        return str(vector)
+        return str(self.getStateVector())
 
 class ControlInput:
     def __init__(self, control=[0,0,0]):
@@ -36,11 +46,13 @@ class AUV:
         self.robotState = LocalState()
         self.worldState = WorldState()
 
-        self.buoyancy = .25
+        self.buoyancy = .001
         self.dragConstant = 0.5
         self.angularDragConstant = 0.5
 
-    def propogateControls(self, control: ControlInput, deltaT: float):
+        self.pub = rospy.Publisher("robot_state_raw", controls.msg.State, queue_size=5, latch=True)
+
+    def propogateControls(self, control, deltaT):
         robotState = self.robotState
         xDotRobot = robotState.xDot
         zDotRobot = robotState.zDot
@@ -48,10 +60,13 @@ class AUV:
 
 
         # Update robot's state
-        aX = (control.left + control.right) / self.mass - self.dragConstant * xDotRobot
-        aZ = (control.vert)/self.mass - self.buoyancy
-        alpha = (control.left - control.right) / (self.mass*self.radius) - \
-                self.angularDragConstant * thetaDotRobot
+        aX = (control.left + control.right) / self.mass
+        if aX > 1:
+            aX = 1
+        aZ = (control.vert)/self.mass
+        if aZ > 1:
+            aZ = 1
+        alpha = (control.left - control.right) / (self.mass*self.radius)
 
         robotState.xDot += aX * deltaT
         robotState.zDot += aZ * deltaT
@@ -62,20 +77,34 @@ class AUV:
         worldState = self.worldState
 
         theta = worldState.theta
-        worldState.xDot = xDotRobot * np.cos(theta)
-        worldState.yDot = xDotRobot * np.sin(theta)
-        worldState.zDot = zDotRobot
-        worldState.thetaDot = thetaDotRobot
+        worldState.xDot = robotState.xDot * np.cos(theta)
+        worldState.yDot = robotState.xDot * np.sin(theta)
+        worldState.zDot = robotState.zDot
+        worldState.thetaDot = robotState.thetaDot
 
         worldState.x += worldState.xDot * deltaT
         worldState.y += worldState.yDot * deltaT
         worldState.z += worldState.zDot * deltaT
+        rospy.loginfo(worldState.z)
         worldState.theta += worldState.thetaDot * deltaT
 
-        print(worldState)
+        stateMsg = controls.msg.State()
+        stateMsg.state = self.worldState.get12StateVector()
+        self.pub.publish(stateMsg)
+
+    def getState(self):
+        return self.worldState.get12StateVector()
+
+    def getZPosition(self):
+        return self.worldState.z
+
 
 if __name__ == '__main__':
+    rospy.init_node("VehicleDynamics")
+
     auv = AUV()
-    c = ControlInput([1,0.8,1])
+    c = ControlInput([0,0,0])
+    rate = rospy.Rate(10)
     for _ in range(4):
         auv.propogateControls(c, 1)
+        rate.sleep()
