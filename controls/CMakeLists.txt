@@ -54,9 +54,9 @@ target_link_libraries(simulation_dynamics
   ${catkin_LIBRARIES}
 )
 
-# add_executable(state_publisher
-#               src/StatePublisher.cc)
-# add_dependencies(state_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# target_link_libraries(state_publisher
-#   ${catkin_LIBRARIES}
-# )
+add_executable(state_publisher
+              src/StatePublisher.cc)
+add_dependencies(state_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(state_publisher
+  ${catkin_LIBRARIES}
+)

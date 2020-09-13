@@ -1,4 +1,6 @@
 *.pyc
 *.o
+sim/scenes/GateScene.xml
+core/descriptions/alfie.urdf
 hydrophones/data/*
 *__pycache__*

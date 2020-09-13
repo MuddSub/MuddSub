@@ -27,7 +27,9 @@ class Controller:
 
         # Calculate the new error
         self.error = self.setpoint - self.model.getZPosition()
-        self.derivativeError = 0.7 * self.previousDerivativeError + 0.3 * (self.error - prevError)/deltaT
+        self.derivativeError = 0.7 * self.previousDerivativeError + \
+                               0.3 * (self.error - prevError)/deltaT
+
         self.previousDerivativeError = self.derivativeError
         self.integralError += self.error * deltaT
 
@@ -36,7 +38,7 @@ class Controller:
         P = self.kP * self.error
         I = self.kI * self.integralError
         D = self.kD * self.derivativeError
-        rospy.loginfo("Error: {}, Deriv: {}, kD: {}, D: {}".format(self.error, self.derivativeError, self.kD, D))
+        rospy.loginfo("Error: {}, P: {}, D: {}".format(self.error, P, D))
         return (P + I + D)
 
 
@@ -47,20 +49,20 @@ if __name__ == '__main__':
 
     controller = Controller()
 
-    def kpCB(msg):
+    def kpCallack(msg):
         controller.kP = msg.data
-    def kiCB(msg):
+    def kiCallack(msg):
         controller.kI = msg.data
-    def kdCB(msg):
+    def kdCallack(msg):
         controller.kD = msg.data
-    def setpointCB(msg):
+    def setpointCallack(msg):
         controller.setpoint = msg.data
 
-    kPSub = rospy.Subscriber("kP", Float64, kpCB)
-    kISub = rospy.Subscriber("kI", Float64, kiCB)
-    kDSub = rospy.Subscriber("kD", Float64, kdCB)
+    kPSub = rospy.Subscriber("kP", Float64, kpCallack)
+    kISub = rospy.Subscriber("kI", Float64, kiCallack)
+    kDSub = rospy.Subscriber("kD", Float64, kdCallack)
 
-    setpointSub = rospy.Subscriber("setpoint", Float64, setpointCB)
+    setpointSub = rospy.Subscriber("setpoint", Float64, setpointCallack)
 
     loopRate = rospy.Rate(10)
 
