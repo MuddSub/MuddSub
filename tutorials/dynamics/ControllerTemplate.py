@@ -58,9 +58,9 @@ if __name__ == '__main__':
         controller.kP = msg.data
     """
     Fill in the callbacks for the other subscribers. These are the topics:
-    - /kI
-    - /kD
-    - /setpoint
+    - /kI: Store the result in controller.kI
+    - /kD: Store the result in controller.kD
+    - /setpoint: Store the result in controller.setpoint
     """
 
     # This declares the subscriber, and specifies to call the kP callback
