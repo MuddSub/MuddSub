@@ -4,7 +4,11 @@ The code for MuddSub's Alfie AUV
 ## Installation
 
 ### Prerequisites
-You'll need to install a few dependencies to get everything working:
+This all needs to be in Ubuntu, preferably 18.04. Other linux distributions can in theory be used, but not all packages are guaranteed to be supported. For example, in Arch linux, everything except simulation is supported. These instructions are all written for Ubuntu. If you want to use a different distribution, you'll have to figure out how to install the packages in the distro.
+
+Start by following [these instructions](http://wiki.ros.org/melodic/Installation/Ubuntu) to install ros melodic. 
+
+You'll also need to install a few dependencies to get everything working:
 
 ```
 sudo apt-get install ros-melodic-uwsim
@@ -19,9 +23,7 @@ The first is optional, and provides the tools we use for simulation. The second 
 
 ### Download and Build
 
-This all needs to be in Ubuntu, preferably 18.04. Other linux distributions can in theory be used, but not all packages are guaranteed to be supported. For example, in Arch linux, everything except simulation is supported. These instructions are all written for Ubuntu. If you want to use a different distribution, you'll have to figure out how to install the packages in the distro.
 
-Start by following [these instructions](http://wiki.ros.org/melodic/Installation/Ubuntu) to install ros melodic. 
 
 You'll need a catkin workspace, which can be created by opening a terminal and running 
 ```
@@ -42,4 +44,4 @@ With that said, this is a good opportunity to build!
 ```
 catkin build muddsub_sim
 ```
-This may take a few minutes! 
+This may take a few minutes! Note: If you didn't install `ros-melodic-uwsim`, you can still build, but with `catkin build muddsub_primary` instead. This builds everything but the simulator. 
