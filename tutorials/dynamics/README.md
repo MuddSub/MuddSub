@@ -20,9 +20,9 @@ sure you installed all of the recommended packages listed on the main README. Sp
 There are two commands which you need to run to configure our simulator to load the model of our robot. Run these:
 
 ```
-cd ~/catkin_ws/src/muddsub
+cd ~/catkin_ws/src/MuddSub
 rosrun xacro xacro core/descriptions/alfie.urdf.xacro -o core/descriptions/alfie.urdf
-rosrun xacro xacro sim/scenes/GateScene.xml.xacro -o sim/scenes/GateScenes.xml
+rosrun xacro xacro sim/scenes/GateScene.xml.xacro -o sim/scenes/GateScene.xml
 ```
 
 Now, you can run the simulator with our robot! This will also allow us to command the position of the robot using ROS messages.
