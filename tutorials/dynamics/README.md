@@ -111,7 +111,21 @@ Rename the existing `Controller.py` to something else (maybe `ControllerSolution
 
 Now, we need to make it executable. You can do this with `chmod u+x ~/catkin_ws/src/muddsub/tutorials/dynamics/Controller.py`
 
-Finally, you can run everything together with `roslaunch tutorials DynamicsSim.launch`. This will run the simulator, and your code.
+Now, build the package. You'll also need to run the setup script again so ROS can recognize your new package.
+
+```
+cd ~/catkin_ws
+catkin build tutorials
+source devel/setup.bash
+```
+
+Finally, you can run everything together with 
+
+```
+roslaunch tutorials DynamicsSim.launch
+```
+
+ This will run the simulator, and your code.
 
 ## Part 4: Tuning the PID Loops.
 
