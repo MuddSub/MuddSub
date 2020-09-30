@@ -5,7 +5,7 @@ template<size_t stateDim, size_t controlDim>
 LQRController<stateDim, controlDim>::LQRController()
 {
   // Q_ and R_ start as identity; by default, just make R nice and small
-  R_ *= .001;
+  Q_ *= 100;
 }
 
 template<size_t stateDim, size_t controlDim>

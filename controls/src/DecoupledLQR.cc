@@ -56,7 +56,7 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
   Eigen::Matrix<double, stateDim, controlDim> B = linearizer.getDerivativeControl(state,u,t);
 
   auto err = computeError(state, setpoint_);
-  std::cerr << "Error: " << err << std::endl;
+  // std::cerr << "Error: " << err << std::endl;
 
   // Now that we've linearized about the entire state (which needs roll/pitch info)
   //     we actually only keep x,y,z,yaw and those velocities
@@ -69,9 +69,6 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
 
   const auto& controlActionLQR = lqr8DoF_.computeControl(partitionedA, partitionedB, error8DoF);
 
-  std::cerr << "Control action LQR: " << controlActionLQR << std::endl;
-
-
   // Update the PID controllers
   double deltaT = t - previousTime_;
   previousTime_ = t;
@@ -82,8 +79,9 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
   controlAction << controlActionLQR.segment<3>(0), controlActionRoll,
                    controlActionPitch, controlActionLQR[3];
 
-   std::cerr << "Control action: " << controlAction << std::endl;
+  const auto& G = vehicleDynamics_->getGravityMatrix();
 
+  controlAction += G;
 }
 
 

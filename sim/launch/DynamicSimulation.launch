@@ -1,5 +1,7 @@
 <launch>
 
   <include file="$(find core)/launch/alfie_config.launch" />
+  <include file="$(find sim)/launch/sim.launch" />
+  <node name="state_pub" pkg="controls" type="state_publisher" output="screen" />
   <node name="simulation_dynamics" pkg="controls" type="simulation_dynamics" output="screen" />
 </launch>

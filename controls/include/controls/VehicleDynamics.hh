@@ -80,6 +80,16 @@ public:
   /// @param controller: a pointer to the controller object. Ideally there should only be 1 instance at a time.
   void setController(const controllerPtr_t& controller);
 
+
+  /// Get the previously set gravity matrix.
+  /// The gravity matrix is built in the computeControlledDynamics() call.
+  /// It's also needed by the LQR, so we store and recall later.
+  /// This is invalid until buildGravityMatrix() is called (usually through computeControlledDynamics)
+  inline Eigen::Matrix<double, 6, 1> getGravityMatrix() const
+  {
+    return G_;
+  };
+
 private:
 
   /// Robot dynamics properties, where all values are fetched from a
@@ -92,13 +102,14 @@ private:
                                   centerOfGravity_, centerOfBuoyancy_, inertia_;
 
     Eigen::Vector3d centerOfGravityVector_, centerOfBuoyancyVector_;
+    Eigen::Matrix<double, 6, 1> linearDampingCoefficientsVector_;
     double mass_, buoyancy_;
   } RobotInfo;
 
   RobotInfo robotInfo_;
 
 
-  constexpr static double gravity_{9.8};
+  constexpr static double gravity_{9.80665};
 
   /// Excecution rate. Loaded from ROS parameter server. Ballpark ~20Hz.
   double rate_;
@@ -111,6 +122,10 @@ private:
 
   /// ROS NodeHandle
   ros::NodeHandle nh_;
+
+
+  /// Stores the previously computed gravity matrix.
+  Eigen::Matrix<double, 6, 1> G_;
 
   // An identity matrix, because it's useful.
   Eigen::Matrix3d I_{Eigen::Matrix3d::Identity()};
@@ -126,17 +141,18 @@ private:
 
   /// Find the transformation between the robot frame and world frame.
   /// @param attitude: The 3DOF attitude of the robot
-  Eigen::Matrix<double, 6, 6> buildJnMatrix(const Eigen::Vector3d& attitude);
+  Eigen::Matrix<double, 6, 6> buildJnMatrix(const Eigen::Vector3d& attitude) const;
 
   /// Find the effect of gravity and buoyancy on the robot's position and attitude
   /// @param attitude: The 3DOF attitude of the robot
   Eigen::Matrix<double, 6, 1> buildGravityMatrix(const Eigen::Vector3d& attitude);
 
+
   /// Find the skew-symmetric matrix for computing quick cross products with 3-vectors.
   Eigen::Matrix3d S(const Eigen::Vector3d& vec) const;
 
   /// Whether or not the controller has been set. Avoids nonsense calls to the controller
-  bool controllerSet_{0};
+  bool controllerSet_{false};
 
 };
 

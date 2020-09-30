@@ -29,8 +29,7 @@ void SimulationDynamics::setpointCB(const controls::State& state)
 
 void SimulationDynamics::runOnce()
 {
-  std::cerr << "STATE: \n" << state_ << std::endl;
-  std::cerr << "DERIV: \n" << stateDerivative_ << std::endl;
+
   // Propogate previous state derivative
   double newTime = ros::Time::now().toSec();
   double deltaT = newTime - prevTime_;
@@ -48,19 +47,16 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "SimulationDynamics");
   ros::NodeHandle nh;
-  ROS_INFO("INIT");
   MuddSub::Controls::SimulationDynamics simulation;
 
-  ROS_INFO("Created simulation");
-  ros::Rate loopRate = 1;//{simulation.rate_};
+  ros::Rate loopRate = 5;
   double t = ros::Time::now().toSec();
   while(ros::ok())
   {
-    ROS_INFO("Iterating simulator");
     simulation.runOnce();
     double newT = ros::Time::now().toSec();
-    ROS_INFO("Time: %f", t - newT);
     t = newT;
     loopRate.sleep();
+    ros::spinOnce();
   }
 }

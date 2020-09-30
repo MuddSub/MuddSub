@@ -11,7 +11,7 @@
     <reflectionDamping> 0.35 </reflectionDamping>
     <waveScale> 1e-7 </waveScale>
     <isNotChoppy> 0 </isNotChoppy>
-    <choppyFactor> 2.5 </choppyFactor>
+    <choppyFactor> 0.5 </choppyFactor>
     <crestFoamHeight> 2.2 </crestFoamHeight>
     <oceanSurfaceHeight> 0 </oceanSurfaceHeight>
     <fog>

@@ -80,6 +80,7 @@ public:
   /// @param setpoint: Desired location of robot
   inline void setSetpoint(const stateVector_t& setpoint)
   {
+    ROS_INFO("Setpoint updated");
     setpoint_ = setpoint;
   };
 

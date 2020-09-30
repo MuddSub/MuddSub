@@ -32,6 +32,15 @@ VehicleDynamics::VehicleDynamics()
   nh_.getParam(paramRoot+"rate", rate_);
   nh_.getParam(paramRoot+"inertia", robotInfo_.inertia_);
 
+  robotInfo_.linearDampingCoefficientsVector_ <<
+    robotInfo_.linearDampingCoefficients_["x"],
+    robotInfo_.linearDampingCoefficients_["y"],
+    robotInfo_.linearDampingCoefficients_["z"],
+    robotInfo_.linearDampingCoefficients_["k"],
+    robotInfo_.linearDampingCoefficients_["m"],
+    robotInfo_.linearDampingCoefficients_["n"];
+
+
   // Construct the inertia tensor, represented as 3x3 matrix (Eigen3d)
   robotInfo_.inertiaTensor_ <<
     robotInfo_.inertia_["ixx"], -1*robotInfo_.inertia_["ixy"], -1*robotInfo_.inertia_["ixz"],
@@ -90,6 +99,7 @@ void VehicleDynamics::computeControlledDynamics(const stateVector_t &x,
   // The generalized mass matrix comprises actual mass and hydrodynamic added mass
   // Todo: This doesn't need to be calculated at every iteration
   const auto& M = buildMassMatrix();
+
   Eigen::Matrix<double, 6, 6> mInv;
 
   // TODO: Make this faster!
@@ -98,21 +108,25 @@ void VehicleDynamics::computeControlledDynamics(const stateVector_t &x,
   else
     mInv = M.inverse();
 
+  // A not-so-bad approximation (used in both Chin and Fossen)
+  Eigen::Matrix<double,6,6> D = robotInfo_.linearDampingCoefficientsVector_.asDiagonal();
+
   // In state space form: x' = f(x) + g(u)
   // Refer to Chin 2013, p. 138 for a full explanation.
   Eigen::Matrix<double, 12, 12> f1;
   f1 << Eigen::Matrix<double, 6, 6>::Zero(), Jn,
-        Eigen::Matrix<double, 6, 6>::Zero(), mInv;
+        Eigen::Matrix<double, 6, 6>::Zero(), -1*mInv*(C + D);
 
   Eigen::Matrix<double, 12, 1> f2, f, g, xT;
   xT = x.transpose();
 
   Eigen::Matrix<double, 6, 1> generalizedGravity = -1*(mInv*Gf);
   f2 << Eigen::Matrix<double, 6, 1>::Zero(), generalizedGravity;
-
   f = f1*xT + f2;
+
   Eigen::Matrix<double, 6, 1> controlForces = mInv*u;
   g << Eigen::Matrix<double, 6, 1>::Zero(), controlForces;
+
   derivative = (f+g).transpose();
 }
 
@@ -121,11 +135,12 @@ void VehicleDynamics::computeDynamics(const stateVector_t& state, const ctTime_t
   const auto& controller = getController();
   controlVector_t controlAction;
   if(controllerSet_)
-  {
     controller->computeControl(state, t, controlAction);
-  }
   else
+  {
+    ROS_ERROR("Controller not set. Applying zero control!");
     controlAction = controlVector_t::Zero();
+  }
   computeControlledDynamics(state, t, controlAction, deriv);
 }
 
@@ -133,9 +148,7 @@ void VehicleDynamics::computeDynamics(const stateVector_t& state, const ctTime_t
 Eigen::Matrix<double, 6, 6> VehicleDynamics::buildCMatrix(const Eigen::Vector3d& v1, const Eigen::Vector3d& v2)
 {
   Eigen::Matrix3d C12 = -1*robotInfo_.mass_*
-                              (
-                                S(v1) + S(v2)*S(robotInfo_.centerOfGravityVector_)
-                              );
+                                (S(v1) + S(v2)*S(robotInfo_.centerOfGravityVector_));
 
   Eigen::Matrix3d C21 = -1*C12.transpose();
 
@@ -145,6 +158,7 @@ Eigen::Matrix<double, 6, 6> VehicleDynamics::buildCMatrix(const Eigen::Vector3d&
   Eigen::Matrix<double, 6, 6> Crb;
   Crb << Eigen::Matrix3d::Zero(), C12,
          C21, C22;
+
   Eigen::Matrix<double, 6, 6> Ca;
 
   // Fossen 2011, p. 121
@@ -154,6 +168,7 @@ Eigen::Matrix<double, 6, 6> VehicleDynamics::buildCMatrix(const Eigen::Vector3d&
         0, -1*robotInfo_.addedMass_["z"]*v1(2), robotInfo_.addedMass_["y"]*v1(1), 0, -1*robotInfo_.addedMass_["r"]*v2(2), robotInfo_.addedMass_["q"]*v2(1),
         robotInfo_.addedMass_["z"]*v1(2), 0, -1*robotInfo_.addedMass_["x"]*v1(0), robotInfo_.addedMass_["r"]*v2(2), 0, -1*robotInfo_.addedMass_["p"]*v2(0),
         -1*robotInfo_.addedMass_["y"]*v1(1), robotInfo_.addedMass_["x"]*v1(0), 0, -1*robotInfo_.addedMass_["q"]*v2(1), robotInfo_.addedMass_["p"] * v2(0), 0;
+
 
   return Ca + Crb;
 
@@ -192,14 +207,11 @@ Eigen::Matrix<double, 6, 1> VehicleDynamics::buildGravityMatrix(const Eigen::Vec
   // Here we re-name variables for the sake of making equations semi-readable, and in the
   // notation of Fossen, 2011, p. 60
 
-  double cPhi, sPhi, cTheta, sTheta, tTheta, cTsi, sTsi;
+  double cPhi, sPhi, cTheta, sTheta;
   cPhi = cos(attitude(0));
   sPhi = sin(attitude(0));
   cTheta = cos(attitude(1));
   sTheta = sin(attitude(1));
-  tTheta = tan(attitude(1));
-  cTsi = cos(attitude(2));
-  sTsi = sin(attitude(2));
 
   // Weight and buoyancy.
   const auto& w = gravity_*robotInfo_.mass_;
@@ -225,10 +237,11 @@ Eigen::Matrix<double, 6, 1> VehicleDynamics::buildGravityMatrix(const Eigen::Vec
            (cgZ*w-cbZ*b)*sTheta+(cgX*w-cbX*b)*cTheta*cPhi,
            -1*(cgX*w-cbX*b)*cTheta*sPhi-(cgY*w-cbY*b)*sTheta;
 
+  G_ = result;
   return result;
 }
 
-Eigen::Matrix<double, 6, 6> VehicleDynamics::buildJnMatrix(const Eigen::Vector3d& attitude)
+Eigen::Matrix<double, 6, 6> VehicleDynamics::buildJnMatrix(const Eigen::Vector3d& attitude) const
 {
   // Todo: this shouldn't be copy-pasta'd
   double cPhi, sPhi, cTheta, sTheta, tTheta, cTsi, sTsi;
