@@ -7,6 +7,8 @@
    is sufficient. If to be used on other, less stable axes, filters should
    be reconsidered.
 */
+namespace MuddSub::Controls
+{
 class PidController
 {
 private:
@@ -97,3 +99,4 @@ public:
     controlEffort_ = kP_ * error_ + kI_ * integralError_ + kD_ * derivativeError_;
   }
 };
+}
