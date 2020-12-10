@@ -2,37 +2,39 @@
 // Created by tanvi on 10/30/2020.
 //
 
-#ifndef CONTROLS_PID_H
-#define CONTROLS_PID_H
-
+#pragma once
 
 class PID
 {
 private:
-    //double deltaT_;
     double kP_;
     double kI_;
     double kD_;
-    bool angle_;
+    bool isAngle_;
 
     double integralError_;
     double previousError_;
 
+    double windupLimit_;
+
 public:
     PID(double kP, double kI, double kD);
-    PID(double kP, double kI, double kD, bool angle);
+
+    //isAngle true when PID controls an angle, and false when PID controls a position
+    PID(double kP, double kI, double kD, bool isAngle);
+
+    PID(double kP, double kI, double kD, bool isAngle, double windupLimit);
+
+
     PID();
 
     void tune(double kP, double kI, double kD);
 
-    double getkI();
-    double getkP();
-    double getkD();
+    double getKI();
+    double getKP();
+    double getKD();
 
     double update(double setPoint, double plantState,  double deltaT);
 
 
 };
-
-
-#endif //CONTROLS_PID_H

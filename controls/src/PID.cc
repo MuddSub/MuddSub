@@ -8,19 +8,21 @@
 double PID::update(double plantState, double setPoint, double deltaT)
 {
     double error = setPoint - plantState;
-    if(angle_)
+    if(isAngle_)
     {
 
-        double otherError = (360 - error)*-1;
-        if(std::abs(otherError) < std::abs(error))
+        double explementaryError  = (360 - error)*-1;
+        if(std::abs(explementaryError) < std::abs(error))
         {
-            error = otherError;
+            error = explementaryError;
         }
 
-        //std::cout<<"error"<<error<<' '<<goal<<' '<<current<<std::endl;
     }
     integralError_ += error * deltaT;
-    double derivativeError = (error + previousError_) / 2;
+    integralError_ = std::min(integralError_, windupLimit_);
+    integralError_ =  std::max(integralError_, -1*windupLimit_);
+
+    double derivativeError = (error - previousError_) / 2;
     previousError_ = error;
     return kI_ * integralError_ + kD_ * derivativeError + kP_*(error);
 }
@@ -32,26 +34,38 @@ void PID::tune(double kP, double kI, double kD)
     kI_ = kI;
     kD_ = kD;
 }
-double PID::getkI()
+double PID::getKI()
 {
     return kI_;
 }
-double PID::getkP()
+double PID::getKP()
 {
     return kP_;
 }
-double PID::getkD()
+double PID::getKD()
 {
     return kD_;
 }
-PID::PID(double kP, double kI, double kD, bool angle)
+PID::PID(double kP, double kI, double kD, bool isAngle)
 {
     kP_ = kP;
     kI_ = kI;
     kD_ = kD;
     previousError_ = 0;
     integralError_ = 0;
-    angle_ = angle;
+    isAngle_ = isAngle;
+    windupLimit_ = 100;
+}
+
+PID::PID(double kP, double kI, double kD, bool isAngle, double windupLimit)
+{
+    kP_ = kP;
+    kI_ = kI;
+    kD_ = kD;
+    previousError_ = 0;
+    integralError_ = 0;
+    isAngle_ = isAngle;
+    windupLimit_ = windupLimit;
 }
 
 PID::PID(double kP, double kI, double kD)
@@ -61,7 +75,8 @@ PID::PID(double kP, double kI, double kD)
     kD_ = kD;
     previousError_ = 0;
     integralError_ = 0;
-    angle_ = false;
+    isAngle_ = false;
+    windupLimit_ = 100;
 }
 
 PID::PID()
@@ -71,5 +86,6 @@ PID::PID()
     kD_ = 0;
     previousError_ = 0;
     integralError_ = 0;
-    angle_ = false;
+    isAngle_ = false;
+    windupLimit_ = 100;
 }
