@@ -34,7 +34,7 @@ public:
     double getKP();
     double getKD();
 
-    double update(double setPoint, double plantState,  double deltaT);
+    double update(double setPoint, double plantState, double deltaT);
 
 
 };
