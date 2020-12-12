@@ -35,6 +35,8 @@ void SimulationDynamics::runOnce()
   double deltaT = newTime - prevTime_;
   prevTime_ = newTime;
   state_ += deltaT * stateDerivative_;
+  std::cout << "State: " << state_ << std::endl;
+
   statePub_(state_);
 
   std::vector<double> setpoint;
