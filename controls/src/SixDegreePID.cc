@@ -6,7 +6,8 @@
 #include <vector>
 
 SixDegreePID::SixDegreePID():
-  roll_(), pitch_(), yaw_(), surge_(), sway_(), heave_()
+  roll_("/roll"), pitch_("/pitch"), yaw_("/yaw"),
+  surge_("/surge"), sway_("/sway"), heave_("/heave")
 {
 }
 

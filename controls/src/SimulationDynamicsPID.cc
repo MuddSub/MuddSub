@@ -82,7 +82,7 @@ int main(int argc, char** argv)
   MuddSub::Controls::SimulationDynamics simulation;
 
   ROS_INFO("Created simulation");
-  ros::Rate loopRate = 1;//{simulation.rate_};
+  ros::Rate loopRate = 5;//{simulation.rate_};
   double t = ros::Time::now().toSec();
   while(ros::ok())
   {

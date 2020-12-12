@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <ros/ros.h>
 
 class PID
 {
@@ -17,6 +18,11 @@ private:
 
     double windupLimit_;
 
+    std::string tuneParamRoot_;
+    bool tuneFromParams_;
+
+    ros::NodeHandle nh_;
+
 public:
     PID(double kP, double kI, double kD);
 
@@ -25,6 +31,7 @@ public:
 
     PID(double kP, double kI, double kD, bool isAngle, double windupLimit);
 
+    PID(std::string tuneParamRoot);
 
     PID();
 

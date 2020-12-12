@@ -7,6 +7,19 @@
 
 double PID::update(double plantState, double setPoint, double deltaT)
 {
+    bool gotTuning{true};
+    if(tuneFromParams_)
+    {
+      gotTuning &= nh_.getParam(tuneParamRoot_ + "/kP", kP_);
+      gotTuning &= nh_.getParam(tuneParamRoot_ + "/kI", kI_);
+      gotTuning &= nh_.getParam(tuneParamRoot_ + "/kD", kD_);
+    }
+    if(!gotTuning)
+    {
+      ROS_ERROR("Failed to get tuning from parameter server; make sure it's running");
+      ros::Duration(0.5).sleep();
+    }
+
     double error = setPoint - plantState;
     if(isAngle_)
     {
@@ -88,4 +101,10 @@ PID::PID()
     integralError_ = 0;
     isAngle_ = false;
     windupLimit_ = 100;
+}
+
+PID::PID(std::string tuneParamRoot)
+{
+    tuneParamRoot_ = tuneParamRoot;
+    tuneFromParams_ = true;
 }
