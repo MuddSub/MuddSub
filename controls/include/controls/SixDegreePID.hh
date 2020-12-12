@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include "PID.h"
+#include "controls/PID.hh"
 #include <vector>
 
 class SixDegreePID
@@ -18,6 +18,7 @@ private:
     PID heave_ = PID();
 
 public:
+    SixDegreePID();
     SixDegreePID(std::vector<double> kP, std::vector<double> kI, std::vector<double> kD);
 
     PID& getRoll();
@@ -33,7 +34,4 @@ public:
 
     //format of setPoint and plantState is <roll, pitch, yaw, surge, sway, heave>
     std::vector<double> update(std::vector<double> setPoint, std::vector<double> plantState, double dT);
-
-
-
 };

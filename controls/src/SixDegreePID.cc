@@ -1,9 +1,14 @@
 //
 // Created by tanvi on 11/21/2020.
 //
-#include "PID.h"
-#include "SixDegreePID.h"
+#include "controls/PID.hh"
+#include "controls/SixDegreePID.hh"
 #include <vector>
+
+SixDegreePID::SixDegreePID():
+  roll_(), pitch_(), yaw_(), surge_(), sway_(), heave_()
+{
+}
 
 SixDegreePID::SixDegreePID(std::vector<double> kP, std::vector<double> kI, std::vector<double> kD)
 {

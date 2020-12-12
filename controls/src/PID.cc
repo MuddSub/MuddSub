@@ -2,7 +2,7 @@
 // Created by tanvi on 10/30/2020.
 //
 
-#include "PID.h"
+#include "controls/PID.hh"
 #include <iostream>
 
 double PID::update(double plantState, double setPoint, double deltaT)
@@ -22,7 +22,7 @@ double PID::update(double plantState, double setPoint, double deltaT)
     integralError_ = std::min(integralError_, windupLimit_);
     integralError_ =  std::max(integralError_, -1*windupLimit_);
 
-    double derivativeError = (error - previousError_) / 2;
+    double derivativeError = (error - previousError_) / deltaT;
     previousError_ = error;
     return kI_ * integralError_ + kD_ * derivativeError + kP_*(error);
 }

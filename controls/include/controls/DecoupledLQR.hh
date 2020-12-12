@@ -83,6 +83,11 @@ public:
     setpoint_ = setpoint;
   };
 
+  inline stateVector_t getSetpoint()
+  {
+    return setpoint_;
+  };
+
   /// The controller needs knowledge of the vehicle dynaics to solve the
   /// optimal control problem
   /// @param dynamicsPtr: shared_ptr to instance of vehicle dynamics. Only one such instance should be present at a time.
@@ -103,8 +108,10 @@ private:
   /// Stores the 12DOF dynamics of the robot.
   std::shared_ptr<VehicleDynamics> vehicleDynamics_;
 
+
   /// Current 12DOF setpoint (where we want to be).
   stateVector_t setpoint_;
+
 
   /// Get the 8DOF A matrix from the 12DOF A matrix (throw out roll/pitch)
   /// @param A: 12DOF linearized A matrix

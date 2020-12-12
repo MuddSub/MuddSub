@@ -54,8 +54,24 @@ target_link_libraries(simulation_dynamics
   ${catkin_LIBRARIES}
 )
 
+add_executable(simulation_dynamics_pid
+    src/SixDegreePID.cc
+    src/PID.cc
+    src/VehicleDynamics.cc
+    src/DecoupledLQR.cc
+    src/SimulationDynamicsPID.cc)
+add_dependencies(simulation_dynamics_pid
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${catkin_EXPORTED_TARGETS}
+	ct_core
+	ct_optcon)
+target_link_libraries(simulation_dynamics_pid
+  ${catkin_LIBRARIES}
+)
+
+
 add_executable(state_publisher
-              src/StatePublisher.cc)
+            src/StatePublisher.cc)
 add_dependencies(state_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(state_publisher
   ${catkin_LIBRARIES}
