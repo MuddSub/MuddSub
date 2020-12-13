@@ -10,7 +10,7 @@ SimulationDynamics::SimulationDynamics(): statePub_("robot_state")
   ROS_INFO("Controller constructed");
   dynamics_.setController(controller_);
   controller_->setDynamics(std::shared_ptr<VehicleDynamics>(&dynamics_));
-  setpointSub_ = nh_.subscribe("robot_setpoint", 1, &SimulationDynamics::setpointCB, this);
+  setpointSub_ = nh_.subscribe("/robot_setpoint", 1, &SimulationDynamics::setpointCB, this);
 }
 
 // Subscribe to the setpoint (currently a 12-vector for convenience, will
@@ -35,7 +35,6 @@ void SimulationDynamics::runOnce()
   double deltaT = newTime - prevTime_;
   prevTime_ = newTime;
   state_ += deltaT * stateDerivative_;
-  std::cout << "State: " << state_ << std::endl;
 
   statePub_(state_);
 
@@ -83,16 +82,15 @@ int main(int argc, char** argv)
   ROS_INFO("INIT");
   MuddSub::Controls::SimulationDynamics simulation;
 
-  ROS_INFO("Created simulation");
   ros::Rate loopRate = 5;//{simulation.rate_};
   double t = ros::Time::now().toSec();
   while(ros::ok())
   {
-    ROS_INFO("Iterating simulator");
     simulation.runOnce();
     double newT = ros::Time::now().toSec();
-    ROS_INFO("Time: %f", t - newT);
+    ROS_INFO("Simulator iterated. DeltaT: %f", t - newT);
     t = newT;
+    ros::spinOnce();
     loopRate.sleep();
   }
 }

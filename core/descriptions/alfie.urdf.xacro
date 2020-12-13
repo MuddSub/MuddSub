@@ -16,10 +16,10 @@
       </geometry>
     </visual>
     <underwater_dynamics>
-      <buoyancy value="21"/>
+      <buoyancy value="20.05"/>
       <center_of_buoyancy x="0" y = "0" z = "0.1" />
       <added_mass x="0" y="0" z="0" k="0" m="0" n="0" />
-      <linear_damping_coeffs x="0" y="0" z="0" k="0" m="0" n="0" />
+      <linear_damping_coeffs x="0.1" y="0.1" z="10000" k="0" m="0" n="0" />
       <rate value="50" />
     </underwater_dynamics>
   </link>

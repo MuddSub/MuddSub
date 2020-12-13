@@ -25,5 +25,5 @@ if __name__ == '__main__':
     rospy.set_param("yaw/kD", 0)
 
     rospy.set_param("heave/kP", -5)
-    rospy.set_param("heave/kI", -4)
-    rospy.set_param("heave/kD", -.05)
+    rospy.set_param("heave/kD", -4)
+    rospy.set_param("heave/kI", -.05)
