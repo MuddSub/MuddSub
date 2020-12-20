@@ -14,8 +14,14 @@ def displayImages():
     bridge = CvBridge()
     def get_image_left(msg):
         imageGen.left_image = np.array(bridge.imgmsg_to_cv2(msg))
+        img = imageGen.left_image.copy()
+        noise = cv2.randn(img,(0,0,0),(50,50,50))
+        imageGen.left_image+=noise
     def get_image_right(msg):
         imageGen.right_image = np.array(bridge.imgmsg_to_cv2(msg))
+        img = imageGen.right_image.copy()
+        noise = cv2.randn(img,(0,0,0),(0,0,0))
+        imageGen.right_image+=noise
     rospy.init_node('image_listener', anonymous=True)
     sub_left = rospy.Subscriber('/cameras/front_left/raw', Image, get_image_left)    
     sub_right = rospy.Subscriber('/cameras/front_right/raw', Image, get_image_right)
