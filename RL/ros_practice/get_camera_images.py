@@ -38,7 +38,7 @@ def displayImages():
         cv2.waitKey()
         cv2.destroyAllWindows()
         loopRate.sleep()
-
+        
 
 if __name__ == '__main__':
     displayImages()

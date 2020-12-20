@@ -141,6 +141,11 @@
       <p>3.1415</p>
       <y>0</y>
     </orientation>
+    <scaleFactor>
+      <x> .5 </x>
+      <y> .5 </y>
+      <z> .5 </z>
+    </scaleFactor>
 </object>
 
   <rosInterfaces>
