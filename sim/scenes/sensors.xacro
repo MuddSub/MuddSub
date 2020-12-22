@@ -19,7 +19,7 @@
         <r>0</r>
         <p>0</p>
         <y>0</y>
-      </orientation>
+	  </orientation>
     </virtualCamera>
   </xacro:macro>
 
