@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   ct_core
   ct_optcon
+  tf2_geometry_msgs
 )
 
 add_message_files(
