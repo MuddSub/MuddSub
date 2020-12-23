@@ -3,4 +3,5 @@
 sim/scenes/GateScene.xml
 core/descriptions/alfie.urdf
 hydrophones/data/*
+RL/data_prep/sim_images/*
 *__pycache__*
