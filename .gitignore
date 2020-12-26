@@ -1,3 +1,4 @@
+*.vscode*
 *.pyc
 *.o
 sim/scenes/GateScene.xml

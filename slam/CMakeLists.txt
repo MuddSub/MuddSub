@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(slam)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+# find_package(Eigen3 REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -14,6 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   geometry_msgs
   message_generation
+  ct_core
+  rospack
+  Eigen3
+  roslib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -107,27 +113,18 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES slam
-#  CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
-#  DEPENDS system_lib
+	INCLUDE_DIRS include
+	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
+	DEPENDS system_lib
+
 )
 
-###########
-## Build ##
-###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/slam.cpp
-# )
 
 add_executable(SLAMExampleNode
 	src/SLAMExampleNode.cc
@@ -194,5 +191,10 @@ target_link_libraries(SLAMExampleNode ${catkin_LIBRARIES})
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+target_link_libraries(slam
+  ${catkin_LIBRARIES})
+target_include_directories(slam PUBLIC ${EIGEN3_INCLUDE_DIR})
+add_dependencies(slam
+	${${PROJECT_NAME}_EXPORTED_TARGETS}
+	${catkin_EXPORTED_TARGETS}
+)
