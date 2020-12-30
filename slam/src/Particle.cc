@@ -9,7 +9,8 @@ Particle::Particle(unsigned long n, slamStateVector_t state):
                   slipDistribution_(0, slipSigma_),
                   velocityDistribution_(0, velocitySigma_),
                   thetaDistribution_(0, angleSigma_),
-                  robotState_(state)
+                  robotState_(state),
+                  weight_(1/n)
 {
   robotState_[THETA_IDX] = wrapToPi(robotState_[THETA_IDX]);
 }
@@ -33,12 +34,15 @@ void Particle::propagateMotion(double velocity, double thetaMeas, double dt)
   thetaMeas += thetaDistribution_(randGenerator_);
   double slipVel = slipDistribution_(randGenerator_);
 
-  robotState_[THETA_IDX] = wrapToPi(thetaMeas);
 
+  // ROS_INFO("Theta: %f", thetaMeas);
   auto& theta = robotState_[THETA_IDX];
 
+  theta = wrapToPi(thetaMeas);
+
   auto xVel = velocity*std::cos(theta);
-  auto yVel = velocity * std::sin(theta);
+  auto yVel = velocity*std::sin(theta);
+  // ROS_INFO("XVel %f, YVel %f, theta %f, dt %f", xVel, yVel, theta, dt);
 
   robotState_[X_IDX] += xVel*dt - slipVel*dt*std::sin(theta);
   robotState_[Y_IDX] += yVel*dt + slipVel*dt*std::cos(theta);
@@ -48,7 +52,6 @@ double Particle::correct(double time, unsigned int subject, double range, double
 {
   if(subject < 5)
       throw std::runtime_error("Subject should not have been less than 5.");
-
   if(landmarkEKFs_.count(subject) == 0)
   {
     landmarkEKFs_[subject] = std::make_unique<EKF>(robotState_, range, bearing);
@@ -63,6 +66,3 @@ double Particle::correct(double time, unsigned int subject, double range, double
 }
 
 };
-
-int main()
-{}

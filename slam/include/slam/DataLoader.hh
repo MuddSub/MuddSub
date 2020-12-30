@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <array>
+#include <ros/ros.h>
 
 #include "slam/Types.hh"
 
@@ -18,7 +19,7 @@ class DataLoader
 {
 
 public:
-  DataLoader(const std::string& dataDirectory, const int& robotId, const int& datasetId);
+  DataLoader(const int& datasetId, const int& robotId);
 
   double getCompass(double t) const;
 
@@ -33,6 +34,8 @@ public:
 private:
 
   void loadBarcodes();
+
+  // Note: Ground truth must be called before the other four below.
   void loadGroundtruth();
   void loadMeasurements();
   void loadOdometry();
@@ -40,6 +43,7 @@ private:
 
   void mergeRobotData();
 
+  void dumpVectorToFile(const std::string& fname, std::vector<KeyFrame> data);
 
   std::vector<std::vector<double>> parseFileToVectors(const std::string& path);
 
@@ -59,6 +63,8 @@ private:
   std::vector<KeyFrame> robotGroundTruth_;
   std::vector<KeyFrame> robotMeasurement_;
   std::vector<KeyFrame> robotOdometry_;
+
+  double startTime_{0};
 
   friend class FastSLAM;
 

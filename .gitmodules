@@ -7,3 +7,9 @@
 [submodule "thirdparty/pigpio"]
 	path = thirdparty/pigpio
 	url = https://github.com/joan2937/pigpio
+[submodule "thirdparty/matplotlib-cpp"]
+	path = thirdparty/matplotlib-cpp
+	url = https://github.com/lava/matplotlib-cpp
+[submodule "thirdparty/tqdm-cpp"]
+	path = thirdparty/tqdm-cpp
+	url = https://github.com/tqdm/tqdm.cpp

@@ -8,6 +8,7 @@
 #include <array>
 #include <utility>
 
+#include "matplotlib-cpp/matplotlibcpp.h"
 #include "slam/Particle.hh"
 #include "slam/EKF.hh"
 #include "slam/DataLoader.hh"
@@ -22,7 +23,7 @@ class FastSLAM
 
 public:
 
-  FastSLAM(std::string dataDirectory);
+  FastSLAM(const int& datasetId, const int& robotId);
 
   void createParticles();
 
@@ -53,10 +54,10 @@ public:
 
 private:
 
-  static const unsigned int n_{150};
+  static const unsigned int n_{50};
   static const unsigned int numSteps_{20000};
-  static const unsigned int robotID_{1};
-  static const unsigned int datasetID_{1};
+  const unsigned int robotID_{1};
+  const unsigned int datasetID_{1};
   static const unsigned int estimateSnapshotInterval_{100};
   int snapshotCounter_{0};
 
