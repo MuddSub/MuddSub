@@ -10,12 +10,12 @@ EKF::EKF(slamStateVector_t robotState, double range, double bearing)
 
     sigmaZ_ << 0.75, 0, 0, 0.25;
 
-    double robotX = robotState(0);
-    double robotY = robotState(1);
-    double robotTheta = robotState(2);
+    const double& robotX = robotState(0);
+    const double& robotY = robotState(1);
+    const double& robotTheta = robotState(2);
 
-    double x = robotX + range * std::cos(wrapToPi(robotTheta) + wrapToPi(bearing));
-    double y = robotY + range * std::sin(wrapToPi(robotTheta) + wrapToPi(bearing));
+    const double x = robotX + range * std::cos(wrapToPi(robotTheta) + wrapToPi(bearing));
+    const double y = robotY + range * std::sin(wrapToPi(robotTheta) + wrapToPi(bearing));
 
     stateEstimate_ << x,y;
 
@@ -64,7 +64,9 @@ Eigen::Matrix2d EKF::computeMeasurementJacobian(double range, double bearing, sl
 // Returns the probability of getting the measurement
 double EKF::correct(double range, double bearing, slamStateVector_t robotState)
 {
+  // std::cerr << "Robot State: " << robotState << std::endl;
   auto zHat = measurementModel(robotState);
+  // std::cerr << "Predicted: " << zHat << std::endl;
 
   auto H = computeMeasurementJacobian(range, bearing, robotState);
 
@@ -77,13 +79,19 @@ double EKF::correct(double range, double bearing, slamStateVector_t robotState)
   Eigen::Matrix<double, 2, 1> zt;
   zt << range, bearing;
 
+  // std::cerr << "Measured: " << zt << std::endl;
+
   Eigen::Matrix<double, 2, 1> diff = zt - zHat;
+
 
   diff[1] = wrapToPi(diff[1]);
 
-  double weightRange = gauss(zt(0), zHat(0), .05);
-  double weightBearing = gauss(zt(1), zHat(1), .025);
-  auto weight = weightRange * weightBearing;
+  // std::cerr << "Diff: " << diff << std::endl;
+
+  double weightRange = gauss(zt(0), zHat(0), 1000000);
+  double weightBearing = gauss(zt(1), zHat(1), 1000000);
+  // ROS_INFO("Range %f, Bearing %f", weightRange, weightBearing);
+  double weight = weightRange * weightBearing;
 
   stateEstimate_ += K*diff;
   stateCovariance_ = (Eigen::Matrix2d::Identity() - K*H)*stateCovariance_;
