@@ -4,26 +4,29 @@
 #include <iterator>
 #include <random>
 #include <algorithm>
+#include <iostream>
+#include <ros/ros.h>
 
 namespace MuddSub::SLAM
 {
 
 inline double wrapToPi(double val)
 {
-    auto th = std::fmod(val, 2*M_PI);
+  auto th = std::fmod(val, 2*M_PI);
 
-    if(th > M_PI)
-      th -= 2*M_PI;
-    else if(th <= -1*M_PI)
-      th += 2*M_PI;
+  if(th > M_PI)
+    th -= 2*M_PI;
+  else if(th < -1*M_PI)
+    th += 2*M_PI;
+
+  return th;
 };
 
 inline double gauss(double x, double mu, double stdDev)
 {
-  auto a = 1/(stdDev*std::sqrt(2*M_PI));
-  auto b = -0.5/(std::pow(stdDev, 2));
-  return a*std::exp(b*std::pow((x-mu), 2));
+  double result = (1/(stdDev*std::sqrt(2*M_PI))) *std::exp(-1/2*std::pow((x-mu)/stdDev, 2));
+  // ROS_INFO("X: %.10f, Mu: %.10f, stdDev: %.10f, Result: %.10f", x, mu, stdDev, result);
+  return result;
 };
-
 
 }

@@ -7,6 +7,7 @@
 #include <vector>
 #include <cmath>
 #include <memory>
+#include <ros/ros.h>
 
 namespace MuddSub::SLAM
 {
