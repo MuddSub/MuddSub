@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "matplotlib-cpp/matplotlibcpp.h"
+#include "cpptqdm/tqdm.h"
 #include "slam/Particle.hh"
 #include "slam/EKF.hh"
 #include "slam/DataLoader.hh"
@@ -54,8 +55,8 @@ public:
 
 private:
 
-  static const unsigned int n_{50};
-  static const unsigned int numSteps_{20000};
+  static const unsigned int n_{150};
+  static const unsigned int numSteps_{15000};
   const unsigned int robotID_{1};
   const unsigned int datasetID_{1};
   static const unsigned int estimateSnapshotInterval_{100};

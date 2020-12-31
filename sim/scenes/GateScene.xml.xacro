@@ -48,7 +48,7 @@
       <z> -1.57 </z>
     </offsetr>
   </simParams>
-  <camera>
+  <!-- <camera>
     <freeMotion> 1 </freeMotion>
     <objectToTrack>Alfie/base_link</objectToTrack>
     <fov> 60 </fov>
@@ -65,7 +65,7 @@
       <y>0 </y>
       <z>0 </z>
     </lookAt>
-  </camera>
+  </camera> -->
 
   <vehicle>
     <name>Alfie</name>

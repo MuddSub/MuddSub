@@ -58,9 +58,8 @@ double Particle::correct(double time, unsigned int subject, double range, double
     weight_ = 1/n_;
   }
   else
-  {
     weight_ = landmarkEKFs_[subject]->correct(range, bearing, robotState_);
-  }
+  
 
   return weight_;
 }

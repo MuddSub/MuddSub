@@ -25,6 +25,7 @@ private:
     std::vector<Eigen::Matrix<double, 2, 1>> stateEstimateLogs_;
     std::vector<Eigen::Matrix<double, n_, n_>> stateCovarianceLogs_;
 
+    map_t map;
 
     friend class FastSLAM;
 public:
