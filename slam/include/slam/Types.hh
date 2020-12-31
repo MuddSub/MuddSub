@@ -8,7 +8,7 @@ namespace MuddSub::SLAM
 using slamStateVector_t = Eigen::Vector3d;
 using slamControlVector_t = Eigen::Vector2d;
 using slamMeasurementVector_t = Eigen::Vector2d;
-using map_t = std::unordered_map<int, std::pair<int, int>>;
+using map_t = std::unordered_map<int, std::pair<double, double>>;
 
 class KeyFrame
 {

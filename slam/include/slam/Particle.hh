@@ -32,7 +32,7 @@ private:
 
   double weight_{1};
 
-  double velocitySigma_{0.025};
+  double velocitySigma_{0.07};
   double angleSigma_{0.025};
   double slipSigma_{0.125};
 
@@ -50,6 +50,8 @@ private:
   static const unsigned short THETA_IDX{2};
 
   friend class FastSLAM;
+
+  // map_t map;
 
 };
 

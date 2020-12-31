@@ -66,9 +66,8 @@ public:
   /// Clone the object
   DecoupledLQR* clone() const;
 
-  /// Given the state and setpoint, compute the error.
-  stateVector_t computeError(const stateVector_t& state,
-                              const stateVector_t& setpoint) const;
+  /// Given the state and stored setpoint, compute the error.
+  stateVector_t computeError(const stateVector_t& state) const;
 
   /// Given the current error, find the control action (6DOF wrench.)
   /// This implements the described controller.
