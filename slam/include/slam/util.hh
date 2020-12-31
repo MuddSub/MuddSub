@@ -22,11 +22,10 @@ inline double wrapToPi(double val)
   return th;
 };
 
-inline double gauss(double x, double mu, double stdDev)
+inline double gauss(double x, double mu, double stdDev, double scale=1)
 {
-  double result = (1/(stdDev*std::sqrt(2*M_PI))) *std::exp(-1/2*std::pow((x-mu)/stdDev, 2));
-  // ROS_INFO("X: %.10f, Mu: %.10f, stdDev: %.10f, Result: %.10f", x, mu, stdDev, result);
-  return result;
+  double result = (1./(stdDev*std::sqrt(2*M_PI))) *std::exp(-1./2.*std::pow((x-mu)/stdDev, 2));
+  return result*scale;
 };
 
 }

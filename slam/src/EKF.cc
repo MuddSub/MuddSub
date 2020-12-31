@@ -34,9 +34,14 @@ slamMeasurementVector_t EKF::measurementModel(slamStateVector_t robotState)
 
     double robotTheta = wrapToPi(robotState(2));
 
-    double range = std::sqrt(std::pow(robotX - stateEstimate_(0), 2) + std::pow(robotY - stateEstimate_(1), 2));
+    double range = std::sqrt(std::pow(robotX - stateEstimate_(0), 2) +
+                             std::pow(robotY - stateEstimate_(1), 2));
 
-    double bearing = std::atan2(stateEstimate_(1) - robotY, stateEstimate_(0) - robotX) - robotTheta;
+    double bearing = std::atan2(stateEstimate_(1) - robotY,
+                                stateEstimate_(0) - robotX)
+                    - robotTheta;
+
+    bearing = wrapToPi(bearing);
 
     slamMeasurementVector_t output;
     output << range, bearing;
@@ -64,9 +69,8 @@ Eigen::Matrix2d EKF::computeMeasurementJacobian(double range, double bearing, sl
 // Returns the probability of getting the measurement
 double EKF::correct(double range, double bearing, slamStateVector_t robotState)
 {
-  // std::cerr << "Robot State: " << robotState << std::endl;
   auto zHat = measurementModel(robotState);
-  // std::cerr << "Predicted: " << zHat << std::endl;
+  bearing = wrapToPi(bearing);
 
   auto H = computeMeasurementJacobian(range, bearing, robotState);
 
@@ -79,18 +83,13 @@ double EKF::correct(double range, double bearing, slamStateVector_t robotState)
   Eigen::Matrix<double, 2, 1> zt;
   zt << range, bearing;
 
-  // std::cerr << "Measured: " << zt << std::endl;
-
   Eigen::Matrix<double, 2, 1> diff = zt - zHat;
 
 
   diff[1] = wrapToPi(diff[1]);
 
-  // std::cerr << "Diff: " << diff << std::endl;
-
-  double weightRange = gauss(zt(0), zHat(0), 1000000);
-  double weightBearing = gauss(zt(1), zHat(1), 1000000);
-  // ROS_INFO("Range %f, Bearing %f", weightRange, weightBearing);
+  double weightRange = gauss(zt(0), zHat(0), .075);
+  double weightBearing = gauss(zt(1), zHat(1), .1);
   double weight = weightRange * weightBearing;
 
   stateEstimate_ += K*diff;

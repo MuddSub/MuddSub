@@ -13,3 +13,6 @@
 [submodule "thirdparty/tqdm-cpp"]
 	path = thirdparty/tqdm-cpp
 	url = https://github.com/tqdm/tqdm.cpp
+[submodule "thirdparty/cpptqdm"]
+	path = thirdparty/cpptqdm
+	url = https://github.com/aminnj/cpptqdm

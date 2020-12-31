@@ -54,7 +54,7 @@ private:
   std::string odometryPath_;
   std::string mapPath_;
 
-  std::unordered_map<int, std::pair<int, int>> groundTruthMap_;
+  map_t groundTruthMap_;
 
   std::unordered_map<int, int> barcodeMap_;
 

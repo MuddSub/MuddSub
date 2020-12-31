@@ -1,5 +1,4 @@
 <launch>
-
   <param name="robot_description"
     command="xacro '$(find core)/descriptions/alfie.urdf.xacro'" />
 
@@ -11,7 +10,4 @@
     <param name="~urdf_name" value="robot_description"/>
     <param name="~base_link" value="base_link"/>
   </node>
-
-
-  <!-- <node name="state_publisher" pkg="core" type="state_publisher" output="screen"/> -->
 </launch>

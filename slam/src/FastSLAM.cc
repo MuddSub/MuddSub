@@ -16,9 +16,9 @@ void FastSLAM::createParticles()
   slamStateVector_t initialState_ = {data_.robotGroundTruth_[0].data_[0],
                                      data_.robotGroundTruth_[0].data_[1],
                                      data_.robotGroundTruth_[0].data_[2]};
-  std::cerr << "Initial: " << initialState_ << std::endl;
   for(int i = 0; i < n_; ++i)
     particles_[i] = {n_, initialState_};
+
 }
 
 void FastSLAM::runFastSLAM()
@@ -35,12 +35,11 @@ void FastSLAM::runFastSLAM()
 
   int numCorrect{0};
 
+  tqdm bar;
   for(auto& keyFrame : robotData)
   {
     if(!ros::ok() || i == numSteps_) break;
-
-    ROS_INFO("===== Iteration %d ===== ", i);
-
+    bar.progress(i, numSteps_);
     double t = keyFrame.time_;
 
     if(keyFrame.type_ == "odometry")
@@ -49,16 +48,7 @@ void FastSLAM::runFastSLAM()
       prevOdomTime = t;
       double thetaMeas = wrapToPi(data_.getCompass(t));
       for(auto& p : particles_)
-      {
         p.propagateMotion(keyFrame.data_[0], thetaMeas, dt);
-        double xTruth{data_.getXTruth(t)}, yTruth{data_.getYTruth(t)};
-        p.robotState_ = {xTruth, yTruth, thetaMeas}; 
-        // std::stringstream ss;
-        // ss << p.robotState_;
-        // auto stateString = ss.str();
-        // std::replace(stateString.begin(), stateString.end(), '\n', ',');
-        // ROS_INFO("I: %d, T: %.9f", i, t);
-      }
     }
     else
     {
@@ -77,25 +67,27 @@ void FastSLAM::runFastSLAM()
 
       double& range = measurement[1];
       double& bearing = measurement[2];
-      for(auto& p : particles_)
-      {
-        p.correct(t, subject, range, bearing);
-      }
-
-      auto getWeight = [](const Particle& p){return p.weight_;};
-
       std::array<double, n_> weights;
 
-      for(int w = 0; w < particles_.size(); ++w)
-        weights[w] = getWeight(particles_[w]);
+      int j = 0;
+      for(auto& p : particles_)
+      {
+        weights[j] = p.correct(t, subject, range, bearing);
+        ++j;
+      }
 
+      double weightSum = 0;
+      for(int wIt = 0; wIt < n_; ++wIt)
+      {
+        weightSum += weights[wIt];
+      }
 
-      double weightSum = std::accumulate(weights.begin(), weights.end(), 0);
       if(weightSum != 0.)
       {
-        ROS_INFO("Weight sum %f", weightSum);
-        auto normalize = [weightSum](double& w){return w/weightSum;};
-        std::for_each(weights.begin(), weights.end(), normalize);
+        for(int wIt = 0; wIt < n_; ++wIt)
+        {
+          weights[wIt] /= weightSum;
+        }
       }
       else
       {
@@ -117,8 +109,6 @@ void FastSLAM::runFastSLAM()
     ++snapshotCounter_;
     ++i;
   }
-  ROS_INFO("Total time: %f", ros::Time::now().toSec() - start);
-
 
   std::vector<double> xLandmarks;
   std::vector<double> yLandmarks;
@@ -170,15 +160,21 @@ std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle,
 {
   assert(*std::min_element(weights.begin(), weights.end()) >= 0.);
 
+  std::array<double, n_> normalizedWeights = weights;
   if(!normalized)
   {
-    double weightSum = std::accumulate(weights.begin(), weights.end(), 0);
+    double weightSum = 0;
+    for(int wIt = 0; wIt < n_; ++wIt)
+      weightSum += weights[wIt];
+
     if(weightSum != 1.)
     {
-      auto normalize = [weightSum](const double& w){return w/weightSum;};
-      std::for_each(weights.begin(), weights.end(), normalize);
+      for(int wIt = 0; wIt < n_; ++wIt)
+        normalizedWeights[wIt] = weights[wIt]/weightSum;
     }
   }
+  else
+    normalizedWeights = weights;
 
   std::default_random_engine generator;
   std::uniform_real_distribution<double> uniform(0., 1.);
