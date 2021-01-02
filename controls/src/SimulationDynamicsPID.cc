@@ -38,37 +38,9 @@ void SimulationDynamics::runOnce()
 
   statePub_(state_);
 
-  std::vector<double> setpoint;
-  for(int i = 0; i < 6; ++i)
-  {
-    if(i < 3)
-      setpoint.push_back(controller_->getSetpoint()[i+3]);
-    else
-      setpoint.push_back(controller_->getSetpoint()[i-3]);
-  }
-
-  std::vector<double> plantState;
-  for(int i = 0; i < 6; ++i)
-  {
-    if(i < 3)
-      plantState.push_back(state_[i+3]);
-    else
-      plantState.push_back(state_[i-3]);
-  }
-
-  std::vector<double> controlEffort = pid_.update(setpoint, plantState, deltaT);
-
   VehicleDynamics::controlVector_t control;
 
-  for(int i = 0; i < 6; ++i)
-  {
-    if(i < 3)
-      control[i] = controlEffort[i+3];
-    else
-      control[i] = controlEffort[i-3];
-  }
-
-
+  pid_.update(controller_->getSetpoint(), state_, deltaT, control);
   // Compute new state derivative
   dynamics_.computeControlledDynamics(state_, newTime, control, stateDerivative_);
 }

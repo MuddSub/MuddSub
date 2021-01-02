@@ -32,6 +32,6 @@ public:
 
     void tuneController(double kP, double kI, double kD,  PID& controller);
 
-    //format of setPoint and plantState is <roll, pitch, yaw, surge, sway, heave>
-    std::vector<double> update(std::vector<double> setPoint, std::vector<double> plantState, double dT);
+    //format of setPoint and plantState is <surge, sway, heave, roll, pitch, yaw >
+    void update(VehicleDynamics::stateVector_t setPoint, VehicleDynamics::stateVector_t plantState, double dT, VehicleDynamics::controlVector_t control);
 };
