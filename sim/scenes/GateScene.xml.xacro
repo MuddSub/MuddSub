@@ -78,7 +78,7 @@
     <orientation>
       <r>0</r>
       <p>0</p>
-      <y>0</y>
+      <y>-1.57</y>
     </orientation>
     <xacro:include filename="$(find sim)/scenes/sensors.xacro" />
     <xacro:camera name="front_left" down="0"/>
@@ -88,8 +88,8 @@
   </vehicle>
 
   <vehicle>
-    <name>Buoy</name>
-    <file>$(find sim)/scenes/buoy.urdf</file>
+    <name>Gate</name>
+    <file>$(find sim)/scenes/gate.urdf</file>
     <position>
       <x> 0 </x>
       <y> 0 </y>
@@ -98,9 +98,29 @@
     <orientation>
       <r>0</r>
       <p>0</p>
-      <y>0</y>
+      <y>-1.57</y>
     </orientation>
   </vehicle>
+
+  <!-- <vehicle>
+   <name> buoy </name>
+   <file>sim/scenes/meshes/buoy.urdf</file>
+   <position>
+     <x> 0</x>
+     <y> 0 </y>
+     <z> .25 </z>
+   </position>
+   <orientation>
+     <r>0</r>
+     <p>3.1415</p>
+     <y>0</y>
+   </orientation>
+   <scaleFactor>
+     <x> .5 </x>
+     <y> .5 </y>
+     <z> .5 </z>
+   </scaleFactor>
+</vehicle> -->
 
   <object>
     <name>terrain</name>
@@ -127,10 +147,9 @@
     </offsetr>
   </object>
 
-
   <object>
     <name> blackbox </name>
-    <file> objects/blackbox_uib_trimesh.osg  </file>
+    <file> objects/blackbox_uib_trimesh.osg </file>
     <position>
       <x> 0</x>
       <y> 0 </y>
@@ -138,30 +157,30 @@
     </position>
     <orientation>
       <r>0</r>
-      <p>3.1415</p>
-      <y>0</y>
+      <p>0</p>
+      <y>-1.57</y>
     </orientation>
  </object>
 
- <object>
+ <!-- <object>
     <name> gate </name>
     <file> sim/scenes/meshes/gate.osg  </file>
     <position>
-      <x> 2 </x>
+      <x> 0 </x>
       <y> 0 </y>
-      <z> 2 </z>
+      <z> 0 </z>
     </position>
     <orientation>
       <r>0</r>
       <p>3.1415</p>
-      <y>2</y>
+      <y>0</y>
     </orientation>
     <scaleFactor>
-      <x> 0.5 </x>
-      <y> 1 </y>
-      <z> 1 </z>
+      <x> .5 </x>
+      <y> .5 </y>
+      <z> .5 </z>
     </scaleFactor>
-</object>
+</object> -->
 
   <rosInterfaces>
     <ROSOdomToPAT>
@@ -169,7 +188,7 @@
       <vehicleName> Alfie </vehicleName>
     </ROSOdomToPAT>
     <PATToROSOdom>
-      <topic> /uwsim/alfie_odom </topic>
+      <topic> /uwsim/alfie_odom </topic>  
       <vehicleName> Alfie </vehicleName>
     </PATToROSOdom>
     <VirtualCameraToROSImage>
@@ -193,4 +212,7 @@
       <rate> 10 </rate>
     </DVLSensorToROS>
   </rosInterfaces>
+
+
+
 </UWSimScene>
