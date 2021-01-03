@@ -37,13 +37,14 @@ private:
   double slipSigma_{0.125};
 
   unsigned long n_;
-
+  
   std::default_random_engine randGenerator_;
 
   std::normal_distribution<double> slipDistribution_, thetaDistribution_,
                                    velocityDistribution_;
 
   slamStateVector_t robotState_{0,0,0};
+
 
   static const unsigned short X_IDX{0};
   static const unsigned short Y_IDX{1};

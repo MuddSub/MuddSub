@@ -55,6 +55,8 @@ public:
 
 private:
 
+  // const Parameters params;
+  //question
   static const unsigned int n_{150};
   static const unsigned int numSteps_{15000};
   const unsigned int robotID_{1};

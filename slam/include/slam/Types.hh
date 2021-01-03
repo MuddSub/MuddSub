@@ -33,4 +33,9 @@ struct State
   map_t map_;
 };
 
+struct Parameters
+{
+	int numParticles;
+	double velocitySigma, angleSigma, slipSigma, rangeSigma, bearingSigma, rangeWeightStd, bearingWeightStd;
+};
 }

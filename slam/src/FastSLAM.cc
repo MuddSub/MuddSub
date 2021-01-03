@@ -5,7 +5,7 @@ namespace plt = matplotlibcpp;
 namespace MuddSub::SLAM
 {
 
-FastSLAM::FastSLAM(const int& datasetId, const int& robotId):
+FastSLAM::FastSLAM(const int& datasetId, const int& robotId):  
   datasetID_(datasetId), robotID_(robotId), data_(robotID_, datasetID_)
 {
   createParticles();
@@ -17,8 +17,9 @@ void FastSLAM::createParticles()
                                      data_.robotGroundTruth_[0].data_[1],
                                      data_.robotGroundTruth_[0].data_[2]};
   for(int i = 0; i < n_; ++i)
+  {
     particles_[i] = {n_, initialState_};
-
+  }
 }
 
 void FastSLAM::runFastSLAM()
@@ -147,11 +148,30 @@ void FastSLAM::runFastSLAM()
     yLandmarkTruth.push_back(landmark.second.second);
   }
 
+  std::vector<State> robotStates;
+  std::vector<State> groundTruthStates;
+
+  for(int i=0; i<xTruth.size(); ++i){
+  	State robotState, groundTruthState;
+	groundTruthState.x_ = xTruth[i];
+	groundTruthState.y_ = yTruth[i];
+	robotState.x_ = robotX[i];
+	robotState.y_ = robotY[i];
+	groundTruthStates.push_back(groundTruthState);
+	robotStates.push_back(robotState);
+  }
+
   plt::plot(robotX, robotY);
   plt::plot(xTruth, yTruth);
   plt::scatter(xLandmarks, yLandmarks, 8);
   plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
   plt::show();
+
+  auto rms = FastSLAM::euclidRMS(groundTruthStates,robotStates);
+  std::cout<<"\n";
+  std::cout<<"number of particles "<<n_<<"\n";
+  std::cout<<"number of steps "<<numSteps_<<"\n";
+  std::cout<<"rms "<<rms<<"\n";
 }
 
 std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle, n_>& input,
@@ -175,8 +195,8 @@ std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle,
   }
   else
     normalizedWeights = weights;
-
-  std::default_random_engine generator;
+  std::random_device r;
+  std::default_random_engine generator = std::default_random_engine{r()};
   std::uniform_real_distribution<double> uniform(0., 1.);
 
   std::array<Particle, n_> output;
@@ -197,6 +217,7 @@ std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle,
         output[i] = *selectorIt;
         break;
       }
+	  ++selectorIt;
     }
   }
 
@@ -242,7 +263,7 @@ State FastSLAM::getStateAvg()
 
 double FastSLAM::euclidRMS(std::vector<State> stateTruths, std::vector<State> stateEstimates)
 {
-  std::vector<double> errors;
+  std::vector<float> errors;
 
   auto estimateIt = stateEstimates.begin();
   for(auto truth : stateTruths)
@@ -252,7 +273,7 @@ double FastSLAM::euclidRMS(std::vector<State> stateTruths, std::vector<State> st
     errors.push_back(dist);
     ++estimateIt;
   }
-  return std::sqrt(std::inner_product(errors.begin(), errors.end(), errors.begin(), 0));
+  return std::sqrt(std::inner_product(errors.begin(), errors.end(), errors.begin(), 0.0)/errors.size());
 }
 
 }
