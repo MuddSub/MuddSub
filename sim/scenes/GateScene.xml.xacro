@@ -128,7 +128,7 @@
     </orientation>
  </object>
 
- <object>
+  <object>
     <name> gate </name>
     <file> sim/scenes/meshes/gate.osg  </file>
     <position>
@@ -141,7 +141,7 @@
       <p>3.1415</p>
       <y>0</y>
     </orientation>
-</object>
+  </object>
 
   <rosInterfaces>
     <ROSOdomToPAT>
