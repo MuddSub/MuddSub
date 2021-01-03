@@ -1,0 +1,10 @@
+int64 n
+float64 velocitySigma
+float64 angleSigma
+float64 slipSigma
+float64 rangeSigma
+float64 bearingSigma
+float64 rangeWeightStd
+float64 bearingWeightStd
+---
+float64 pathRMS
