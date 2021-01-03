@@ -102,9 +102,9 @@
     </orientation>
   </vehicle>
 
-  <!-- <vehicle>
+ <vehicle>
    <name> buoy </name>
-   <file>sim/scenes/meshes/buoy.urdf</file>
+   <file>$(find sim)/scenes/buoy.urdf</file>
    <position>
      <x> 0</x>
      <y> 0 </y>
@@ -120,7 +120,7 @@
      <y> .5 </y>
      <z> .5 </z>
    </scaleFactor>
-</vehicle> -->
+</vehicle>
 
   <object>
     <name>terrain</name>
@@ -188,7 +188,7 @@
       <vehicleName> Alfie </vehicleName>
     </ROSOdomToPAT>
     <PATToROSOdom>
-      <topic> /uwsim/alfie_odom </topic>  
+      <topic> /uwsim/alfie_odom </topic>
       <vehicleName> Alfie </vehicleName>
     </PATToROSOdom>
     <VirtualCameraToROSImage>

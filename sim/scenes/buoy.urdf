@@ -33,6 +33,11 @@
   <static>true</static>
   <link name="red_buoy">
     <pose>-1.2 0 2.5 0 0 0</pose>
+    <inertial>
+      <mass value="20"/>
+      <origin x="0" y="0" z="-0.1"/>
+      <inertia ixx="10" ixy="0" ixz="0" iyy="10" iyz="0" izz="10"/>
+    </inertial>
     <visual name="red_vis">
       <material name="red"/>
       <geometry>
