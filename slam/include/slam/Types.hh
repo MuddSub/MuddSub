@@ -35,7 +35,7 @@ struct State
 
 struct Parameters
 {
-	int numParticles;
+	int n_;
 	double velocitySigma, angleSigma, slipSigma, rangeSigma, bearingSigma, rangeWeightStd, bearingWeightStd;
 };
 }
