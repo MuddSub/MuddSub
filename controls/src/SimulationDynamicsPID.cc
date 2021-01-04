@@ -38,7 +38,7 @@ void SimulationDynamics::runOnce()
 
   statePub_(state_);
 
-  VehicleDynamics::controlVector_t control;
+  controlVector_t control;
 
   pid_.update(controller_->getSetpoint(), state_, deltaT, control);
   // Compute new state derivative

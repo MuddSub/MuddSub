@@ -1,10 +1,8 @@
-//
-// Created by tanvi on 10/30/2020.
-//
-
 #include "controls/PID.hh"
 #include <iostream>
 
+namespace MuddSub::Controls
+{
 double PID::update(double plantState, double setPoint, double deltaT)
 {
     bool gotTuning{true};
@@ -112,4 +110,5 @@ PID::PID(std::string tuneParamRoot)
 {
     tuneParamRoot_ = tuneParamRoot;
     tuneFromParams_ = true;
+}
 }

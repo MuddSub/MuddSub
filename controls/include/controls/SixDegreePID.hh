@@ -1,10 +1,12 @@
-//
-// Created by tanvi on 11/21/2020.
-//
-
 #pragma once
+
 #include "controls/PID.hh"
+#include "controls/Types.hh"
+
 #include <vector>
+
+namespace MuddSub::Controls
+{
 
 class SixDegreePID
 {
@@ -33,5 +35,7 @@ public:
     void tuneController(double kP, double kI, double kD,  PID& controller);
 
     //format of setPoint and plantState is <surge, sway, heave, roll, pitch, yaw >
-    void update(VehicleDynamics::stateVector_t setPoint, VehicleDynamics::stateVector_t plantState, double dT, VehicleDynamics::controlVector_t control);
+    void update(const stateVector_t& setPoint, const stateVector_t& plantState, double dT, controlVector_t& control);
 };
+
+}

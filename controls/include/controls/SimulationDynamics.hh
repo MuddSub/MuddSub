@@ -5,7 +5,7 @@
 #include "controls/DecoupledLQR.hh"
 #include <memory>
 #include "controls/StateToOdomPublisher.hh"
-
+#include "controls/Types.hh"
 
 namespace MuddSub::Controls
 {
@@ -52,8 +52,8 @@ private:
   /// Used to caluclate the delta in time for propogating state derivative
   double prevTime_{0};
 
-  VehicleDynamics::stateVector_t state_{VehicleDynamics::stateVector_t::Zero()};
-  VehicleDynamics::stateVector_t stateDerivative_{VehicleDynamics::stateVector_t::Zero()};
+  stateVector_t state_{stateVector_t::Zero()};
+  stateVector_t stateDerivative_{stateVector_t::Zero()};
 
 };
 

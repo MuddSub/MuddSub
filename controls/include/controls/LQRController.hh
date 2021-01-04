@@ -4,6 +4,8 @@
 #include <ct/optcon/optcon.h>
 #include <Eigen/Dense>
 
+#include "controls/Types.hh"
+
 namespace MuddSub::Controls
 {
 
@@ -16,30 +18,32 @@ derived from ct::core::Controller.
 
 It also provides a ros-friendly tuning interface.
 */
-template<size_t stateDim, size_t controlDim>
+template<size_t lqrStateDim, size_t lqrControlDim>
 class LQRController
 {
 
 
 public:
+  /// A matrix is (lqrStateDim x lqrStateDim)
+  using AMatrix_t = Eigen::Matrix<double, lqrStateDim, lqrStateDim>;
 
-  using stateVector_t = ct::core::StateVector<stateDim, double>;
-  using controlVector_t = ct::core::ControlVector<controlDim, double>;
+  /// B matrix is (lqrStateDim x lqrControlDim)
+  using BMatrix_t = Eigen::Matrix<double, lqrStateDim, lqrControlDim>;
 
-  /// A matrix is (stateDim x stateDim)
-  using AMatrix_t = Eigen::Matrix<double, stateDim, stateDim>;
+  /// Q matrix controls state error, so it's (lqrStateDim x lqrStateDim)
+  using QMatrix_t = Eigen::Matrix<double, lqrStateDim, lqrStateDim>;
 
-  /// B matrix is (stateDim x controlDim)
-  using BMatrix_t = Eigen::Matrix<double, stateDim, controlDim>;
+  /// R Matrix minimizes control effort, and is thus (lqrControlDim x lqrControlDim)
+  using RMatrix_t = Eigen::Matrix<double, lqrControlDim, lqrControlDim>;
 
-  /// Q matrix controls state error, so it's (stateDim x stateDim)
-  using QMatrix_t = Eigen::Matrix<double, stateDim, stateDim>;
+  /// K Matrix is full-state-feedback gains, and is (lqrControlDim x lqrControlDim)
+  using KMatrix_t = Eigen::Matrix<double, lqrControlDim, lqrStateDim>;
 
-  /// R Matrix minimizes control effort, and is thus (controlDim x controlDim)
-  using RMatrix_t = Eigen::Matrix<double, controlDim, controlDim>;
+  /// State vector for LQR (usually 8-vector)
+  using lqrStateVector_t = ct::core::StateVector<lqrStateDim, double>;
 
-  /// K Matrix is full-state-feedback gains, and is (controlDim x controlDim)
-  using KMatrix_t = Eigen::Matrix<double, controlDim, stateDim>;
+  /// The control vector for LQR (usually 4-vector)
+  using lqrControlVector_t = ct::core::ControlVector<lqrControlDim, double>;
 
   /// The default constructor sets Q to identity, and R to .001*Identity
   LQRController();
@@ -57,13 +61,13 @@ public:
   /// @param A: Linearized matrix specifying how state derivative depends on curent state
   /// @param B: Linearized matrix specifying how state derivative depends on input
   /// @returns controlAction: Optimal control action.
-  controlVector_t computeControl(const AMatrix_t& A, const BMatrix_t& B,
-                                  const stateVector_t& controlAction);
+  lqrControlVector_t computeControl(const AMatrix_t& A, const BMatrix_t& B,
+                                  const lqrStateVector_t& controlAction);
 
 
 private:
   /// Solver for optimal control problem
-  ct::optcon::LQR<stateDim, controlDim> lqrSolver_;
+  ct::optcon::LQR<lqrStateDim, lqrControlDim> lqrSolver_;
 
   /// Feedback matrix: result of LQR solve.
   KMatrix_t K_;

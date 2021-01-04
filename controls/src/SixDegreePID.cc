@@ -1,9 +1,9 @@
-//
-// Created by tanvi on 11/21/2020.
-//
 #include "controls/PID.hh"
 #include "controls/SixDegreePID.hh"
 #include <vector>
+
+namespace MuddSub::Controls
+{
 
 SixDegreePID::SixDegreePID():
   roll_("/roll"), pitch_("/pitch"), yaw_("/yaw"),
@@ -55,7 +55,7 @@ PID& SixDegreePID::getHeave()
 }
 
 
-void SixDegreePID::update(stateVector_t& plantState, stateVector_t& setPoint,  double dT, VehicleDynamics::controlVector_t& control)
+void SixDegreePID::update(const stateVector_t& plantState, const stateVector_t& setPoint,  double dT, controlVector_t& control)
 {
 
     control[0] = surge_.update(plantState[0],setPoint[0],dT);
@@ -73,4 +73,5 @@ void SixDegreePID::tuneController(double kP, double kI, double kD,  PID& control
 {
     controller.tune(kP, kI, kD);
 
+}
 }

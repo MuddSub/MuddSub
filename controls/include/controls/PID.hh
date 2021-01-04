@@ -5,6 +5,9 @@
 #pragma once
 #include <ros/ros.h>
 
+namespace MuddSub::Controls
+{
+
 class PID
 {
 private:
@@ -34,7 +37,7 @@ public:
     PID(double kP, double kI, double kD, bool isAngle, double windupLimit);
 
     PID(std::string tuneParamRoot);
-    
+
     PID();
 
     void tune(double kP, double kI, double kD);
@@ -47,3 +50,5 @@ public:
 
 
 };
+
+}

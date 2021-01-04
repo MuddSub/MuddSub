@@ -3,6 +3,7 @@
 #include "controls/LQRController.hh"
 #include "controls/VehicleDynamics.hh"
 #include "controls/PidController.hh"
+#include "controls/Types.hh"
 
 #include <ct/core/core.h>
 #include <ct/optcon/optcon.h>
@@ -40,28 +41,11 @@ public:
   DecoupledLQR() = default;
   DecoupledLQR(const DecoupledLQR&) = default;
 
-  /// Dimension of AUV state: [x,y,z,roll,pitch,yaw,x',y',z',roll',pitch',yaw']
-  constexpr static unsigned int stateDim = 12;
-
-  /// Dimension of control: 6DOF wrench
-  constexpr static unsigned int controlDim = 6;
-
   /// LQR has state [x,y,z,yaw, x', y', z', yaw']
   static constexpr unsigned int stateDimLQR = 8;
 
   /// LQR control is 4DOF wrench: [x,y,z,yaw]
   static constexpr unsigned int controlDimLQR = 4;
-
-  /// The state vector is by default a 12D vector, representing the position
-  /// and attitude in 6DOF, and all of those velocities.
-  using stateVector_t = ct::core::StateVector<stateDim, double>;
-
-  /// The control vector is a 6-vector, which is just the wrench (forces/torques)
-  /// in 6DOF
-  using controlVector_t = ct::core::ControlVector<controlDim, double>;
-
-  /// The control toolbox has their own time type, which we use for properness.
-  using ctTime_t = ct::core::ControlledSystem<stateDim, controlDim, double>::time_t;
 
   /// Clone the object
   DecoupledLQR* clone() const;
