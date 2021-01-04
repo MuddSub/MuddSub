@@ -3,7 +3,10 @@
 
 namespace MuddSub::SLAM
 {
-static unsigned int id_{0};
+unsigned int Particle::instances_ = 0;
+std::random_device r;
+std::default_random_engine Particle::randGenerator_ = std::default_random_engine{r()};
+
 Particle::Particle(unsigned long n, slamStateVector_t state):
                   n_(n),
                   slipDistribution_(0, slipSigma_),
@@ -12,11 +15,11 @@ Particle::Particle(unsigned long n, slamStateVector_t state):
                   robotState_(state),
                   weight_(1/n)
 {
-  std::random_device r;
-  randGenerator_ = std::default_random_engine{r()};
+  // std::random_device r;
+  // randGenerator_ = std::default_random_engine{r()};
   robotState_[THETA_IDX] = wrapToPi(robotState_[THETA_IDX]);
-  id_+=1;
-  std::cout<<"id "<<id_<<"\n";
+  id_ = Particle::instances_++;
+  // std::cout<<"id "<<id_<<"\n";
 }
 
 Particle::Particle(const Particle& other):
@@ -34,10 +37,12 @@ Particle::Particle(const Particle& other):
 
 void Particle::propagateMotion(double velocity, double thetaMeas, double dt)
 {
-  velocity += velocityDistribution_(randGenerator_);
-  thetaMeas += thetaDistribution_(randGenerator_);
-  double slipVel = slipDistribution_(randGenerator_);
+  // std::random_device r;
+  // randGenerator_ = std::default_random_engine{r()};
 
+  velocity += velocityDistribution_(Particle::randGenerator_);
+  thetaMeas += thetaDistribution_(Particle::randGenerator_);
+  double slipVel = slipDistribution_(Particle::randGenerator_);
 
   // ROS_INFO("Theta: %f", thetaMeas);
   auto& theta = robotState_[THETA_IDX];
@@ -46,8 +51,8 @@ void Particle::propagateMotion(double velocity, double thetaMeas, double dt)
 
   auto xVel = velocity*std::cos(theta);
   auto yVel = velocity*std::sin(theta);
-  
-  //ROS_INFO("XVel %f, YVel %f, theta %f, dt %f, id %d", xVel, yVel, theta, dt, id_);
+
+  // ROS_INFO("Particle %p: XVel %f, YVel %f, slipVel %f, theta %f, dt %f, id %d", this, xVel, yVel, slipVel, theta, dt, id_);
 
   robotState_[X_IDX] += xVel*dt - slipVel*dt*std::sin(theta);
   robotState_[Y_IDX] += yVel*dt + slipVel*dt*std::cos(theta);
@@ -64,7 +69,7 @@ double Particle::correct(double time, unsigned int subject, double range, double
   }
   else
     weight_ = landmarkEKFs_[subject]->correct(range, bearing, robotState_);
-  
+
 
   return weight_;
 }
