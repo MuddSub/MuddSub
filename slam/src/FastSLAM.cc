@@ -5,7 +5,7 @@ namespace plt = matplotlibcpp;
 namespace MuddSub::SLAM
 {
 
-FastSLAM::FastSLAM(const int& datasetId, const int& robotId):  
+FastSLAM::FastSLAM(const int& datasetId, const int& robotId):
   datasetID_(datasetId), robotID_(robotId), data_(robotID_, datasetID_)
 {
   createParticles();
@@ -48,6 +48,7 @@ void FastSLAM::runFastSLAM()
       dt = t - prevOdomTime;
       prevOdomTime = t;
       double thetaMeas = wrapToPi(data_.getCompass(t));
+      // ROS_INFO("Propagate motion step");
       for(auto& p : particles_)
         p.propagateMotion(keyFrame.data_[0], thetaMeas, dt);
     }
@@ -204,12 +205,10 @@ std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle,
   for(int i = 0; i < n_; ++i)
   {
     double rand = uniform(generator);
-
     double runningWeight = 0;
-
     auto selectorIt = input.begin();
 
-    for(auto w : weights)
+    for(auto w : normalizedWeights)
     {
       runningWeight += w;
       if(rand < runningWeight)
@@ -217,9 +216,16 @@ std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle,
         output[i] = *selectorIt;
         break;
       }
-	  ++selectorIt;
+	    ++selectorIt;
     }
   }
+
+  // printf("Resampled. New particles are: ");
+  // for(int i = 0; i < n_; ++i)
+  // {
+  //   printf("%d, ", output[i].id_);
+  // }
+  // printf("\n");
 
   return output;
 };
