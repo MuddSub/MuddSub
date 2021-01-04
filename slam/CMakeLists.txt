@@ -59,3 +59,7 @@ add_dependencies(slam
 	${${PROJECT_NAME}_EXPORTED_TARGETS}
 	${catkin_EXPORTED_TARGETS}
 )
+
+add_executable(SLAMEvalServer src/SLAMEvalServer.cc)
+target_link_libraries(SLAMEvalServer ${catkin_LIBRARIES})
+#add_dependencies(SLAMEvalServer slam_gencpp)

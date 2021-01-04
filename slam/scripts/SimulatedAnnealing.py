@@ -5,10 +5,10 @@ import pickle
 #from FastSLAMEvolution import evaluateFastSLAM
 #from DataLoaderEvolution import *
 
-class simulatedAnnealing:
-    def __init__(self, s0, t0, tf, evaluation, findNeighbors, tempFx, iterations, goodVal=0, alpha= None, beta=None ):  
+class SimulatedAnnealing:
+    def __init__(self, s0, t0, tf, evaluation, findNeighbors, tempFx, iterations, goodVal=0, alpha= None, beta=None ):
         '''
-        s: current solution, starting with initial solution 
+        s: current solution, starting with initial solution
         t: current temperature, starting with initial temperature
         tf: final temperature (termination condition)
         evaluation: evaluation function
@@ -17,7 +17,7 @@ class simulatedAnnealing:
         goodVal: acceptable value
         findNeighbors
 
-        alpha and beta: temperature change parameters 
+        alpha and beta: temperature change parameters
         '''
         self.s = s0
         self.t = t0
@@ -39,9 +39,9 @@ class simulatedAnnealing:
             self.t /= alpha
         elif tempFx == "slow-decrease":
             self.t = self.t / (1 + beta * self.t)
-        else: 
+        else:
             self.t = tempFx(self.t)
-    
+
     def run(self):
         n = 0
         while self.t >= self.tf or (self.goodVal and cost <= self.goodVal) :
@@ -67,7 +67,7 @@ class simulatedAnnealing:
                         self.cost = newCost
                     else:
                         print("Rejected change, difference in cost was", diffCost)
-                
+
                 if self.cost < self.minimalCost:
                     self.bestSolution = self.s
                     self.minimalCost = self.cost
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     beta = 0.1
     goodVal = 0
     steps = [1] + [0.0005] * 7
-    
+
     def randomIndividual():
         bounds = [(3, 15)] + [(0.0001, 0.2)] * 7
         individual = []
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     def evaluation(s):
         pathRMS = evaluateFastSLAM(data, s)
         return pathRMS
-    
+
     print("default: cost", evaluation(default))
 
     # def findNeighbors(s):
