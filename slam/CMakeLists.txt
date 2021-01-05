@@ -43,6 +43,7 @@ include_directories(
 
 
 add_executable(slam
+  src/RunFastSLAM.cc
   src/FastSLAM.cc
   src/DataLoader.cc
 	src/Particle.cc
@@ -60,6 +61,13 @@ add_dependencies(slam
 	${catkin_EXPORTED_TARGETS}
 )
 
-add_executable(SLAMEvalServer src/SLAMEvalServer.cc)
-target_link_libraries(SLAMEvalServer ${catkin_LIBRARIES})
-#add_dependencies(SLAMEvalServer slam_gencpp)
+add_executable(SLAMEvalServer
+  src/SLAMEvalServer.cc
+  src/FastSLAM.cc
+  src/DataLoader.cc
+	src/Particle.cc
+  src/EKF.cc
+)
+target_link_libraries(SLAMEvalServer ${catkin_LIBRARIES} ${PYTHON_LIBRARIES})
+target_include_directories(SLAMEvalServer PRIVATE ${PYTHON_INCLUDE_DIRS})
+add_dependencies(SLAMEvalServer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

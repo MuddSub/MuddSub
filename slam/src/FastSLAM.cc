@@ -50,7 +50,7 @@ void FastSLAM::createParticles()
   }
 }
 
-double FastSLAM::runFastSLAM()
+double FastSLAM::runFastSLAM(bool plot)
 {
   auto& robotData = data_.robotData_;
 
@@ -191,18 +191,20 @@ double FastSLAM::runFastSLAM()
   	robotStates.push_back(robotState);
   }
 
-  plt::plot(robotX, robotY);
-  plt::plot(xTruth, yTruth);
-  plt::scatter(xLandmarks, yLandmarks, 8);
-  plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
-  plt::show();
-
   auto rms = FastSLAM::euclidRMS(groundTruthStates, robotStates);
 
-  std::cout<<"\n";
-  std::cout<<"number of particles "<<n_<<"\n";
-  std::cout<<"number of steps "<<numSteps_<<"\n";
-  std::cout<<"rms "<<rms<<"\n";
+  if (plot)
+  {
+    std::cout<<"\n";
+    std::cout<<"number of particles "<<n_<<"\n";
+    std::cout<<"number of steps "<<numSteps_<<"\n";
+    std::cout<<"rms "<<rms<<"\n";
+    plt::plot(robotX, robotY);
+    plt::plot(xTruth, yTruth);
+    plt::scatter(xLandmarks, yLandmarks, 8);
+    plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
+    plt::show();
+  }
 
   return rms;
 }
@@ -320,10 +322,10 @@ double FastSLAM::euclidRMS(std::vector<State> stateTruths, std::vector<State> st
 }
 
 
-int main(int argc, char** argv)
-{
-  ros::init(argc, argv, "SLAM");
-  ros::NodeHandle nh;
-  MuddSub::SLAM::FastSLAM slam{1, 1};
-  slam.runFastSLAM();
-}
+// int main(int argc, char** argv)
+// {
+//   ros::init(argc, argv, "SLAM");
+//   ros::NodeHandle nh;
+//   MuddSub::SLAM::FastSLAM slam{1, 1};
+//   slam.runFastSLAM();
+// }

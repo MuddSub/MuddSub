@@ -28,7 +28,7 @@ public:
 
   void createParticles();
 
-  double runFastSLAM();
+  double runFastSLAM(bool plot = false);
 
   State getStateMaxWeight();
 
