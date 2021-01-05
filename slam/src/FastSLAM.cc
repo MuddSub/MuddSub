@@ -5,9 +5,24 @@ namespace plt = matplotlibcpp;
 namespace MuddSub::SLAM
 {
 
-FastSLAM::FastSLAM(const int& datasetId, const int& robotId):
-  datasetID_(datasetId), robotID_(robotId), data_(robotID_, datasetID_)
+FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters* params):
+  datasetID_(datasetId), robotID_(robotId), data_(robotID_, datasetID_), params_(params)
 {
+  if (params_ == NULL)
+  {
+    params_ = &Parameters{
+      .n_ = 5,
+      .velocitySigma_ = 0.04,
+      .angleSigma_ = 0.0125,
+      .slipSigma_ = 0.07,
+      .rangeSigma_ = 0.075,
+      .bearingSigma_ = 0.025,
+      .rangeWeightStd_ = 0.03,
+      .bearingWeightStd_ = 0.015
+    }
+  }
+
+  n_ = params_->n_;
   createParticles();
 }
 
@@ -18,7 +33,7 @@ void FastSLAM::createParticles()
                                      data_.robotGroundTruth_[0].data_[2]};
   for(int i = 0; i < n_; ++i)
   {
-    particles_[i] = {n_, initialState_};
+    particles_[i] = {initialState_, params_};
   }
 }
 
@@ -152,27 +167,29 @@ void FastSLAM::runFastSLAM()
   std::vector<State> robotStates;
   std::vector<State> groundTruthStates;
 
-  for(int i=0; i<xTruth.size(); ++i){
+  for(int i=0; i<xTruth.size(); ++i)
+  {
   	State robotState, groundTruthState;
-	groundTruthState.x_ = xTruth[i];
-	groundTruthState.y_ = yTruth[i];
-	robotState.x_ = robotX[i];
-	robotState.y_ = robotY[i];
-	groundTruthStates.push_back(groundTruthState);
-	robotStates.push_back(robotState);
+  	groundTruthState.x_ = xTruth[i];
+  	groundTruthState.y_ = yTruth[i];
+  	robotState.x_ = robotX[i];
+  	robotState.y_ = robotY[i];
+  	groundTruthStates.push_back(groundTruthState);
+  	robotStates.push_back(robotState);
   }
 
-  plt::plot(robotX, robotY);
-  plt::plot(xTruth, yTruth);
-  plt::scatter(xLandmarks, yLandmarks, 8);
-  plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
-  plt::show();
+  // plt::plot(robotX, robotY);
+  // plt::plot(xTruth, yTruth);
+  // plt::scatter(xLandmarks, yLandmarks, 8);
+  // plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
+  // plt::show();
 
-  auto rms = FastSLAM::euclidRMS(groundTruthStates,robotStates);
-  std::cout<<"\n";
-  std::cout<<"number of particles "<<n_<<"\n";
-  std::cout<<"number of steps "<<numSteps_<<"\n";
-  std::cout<<"rms "<<rms<<"\n";
+  auto rms = FastSLAM::euclidRMS(groundTruthStates, robotStates);
+  return rms;
+  // std::cout<<"\n";
+  // std::cout<<"number of particles "<<n_<<"\n";
+  // std::cout<<"number of steps "<<numSteps_<<"\n";
+  // std::cout<<"rms "<<rms<<"\n";
 }
 
 std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle, n_>& input,

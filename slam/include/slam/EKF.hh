@@ -24,13 +24,14 @@ private:
     Eigen::Matrix<double, n_, n_> stateCovariance_;
     std::vector<Eigen::Matrix<double, 2, 1>> stateEstimateLogs_;
     std::vector<Eigen::Matrix<double, n_, n_>> stateCovarianceLogs_;
+    Parameters* params_;
 
     map_t map;
 
     friend class FastSLAM;
 public:
 
-  EKF(slamStateVector_t robotState, double range, double bearing);
+  EKF(slamStateVector_t robotState, double range, double bearing, Parameters* params);
 
   void setMeasurementCovariance(Eigen::Matrix2d cov);
 

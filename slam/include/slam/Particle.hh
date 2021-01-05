@@ -17,7 +17,7 @@ class Particle
 
 public:
   Particle() = default;
-  Particle(unsigned long n, slamStateVector_t state);
+  Particle(slamStateVector_t state, Parameters* params);
 
   Particle(const Particle& rhs);
 
@@ -32,19 +32,15 @@ private:
   std::unordered_map<int, std::shared_ptr<EKF>> landmarkEKFs_;
 
   double weight_{1};
-
-  double velocitySigma_{0.07};
-  double angleSigma_{0.025};
-  double slipSigma_{0.125};
-
-  unsigned long n_;
+  Parameters* params_;
+  unsigned int n_;
 
   static std::default_random_engine randGenerator_;
 
   std::normal_distribution<double> slipDistribution_, thetaDistribution_,
                                    velocityDistribution_;
 
-  slamStateVector_t robotState_{0,0,0};
+  slamStateVector_t robotState_{0, 0, 0};
 
   static unsigned int instances_;
 

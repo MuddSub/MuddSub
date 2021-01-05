@@ -1,4 +1,4 @@
-#include "slam/Particle.hh"
+Std__#include "slam/Particle.hh"
 #include "slam/util.hh"
 
 namespace MuddSub::SLAM
@@ -7,14 +7,30 @@ unsigned int Particle::instances_ = 0;
 std::random_device r;
 std::default_random_engine Particle::randGenerator_ = std::default_random_engine{r()};
 
-Particle::Particle(unsigned long n, slamStateVector_t state):
-                  n_(n),
-                  slipDistribution_(0, slipSigma_),
-                  velocityDistribution_(0, velocitySigma_),
-                  thetaDistribution_(0, angleSigma_),
-                  robotState_(state),
-                  weight_(1/n)
+Particle::Particle(slamStateVector_t state, Parameters* params):
+  robotState_(state),
+  params_(params)
 {
+  if (params_ == NULL)
+  {
+    params_ = &Parameters{
+      .n_ = 5,
+      .velocitySigma_ = 0.04,
+      .angleSigma_ = 0.0125,
+      .slipSigma_ = 0.07,
+      .rangeSigma_ = 0.075,
+      .bearingSigma_ = 0.025,
+      .rangeWeightStd_ = 0.03,
+      .bearingWeightStd_ = 0.015
+    }
+  }
+
+  n_(params_->n_)
+  velocityDistribution_(0, params_->velocitySigma_)
+  angleDistribution_(0, params_->angleSigma_)
+  slipDistribution_(0, params_->slipSigma_)
+  weight_(1/n_)
+
   // std::random_device r;
   // randGenerator_ = std::default_random_engine{r()};
   robotState_[THETA_IDX] = wrapToPi(robotState_[THETA_IDX]);
@@ -64,7 +80,7 @@ double Particle::correct(double time, unsigned int subject, double range, double
       throw std::runtime_error("Subject should not have been less than 5.");
   if(landmarkEKFs_.count(subject) == 0)
   {
-    landmarkEKFs_[subject] = std::make_unique<EKF>(robotState_, range, bearing);
+    landmarkEKFs_[subject] = std::make_unique<EKF>(robotState_, range, bearing, params_);
     weight_ = 1/n_;
   }
   else

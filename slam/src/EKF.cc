@@ -5,10 +5,24 @@
 namespace MuddSub::SLAM
 {
 
-EKF::EKF(slamStateVector_t robotState, double range, double bearing)
+EKF::EKF(slamStateVector_t robotState, double range, double bearing):
+  params_(params)
 {
+    if (params_ == NULL)
+    {
+      params_ = &Parameters{
+        .n_ = 5,
+        .velocitySigma_ = 0.04,
+        .angleSigma_ = 0.0125,
+        .slipSigma_ = 0.07,
+        .rangeSigma_ = 0.075,
+        .bearingSigma_ = 0.025,
+        .rangeWeightStd_ = 0.03,
+        .bearingWeightStd_ = 0.015
+      }
+    }
 
-    sigmaZ_ << 0.75, 0, 0, 0.25;
+    sigmaZ_ << params_->rangeSigma_, 0, 0, params_->bearingSigma_;
 
     const double& robotX = robotState(0);
     const double& robotY = robotState(1);
@@ -17,7 +31,7 @@ EKF::EKF(slamStateVector_t robotState, double range, double bearing)
     const double x = robotX + range * std::cos(wrapToPi(robotTheta) + wrapToPi(bearing));
     const double y = robotY + range * std::sin(wrapToPi(robotTheta) + wrapToPi(bearing));
 
-    stateEstimate_ << x,y;
+    stateEstimate_ << x, y;
 
     stateCovariance_.setConstant(0.1);
 }
@@ -88,8 +102,8 @@ double EKF::correct(double range, double bearing, slamStateVector_t robotState)
 
   diff[1] = wrapToPi(diff[1]);
 
-  double weightRange = gauss(zt(0), zHat(0), .075);
-  double weightBearing = gauss(zt(1), zHat(1), .1);
+  double weightRange = gauss(zt(0), zHat(0), params_->weightRangeStd_);
+  double weightBearing = gauss(zt(1), zHat(1), params->weightBearingStd_);
   double weight = weightRange * weightBearing;
 
   stateEstimate_ += K*diff;

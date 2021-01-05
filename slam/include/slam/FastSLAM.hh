@@ -24,11 +24,11 @@ class FastSLAM
 
 public:
 
-  FastSLAM(const int& datasetId, const int& robotId);
+  FastSLAM(const int& datasetId, const int& robotId, Parameters* params = NULL);
 
   void createParticles();
 
-  void runFastSLAM();
+  double runFastSLAM();
 
   State getStateMaxWeight();
 
@@ -57,12 +57,13 @@ private:
 
   // const Parameters params;
   //question
-  static const unsigned int n_{10};
   static const unsigned int numSteps_{15000};
   const unsigned int robotID_{1};
   const unsigned int datasetID_{1};
   static const unsigned int estimateSnapshotInterval_{100};
   int snapshotCounter_{0};
+  Parameters* params_;
+  unsigned int n_;
 
   std::array<Particle, n_> particles_;
 
