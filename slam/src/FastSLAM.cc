@@ -5,25 +5,36 @@ namespace plt = matplotlibcpp;
 namespace MuddSub::SLAM
 {
 
-FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters* params):
+FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters params):
   datasetID_(datasetId), robotID_(robotId), data_(robotID_, datasetID_), params_(params)
 {
-  if (params_ == NULL)
-  {
-    Parameters p = {
-      .n_ = 5,
-      .velocitySigma_ = 0.04,
-      .angleSigma_ = 0.0125,
-      .slipSigma_ = 0.07,
-      .rangeSigma_ = 0.075,
-      .bearingSigma_ = 0.025,
-      .rangeWeightStd_ = 0.03,
-      .bearingWeightStd_ = 0.015
-    };
-    params_ = &p;
-  }
+  // if (params_ == NULL)
+  // {
+  //   Parameters p = {
+  //     .n_ = 5,
+  //     .velocitySigma_ = 0.04,
+  //     .angleSigma_ = 0.0125,
+  //     .slipSigma_ = 0.07,
+  //     .rangeSigma_ = 0.075,
+  //     .bearingSigma_ = 0.025,
+  //     .rangeWeightStd_ = 0.03,
+  //     .bearingWeightStd_ = 0.015
+  //   };
+  //   params_ = &p;
+  // }
 
-  n_ = params_->n_;
+  ROS_INFO("FastSLAM parameters: %d %f %f %f %f %f %f %f",
+    params_.n_,
+    params_.velocitySigma_,
+    params_.angleSigma_,
+    params_.slipSigma_,
+    params_.rangeSigma_,
+    params_.bearingSigma_,
+    params_.rangeWeightStd_,
+    params_.bearingWeightStd_
+  );
+
+  n_ = params_.n_;
   createParticles();
 }
 
@@ -180,18 +191,20 @@ double FastSLAM::runFastSLAM()
   	robotStates.push_back(robotState);
   }
 
-  // plt::plot(robotX, robotY);
-  // plt::plot(xTruth, yTruth);
-  // plt::scatter(xLandmarks, yLandmarks, 8);
-  // plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
-  // plt::show();
+  plt::plot(robotX, robotY);
+  plt::plot(xTruth, yTruth);
+  plt::scatter(xLandmarks, yLandmarks, 8);
+  plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
+  plt::show();
 
   auto rms = FastSLAM::euclidRMS(groundTruthStates, robotStates);
+
+  std::cout<<"\n";
+  std::cout<<"number of particles "<<n_<<"\n";
+  std::cout<<"number of steps "<<numSteps_<<"\n";
+  std::cout<<"rms "<<rms<<"\n";
+
   return rms;
-  // std::cout<<"\n";
-  // std::cout<<"number of particles "<<n_<<"\n";
-  // std::cout<<"number of steps "<<numSteps_<<"\n";
-  // std::cout<<"rms "<<rms<<"\n";
 }
 
 std::vector<Particle> FastSLAM::resample(const std::vector<Particle>& input,
@@ -199,6 +212,9 @@ std::vector<Particle> FastSLAM::resample(const std::vector<Particle>& input,
                                                       bool normalized)
 {
   assert(*std::min_element(weights.begin(), weights.end()) >= 0.);
+  // auto minWeightIt = std::min_element(weights.begin(), weights.end());
+  // ROS_INFO("Minimum weight: value %f, address %p, index %d", *minWeightIt, minWeightIt, minWeightIt - weights.begin());
+  // assert(*minWeightIt >= 0.0);
 
   std::vector<double> normalizedWeights = weights;
   if(!normalized)
@@ -310,5 +326,4 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   MuddSub::SLAM::FastSLAM slam{1, 1};
   slam.runFastSLAM();
-
 }

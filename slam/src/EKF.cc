@@ -5,25 +5,36 @@
 namespace MuddSub::SLAM
 {
 
-EKF::EKF(slamStateVector_t robotState, double range, double bearing, Parameters* params):
+EKF::EKF(slamStateVector_t robotState, double range, double bearing, Parameters params):
   params_(params)
 {
-    if (params_ == NULL)
-    {
-      Parameters p = {
-        .n_ = 5,
-        .velocitySigma_ = 0.04,
-        .angleSigma_ = 0.0125,
-        .slipSigma_ = 0.07,
-        .rangeSigma_ = 0.075,
-        .bearingSigma_ = 0.025,
-        .rangeWeightStd_ = 0.03,
-        .bearingWeightStd_ = 0.015
-      };
-      params_ = &p;
-    }
+    // if (params_ == NULL)
+    // {
+    //   Parameters p = {
+    //     .n_ = 5,
+    //     .velocitySigma_ = 0.04,
+    //     .angleSigma_ = 0.0125,
+    //     .slipSigma_ = 0.07,
+    //     .rangeSigma_ = 0.075,
+    //     .bearingSigma_ = 0.025,
+    //     .rangeWeightStd_ = 0.03,
+    //     .bearingWeightStd_ = 0.015
+    //   };
+    //   params_ = &p;
+    // }
 
-    sigmaZ_ << params_->rangeSigma_, 0, 0, params_->bearingSigma_;
+    // ROS_INFO("EKF parameters: %d %f %f %f %f %f %f %f",
+    //   params_.n_,
+    //   params_.velocitySigma_,
+    //   params_.angleSigma_,
+    //   params_.slipSigma_,
+    //   params_.rangeSigma_,
+    //   params_.bearingSigma_,
+    //   params_.rangeWeightStd_,
+    //   params_.bearingWeightStd_
+    // );
+
+    sigmaZ_ << params_.rangeSigma_, 0, 0, params_.bearingSigma_;
 
     const double& robotX = robotState(0);
     const double& robotY = robotState(1);
@@ -103,12 +114,16 @@ double EKF::correct(double range, double bearing, slamStateVector_t robotState)
 
   diff[1] = wrapToPi(diff[1]);
 
-  double weightRange = gauss(zt(0), zHat(0), params_->rangeWeightStd_);
-  double weightBearing = gauss(zt(1), zHat(1), params_->bearingWeightStd_);
+  double weightRange = gauss(zt(0), zHat(0), params_.rangeWeightStd_);
+  double weightBearing = gauss(zt(1), zHat(1), params_.bearingWeightStd_);
   double weight = weightRange * weightBearing;
 
   stateEstimate_ += K*diff;
   stateCovariance_ = (Eigen::Matrix2d::Identity() - K*H)*stateCovariance_;
+
+  // ROS_INFO("EKF correction:");
+  // ROS_INFO("Range %f, ex range %f, range std %f, range weight %f", range, zHat(0), params_.rangeWeightStd_, weightRange);
+  // ROS_INFO("Bearing %f, ex bearing %f, bearing std %f, bearing weight %f", bearing, zHat(1), params_.bearingWeightStd_, weightBearing);
 
   return weight;
 }

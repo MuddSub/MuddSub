@@ -24,7 +24,7 @@ class FastSLAM
 
 public:
 
-  FastSLAM(const int& datasetId, const int& robotId, Parameters* params = NULL);
+  FastSLAM(const int& datasetId, const int& robotId, Parameters params = Parameters());
 
   void createParticles();
 
@@ -62,7 +62,7 @@ private:
   const unsigned int datasetID_{1};
   static const unsigned int estimateSnapshotInterval_{100};
   int snapshotCounter_{0};
-  Parameters* params_;
+  Parameters params_;
   unsigned int n_;
 
   std::vector<Particle> particles_;

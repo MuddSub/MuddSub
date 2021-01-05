@@ -17,7 +17,7 @@ class Particle
 
 public:
   Particle() = default;
-  Particle(slamStateVector_t state, Parameters* params);
+  Particle(slamStateVector_t state, Parameters params = Parameters());
 
   Particle(const Particle& rhs);
 
@@ -32,7 +32,7 @@ private:
   std::unordered_map<int, std::shared_ptr<EKF>> landmarkEKFs_;
 
   double weight_{1};
-  Parameters* params_;
+  Parameters params_;
   unsigned int n_;
 
   static std::default_random_engine randGenerator_;

@@ -35,7 +35,19 @@ struct State
 
 struct Parameters
 {
-	int n_;
-	double velocitySigma_, angleSigma_, slipSigma_, rangeSigma_, bearingSigma_, rangeWeightStd_, bearingWeightStd_;
+	int n_{5};
+	double  velocitySigma_{0.04},
+          angleSigma_{0.0125},
+          slipSigma_{0.07},
+          rangeSigma_{0.075},
+          bearingSigma_{0.025},
+          rangeWeightStd_{0.03},
+          bearingWeightStd_{0.015};
 };
+
+// struct Parameters
+// {
+// 	int n_;
+// 	double velocitySigma_, angleSigma_, slipSigma_, rangeSigma_, bearingSigma_, rangeWeightStd_, bearingWeightStd_;
+// };
 }
