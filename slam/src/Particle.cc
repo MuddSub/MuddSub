@@ -1,4 +1,4 @@
-Std__#include "slam/Particle.hh"
+#include "slam/Particle.hh"
 #include "slam/util.hh"
 
 namespace MuddSub::SLAM
@@ -13,7 +13,7 @@ Particle::Particle(slamStateVector_t state, Parameters* params):
 {
   if (params_ == NULL)
   {
-    params_ = &Parameters{
+    Parameters p = {
       .n_ = 5,
       .velocitySigma_ = 0.04,
       .angleSigma_ = 0.0125,
@@ -22,14 +22,15 @@ Particle::Particle(slamStateVector_t state, Parameters* params):
       .bearingSigma_ = 0.025,
       .rangeWeightStd_ = 0.03,
       .bearingWeightStd_ = 0.015
-    }
+    };
+    params_ = &p;
   }
 
-  n_(params_->n_)
-  velocityDistribution_(0, params_->velocitySigma_)
-  angleDistribution_(0, params_->angleSigma_)
-  slipDistribution_(0, params_->slipSigma_)
-  weight_(1/n_)
+  n_ = params_->n_;
+  velocityDistribution_ = std::normal_distribution<double>(0, params_->velocitySigma_);
+  thetaDistribution_ = std::normal_distribution<double>(0, params_->angleSigma_);
+  slipDistribution_ = std::normal_distribution<double>(0, params_->slipSigma_);
+  weight_ = 1 / n_;
 
   // std::random_device r;
   // randGenerator_ = std::default_random_engine{r()};

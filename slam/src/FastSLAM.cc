@@ -10,7 +10,7 @@ FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters* params)
 {
   if (params_ == NULL)
   {
-    params_ = &Parameters{
+    Parameters p = {
       .n_ = 5,
       .velocitySigma_ = 0.04,
       .angleSigma_ = 0.0125,
@@ -19,7 +19,8 @@ FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters* params)
       .bearingSigma_ = 0.025,
       .rangeWeightStd_ = 0.03,
       .bearingWeightStd_ = 0.015
-    }
+    };
+    params_ = &p;
   }
 
   n_ = params_->n_;
@@ -31,13 +32,14 @@ void FastSLAM::createParticles()
   slamStateVector_t initialState_ = {data_.robotGroundTruth_[0].data_[0],
                                      data_.robotGroundTruth_[0].data_[1],
                                      data_.robotGroundTruth_[0].data_[2]};
+  particles_ = std::vector<Particle>(n_);
   for(int i = 0; i < n_; ++i)
   {
     particles_[i] = {initialState_, params_};
   }
 }
 
-void FastSLAM::runFastSLAM()
+double FastSLAM::runFastSLAM()
 {
   auto& robotData = data_.robotData_;
 
@@ -84,7 +86,7 @@ void FastSLAM::runFastSLAM()
 
       double& range = measurement[1];
       double& bearing = measurement[2];
-      std::array<double, n_> weights;
+      std::vector<double> weights = std::vector<double>(n_);
 
       int j = 0;
       for(auto& p : particles_)
@@ -120,7 +122,7 @@ void FastSLAM::runFastSLAM()
     if(snapshotCounter_ == estimateSnapshotInterval_)
     {
       snapshotCounter_ = 0;
-      std::array<Particle, n_> particleCopy = particles_;
+      std::vector<Particle> particleCopy = particles_;
       particleLogs_.push_back(particleCopy);
     }
     ++snapshotCounter_;
@@ -192,13 +194,13 @@ void FastSLAM::runFastSLAM()
   // std::cout<<"rms "<<rms<<"\n";
 }
 
-std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle, n_>& input,
-                                                      const std::array<double, n_>& weights,
+std::vector<Particle> FastSLAM::resample(const std::vector<Particle>& input,
+                                                      const std::vector<double>& weights,
                                                       bool normalized)
 {
   assert(*std::min_element(weights.begin(), weights.end()) >= 0.);
 
-  std::array<double, n_> normalizedWeights = weights;
+  std::vector<double> normalizedWeights = weights;
   if(!normalized)
   {
     double weightSum = 0;
@@ -217,7 +219,7 @@ std::array<Particle, FastSLAM::n_> FastSLAM::resample(const std::array<Particle,
   std::default_random_engine generator = std::default_random_engine{r()};
   std::uniform_real_distribution<double> uniform(0., 1.);
 
-  std::array<Particle, n_> output;
+  std::vector<Particle> output = std::vector<Particle>(n_);
 
   for(int i = 0; i < n_; ++i)
   {

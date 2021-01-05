@@ -65,18 +65,18 @@ private:
   Parameters* params_;
   unsigned int n_;
 
-  std::array<Particle, n_> particles_;
+  std::vector<Particle> particles_;
 
   std::vector<State> stateLogs_;
   std::vector<double> timeSeries_;
 
-  std::vector<std::array<Particle, n_>> particleLogs_;
+  std::vector<std::vector<Particle>> particleLogs_;
 
 
   DataLoader data_;
 
-  std::array<Particle, n_> resample(const std::array<Particle, n_>& input,
-                                    const std::array<double, n_>& weights,
+  std::vector<Particle> resample(const std::vector<Particle>& input,
+                                    const std::vector<double>& weights,
                                     bool normalized);
 
 };
