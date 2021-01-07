@@ -24,7 +24,7 @@ class FastSLAM
 
 public:
 
-  FastSLAM(const int& datasetId, const int& robotId, Parameters params = Parameters());
+  FastSLAM(const int& datasetId, const int& robotId, DataLoader& data, Parameters params = Parameters());
 
   void createParticles();
 
@@ -38,7 +38,6 @@ public:
   {
     assert(truth.size() == estimate.size());
     std::vector<double> errors;
-
     for(int i = 0; i < truth.size(); ++i)
       errors.push_back(truth[i] - estimate[i]);
 

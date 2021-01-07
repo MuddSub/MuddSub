@@ -5,8 +5,8 @@ namespace plt = matplotlibcpp;
 namespace MuddSub::SLAM
 {
 
-FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters params):
-  datasetID_(datasetId), robotID_(robotId), data_(robotID_, datasetID_), params_(params)
+FastSLAM::FastSLAM(const int& datasetId, const int& robotId, DataLoader& data, Parameters params):
+  datasetID_(datasetId), robotID_(robotId), data_(data), params_(params)
 {
   // if (params_ == NULL)
   // {
@@ -16,7 +16,7 @@ FastSLAM::FastSLAM(const int& datasetId, const int& robotId, Parameters params):
   //     .angleSigma_ = 0.0125,
   //     .slipSigma_ = 0.07,
   //     .rangeSigma_ = 0.075,
-  //     .bearingSigma_ = 0.025,
+  //     .bearingSigma_ = 0.025,private:
   //     .rangeWeightStd_ = 0.03,
   //     .bearingWeightStd_ = 0.015
   //   };
