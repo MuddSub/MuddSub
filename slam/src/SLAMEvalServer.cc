@@ -2,7 +2,6 @@
 #include "slam/EvalFastSLAM.h"
 #include "slam/FastSLAM.hh"
 #include "slam/DataLoader.hh"
-#include "slam/SLAMEvalServer.hh"
 
 MuddSub::SLAM::DataLoader* dataPtr;
 
