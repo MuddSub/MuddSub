@@ -72,7 +72,7 @@ class SimulatedAnnealing:
                     self.bestSolution = self.s
                     self.minimalCost = self.cost
                     self.firstIter = n
-                print("num iteration", n, "cost", self.cost, "solution",self.s, "temperature", self.t, "probability", prob)
+                print("num iteration", n, "cost", self.cost,"temperature", self.t, "probability", prob)
 
                 self.history += [(self.cost, self.s, self.firstIter)]
 
@@ -82,11 +82,11 @@ class SimulatedAnnealing:
 
             self.tempUpdate()
 
-        print("initial: cost", self.history[0][0], "solution", self.history[0][1], "@ iter", self.history[0][2])
-        print("final: cost", self.history[-1][0], "solution", self.history[-1][1], "@ iter", self.history[-1][2])
-        print("optimal: cost", self.minimalCost, "solution", self.bestSolution, "@ iter", self.firstIter)
+        print ("initial: cost", self.history[0][0], "\nsolution", self.history[0][1], "@ iter", self.history[0][2])
+        print("final: cost", self.history[-1][0], "\nsolution", self.history[-1][1], "@ iter", self.history[-1][2])
+        print("optimal: cost", self.minimalCost, "\nsolution", self.bestSolution, "@ iter", self.firstIter)
         self.history.sort(key=lambda s:s[0])
-        print("worst: cost", self.history[-1][0], "solution", self.history[-1][1], "@ iter", self.history[-1][2])
+        print("worst: cost", self.history[-1][0], "\nsolution", self.history[-1][1], "@ iter", self.history[-1][2])
 '''
 particleChanges = 0
 

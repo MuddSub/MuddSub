@@ -117,7 +117,7 @@ Eigen::Matrix<double, DecoupledLQR::stateDimLQR, DecoupledLQR::stateDimLQR>
   result.block(3, 0, 5, 8) = result.block(5, 0, 5, 8);
 
   // Fix the size
-  result.conservative.Resize(8,8);
+  result.conservativeResize(8,8);
   return static_cast<Eigen::Matrix<double, 8, 8>>(result);
 }
 
