@@ -48,7 +48,6 @@ if __name__=="__main__":
         pathRMS = evaluateFastSLAM(s)
         return pathRMS
 
-    print("default: cost", evaluation(default))
 
     def findNeighbors(s):
         '''Returns a set of parameters neighoring the given one'''
@@ -68,4 +67,5 @@ if __name__=="__main__":
             alpha, beta)
     sa.run()
 
+    print("default: cost", evaluation(default))
     print("Num particle changes", particleChanges)

@@ -5,7 +5,7 @@
 bool evalFastSLAM(slam::EvalFastSLAM::Request  &params,
          slam::EvalFastSLAM::Response &res)
 {
-  ROS_INFO("request: %ld, %f, %f, %f, %f, %f, %f, %f",
+  ROS_INFO("request: \n n=%ld, vSig=%.4f, angleSig=%.4f, slipSig=%.4f, rangeSig=%.4f, bearingSig=%.4f, rangeWStd=%.4f, bearingWStd=%.4f\n",
     (long int)params.n,
     (double)params.velocitySigma,
     (double)params.angleSigma,
@@ -31,7 +31,7 @@ bool evalFastSLAM(slam::EvalFastSLAM::Request  &params,
   res.pathRMS = slam.runFastSLAM(false);
   // res.pathRMS = 1.0;
 
-  ROS_INFO("sending back response: [%f]", (double)res.pathRMS);
+  ROS_INFO("sending back response: [%f]\n", (double)res.pathRMS);
   return true;
 }
 

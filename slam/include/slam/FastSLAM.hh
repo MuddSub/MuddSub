@@ -57,7 +57,7 @@ private:
 
   // const Parameters params;
   //question
-  static const unsigned int numSteps_{15000};
+  static const unsigned int numSteps_{100000};
   const unsigned int robotID_{1};
   const unsigned int datasetID_{1};
   static const unsigned int estimateSnapshotInterval_{100};
