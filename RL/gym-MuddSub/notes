@@ -1,0 +1,20 @@
+Action Space
+(go forward -1 to 1)
+(go down -1 to 1)
+(strafe 1 to -1)
+
+
+
+sparse rewards:
+discount rate = 0.9
+reward: 1 for passing through gate
+reward: 0 otherwise
+	what does it mean to pass through gate:
+		submarine center is in gate "allow zone"
+
+shaped rewards:
+discount rate = 1
+	-dist to gate
+
+
+# null state value
