@@ -21,20 +21,34 @@ class MuddSubEnv(gym.Env):
         self.robot_init = [0,3,0,0,0,0]
         self.current_step = 0
 
-		# x,y,z, yaw
+        # x,y,z, yaw
         self.current_position = self.robot_init[:3]+self.robot_init[-1]
-        # x,y,theta
-        # x -> move forward [-1,1]
-        # y -> depth [-1,1] 
-        # theta -> submarine angle [-1,1] 
-		# self.action_space = gym.spaces.Box(low= -1, high = 1, shape = (4,), dtype=np.float32)
-		self.action_space = gym.spaces.Discrete(6)
+      
+        self.action_space = gym.spaces.Discrete(6)
 
     def _take_action(self,action):
-        # action is a 3-tuple [-1,1],[-1,1],[-1,1],[-1,1]
-        scale = 0.1
-        self.current_position = [action[i]*scale+self.current_position[i] for i in range(len(action))]
+        
+        scale = 0.01    # movement amount
+        degree = 20     # turn amount in degrees
         x,y,z,yaw = self.current_position
+        
+        if action == "forward":
+            x += scale * np.cos(yaw)
+            y += scale * np.sin(yaw)
+        elif action == "backward":
+            x -= scale * np.cos(yaw)
+            y -= scale * np.sin(yaw)
+        elif action == "turn_left":
+            yaw += degree/180 * np.pi
+        elif action == "turn_right":
+            yaw -= degree/180 * np.pi
+        elif action == "up":
+            z -= scale
+        elif action == "down":
+            z += scale 
+
+        self.current_position = x,y,z,yaw
+
         roll = 0
         pitch = 0
         odom_quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
@@ -49,7 +63,12 @@ class MuddSubEnv(gym.Env):
         pred_right = self.model(img_right).numpy()[0][0]
         #if pred_left/pred_right is null or something:
         #    return -1
-        state = np.concatenate(pred_left,pred_right)
+        if pred_left == None:
+          pred_left = np.array([-1,-1])
+        if pred_right == None:
+          pred_right = np.array([-1,-1])
+        visionState = np.concatenate(pred_left,pred_right)
+        state = np.concatenate(visionState, self.current_position)
         return state
 
     def _distanceToGate(self):
