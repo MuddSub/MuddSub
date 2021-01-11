@@ -16,3 +16,6 @@
 [submodule "thirdparty/cpptqdm"]
 	path = thirdparty/cpptqdm
 	url = https://github.com/aminnj/cpptqdm
+[submodule "thirdparty/uuv_simulator"]
+	path = thirdparty/uuv_simulator
+	url = https://github.com/muddsub/uuv_simulator
