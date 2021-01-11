@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Loading some constants -->
+  <xacro:include filename="$(find uuv_descriptions)/urdf/common.urdf.xacro"/>
+  <!-- Loading file with sensor macros -->
+  <xacro:include filename="$(find uuv_sensor_ros_plugins)/urdf/sensor_snippets.xacro"/>
+  <!-- Loading the UUV simulator ROS plugin macros -->
+  <xacro:include filename="$(find uuv_gazebo_ros_plugins)/urdf/snippets.xacro"/>
+  <!-- Loading vehicle's specific macros -->
+  <xacro:include filename="$(find core)/descriptions/alfie_description/urdf/snippets.xacro"/>
+
+  <!--
+    Vehicle's parameters (remember to enter the model parameters below)
+  -->
+
+  <xacro:property name="mass" value="20"/>
+  <!-- Center of gravity -->
+  <xacro:property name="cog" value="0 0 0"/>
+  <!-- Fluid density -->
+  <xacro:property name="rho" value="1028"/>
+
+  <xacro:property name="visual_mesh_file" value="file://$(find core)/descriptions/alfie_description/meshes/Visual.STL"/>
+  <xacro:property name="collision_mesh_file" value="file://$(find core)/descriptions/alfie_description/meshes/SimCollision.STL"/>
+
+  <!-- Vehicle macro -->
+  <xacro:macro name="alfie_base" params="namespace *gazebo">
+
+      <!-- Rigid body description of the base link -->
+      <link name="${namespace}/base_link">
+        <!--
+          Be careful to setup the coefficients for the inertial tensor,
+          otherwise your model will become unstable on Gazebo
+        -->
+        <inertial>
+          <mass value="${mass}" />
+          <origin xyz="${cog}" rpy="${pi} 0 0"/>
+          <inertia ixx="10" ixy="0" ixz="0"
+                   iyy="10" iyz="0"
+                   izz="10" />
+        </inertial>
+
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <mesh filename="${visual_mesh_file}" scale="1 1 1" />
+          </geometry>
+        </visual>
+
+        <collision>
+          <origin xyz="0 0 0" rpy="${pi} 0 0"/>
+          <geometry>
+            <mesh filename="${collision_mesh_file}" scale="1 1 1" />
+          </geometry>
+        </collision>
+      </link>
+
+    <gazebo reference="${namespace}/base_link">
+      <selfCollide>false</selfCollide>
+    </gazebo>
+
+    <underwater_dynamics>
+      <buoyancy value="21"/>
+      <center_of_buoyancy x="0" y = "0" z = "0.1" />
+      <added_mass x="0" y="0" z="0" k="0" m="0" n="0" />
+      <linear_damping_coeffs x="0" y="0" z="0" k="0" m="0" n="0" />
+      <rate value="50" />
+    </underwater_dynamics>
+
+    <!-- Set up hydrodynamic plugin given as input parameter -->
+    <xacro:insert_block name="gazebo"/>
+
+    <!-- Include the thruster modules -->
+    <xacro:include filename="$(find core)/descriptions/alfie_description/urdf/actuators.xacro"/>
+
+    <!-- Include the sensor modules -->
+    <xacro:include filename="$(find core)/descriptions/alfie_description/urdf/sensors.xacro"/>
+
+  </xacro:macro>
+
+</robot>
