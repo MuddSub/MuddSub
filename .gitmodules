@@ -7,3 +7,15 @@
 [submodule "thirdparty/pigpio"]
 	path = thirdparty/pigpio
 	url = https://github.com/joan2937/pigpio
+[submodule "thirdparty/matplotlib-cpp"]
+	path = thirdparty/matplotlib-cpp
+	url = https://github.com/lava/matplotlib-cpp
+[submodule "thirdparty/tqdm-cpp"]
+	path = thirdparty/tqdm-cpp
+	url = https://github.com/tqdm/tqdm.cpp
+[submodule "thirdparty/cpptqdm"]
+	path = thirdparty/cpptqdm
+	url = https://github.com/aminnj/cpptqdm
+[submodule "thirdparty/uuv_simulator"]
+	path = thirdparty/uuv_simulator
+	url = https://github.com/muddsub/uuv_simulator
