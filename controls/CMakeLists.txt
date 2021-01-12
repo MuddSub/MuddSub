@@ -34,6 +34,10 @@ catkin_package(
 	DEPENDS system_lib
 )
 
+catkin_install_python(PROGRAMS scripts/ControlsPub.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 ###########
 ## Build ##
 ###########
