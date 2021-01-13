@@ -14,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   ct_core
   ct_optcon
-  tf2_geometry_msgs
 )
 
 add_message_files(
@@ -42,35 +41,24 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(simulation_dynamics
-              src/VehicleDynamics.cc
-              src/DecoupledLQR.cc
-              src/SimulationDynamics.cc)
-add_dependencies(simulation_dynamics
+add_executable(control_dispatch
+    src/DecoupledLQR.cc
+    src/PID.cc
+    src/VehicleDynamics.cc
+    src/DecoupledLQR.cc
+    src/ControlDispatch.cc)
+add_dependencies(control_dispatch
 	${${PROJECT_NAME}_EXPORTED_TARGETS}
 	${catkin_EXPORTED_TARGETS}
 	ct_core
 	ct_optcon)
-target_link_libraries(simulation_dynamics
-  ${catkin_LIBRARIES}
-)
-
-add_executable(test_dynamics
-              src/VehicleDynamics.cc
-              src/DecoupledLQR.cc
-              src/DynamicsTesting.cc)
-add_dependencies(test_dynamics
-	${${PROJECT_NAME}_EXPORTED_TARGETS}
-	${catkin_EXPORTED_TARGETS}
-	ct_core
-	ct_optcon)
-target_link_libraries(test_dynamics
+target_link_libraries(control_dispatch
   ${catkin_LIBRARIES}
 )
 
 
 add_executable(state_publisher
-              src/StatePublisher.cc)
+            src/StatePublisher.cc)
 add_dependencies(state_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(state_publisher
   ${catkin_LIBRARIES}
