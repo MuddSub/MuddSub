@@ -5,11 +5,10 @@ import os
 import sys
 sys.path.append('/home/elip/catkin_ws/src/MuddSub/RL/object_detection/PyTorch-YOLOv3/')
 print(os.listdir(sys.path[-1]))
+import rospy
 from models import *
 from camera_listener import *
 import numpy as np
-import rospy
-import tf
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Pose
 
@@ -58,7 +57,7 @@ class MuddSubEnv(gym.Env):
 
         roll = 0
         pitch = 0
-        odom_quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        odom_quat = euler_to_quaternion(yaw, pitch, roll)
         odom = Odometry()
         odom.pose.pose = Pose(Point(x, y, z), odom_quat)
         self.publisher.publish(odom)
@@ -110,7 +109,7 @@ class MuddSubEnv(gym.Env):
     def reset(self):
         # Publisher sets robot state to some init, time to 0
         x,y,z,roll,pitch,yaw = robot_init
-        odom_quat = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
+        odom_quat = euler_to_quaternion(yaw, pitch, roll)
         odom = Odometry()
         odom.pose.pose = Pose(Point(x, y, z), odom_quat)
         self.publisher.publish(odom)
@@ -127,3 +126,8 @@ class MuddSubEnv(gym.Env):
         img_left = imageGen.left_image
         img_right = imageGen.right_image
         return img_left, img_right
+    def euler_to_quaternion(yaw, pitch, roll):
+
+        qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+        qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
+        qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)

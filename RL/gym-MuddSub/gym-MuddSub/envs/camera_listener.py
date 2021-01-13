@@ -4,8 +4,7 @@ import numpy as np
 import time
 from sensor_msgs.msg import Image
 from nav_msgs.msg import Odometry
-from cv_bridge import CvBridge
-import tf
+import cv_bridge
 from geometry_msgs.msg import Point, Pose, Quaternion, Twist, Vector3
 
 class ImageListener:
@@ -13,14 +12,14 @@ class ImageListener:
     right_image = None
 
 def setImageSubscriber(imageGen):
-    bridge = CvBridge()
+
     def get_image_left(msg):
-        imageGen.left_image = np.array(bridge.imgmsg_to_cv2(msg))
+        imageGen.left_image = np.array(imgmsg_to_cv2(msg))
         img = imageGen.left_image.copy()
         noise = cv2.randn(img,(0,0,0),(50,50,50))
         #imageGen.left_image+=noise
     def get_image_right(msg):
-        imageGen.right_image = np.array(bridge.imgmsg_to_cv2(msg))
+        imageGen.right_image = np.array(imgmsg_to_cv2(msg))
         img = imageGen.right_image.copy()
         noise = cv2.randn(img,(0,0,0),(0,0,0))
         #imageGen.right_image+=noise

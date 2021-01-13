@@ -1,0 +1,44 @@
+<?xml version='1.0'?>
+
+<robot name="Gate" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find sim)/scenes/materials.xacro" />
+  <pose>0 0 0.5 0 0 0</pose>
+  <static>true</static>
+
+  <link name="base_link">
+    <inertial>
+      <mass value="20"></mass>
+      <origin x="0" y="0" z="-0.1"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <visual>
+      <origin rpy="${pi} 0 0" xyz="0 0 0"/>
+      <material name="black"/>
+      <geometry>
+        <mesh filename="$(find sim)/scenes/meshes/GateBlack.STL" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name="child_link">
+    <inertial>
+      <mass value="20"></mass>
+      <origin x="0" y="0" z="-0.1"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <visual>
+      <origin rpy="${pi} 0 0" xyz="0 0 0"/>
+      <material name="orange"/>
+      <geometry>
+        <mesh filename="$(find sim)/scenes/meshes/GateOrange.STL" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="base_to_child" type="fixed">
+    <parent link="base_link" />
+    <child link="child_link"/>
+    <origin xyz = "0 -0.05 0" rpy = "0 0 0"/>
+  </joint>
+
+</robot>

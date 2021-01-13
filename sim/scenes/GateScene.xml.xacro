@@ -48,7 +48,7 @@
       <z> -1.57 </z>
     </offsetr>
   </simParams>
-  <!-- <camera>
+  <camera>
     <freeMotion> 1 </freeMotion>
     <objectToTrack>Alfie/base_link</objectToTrack>
     <fov> 60 </fov>
@@ -65,7 +65,7 @@
       <y>0 </y>
       <z>0 </z>
     </lookAt>
-  </camera> -->
+  </camera>
 
   <vehicle>
     <name>Alfie</name>
@@ -78,7 +78,7 @@
     <orientation>
       <r>0</r>
       <p>0</p>
-      <y>0</y>
+      <y>-1.57</y>
     </orientation>
     <xacro:include filename="$(find sim)/scenes/sensors.xacro" />
     <xacro:camera name="front_left" down="0"/>
@@ -86,6 +86,50 @@
     <xacro:camera name="down" down="1"/>
     <xacro:dvl />
   </vehicle>
+
+  <vehicle>
+    <name>Gate</name>
+    <file>$(find sim)/scenes/gate.urdf</file>
+    <position>
+      <x> 1 </x>
+      <y> 1 </y>
+      <z> 1 </z>
+    </position>
+    <orientation>
+      <r>-1.57</r>
+      <p>0</p>
+      <y>0</y>
+    </orientation>
+  </vehicle>
+
+ <vehicle>
+   <name> buoy </name>
+   <file>$(find sim)/scenes/buoy.urdf</file>
+   <position>
+     <x> 0</x>
+     <y> -2 </y>
+     <z> .25 </z>
+   </position>
+   <orientation>
+     <r>0</r>
+     <p>0</p>
+     <y>0</y>
+   </orientation>
+</vehicle>
+<vehicle>
+  <name> bannerbuoy </name>
+  <file>$(find sim)/scenes/bannerbuoy.urdf</file>
+  <position>
+    <x> 2 </x>
+    <y> 2 </y>
+    <z> 0.5 </z>
+  </position>
+  <orientation>
+    <r>-1.57</r>
+    <p>0</p>
+    <y>0</y>
+  </orientation>
+</vehicle>
 
   <object>
     <name>terrain</name>
@@ -112,10 +156,9 @@
     </offsetr>
   </object>
 
-
   <object>
     <name> blackbox </name>
-    <file> objects/blackbox_uib_trimesh.osg  </file>
+    <file> objects/blackbox_uib_trimesh.osg </file>
     <position>
       <x> 0</x>
       <y> 0 </y>
@@ -123,25 +166,30 @@
     </position>
     <orientation>
       <r>0</r>
-      <p>3.1415</p>
-      <y>0</y>
+      <p>0</p>
+      <y>-1.57</y>
     </orientation>
  </object>
 
-  <object>
+ <!-- <object>
     <name> gate </name>
     <file> sim/scenes/meshes/gate.osg  </file>
     <position>
-      <x> 0</x>
+      <x> 0 </x>
       <y> 0 </y>
-      <z> .25 </z>
+      <z> 0 </z>
     </position>
     <orientation>
       <r>0</r>
       <p>3.1415</p>
       <y>0</y>
     </orientation>
-  </object>
+    <scaleFactor>
+      <x> .5 </x>
+      <y> .5 </y>
+      <z> .5 </z>
+    </scaleFactor>
+</object> -->
 
   <rosInterfaces>
     <ROSOdomToPAT>
@@ -173,4 +221,7 @@
       <rate> 10 </rate>
     </DVLSensorToROS>
   </rosInterfaces>
+
+
+
 </UWSimScene>

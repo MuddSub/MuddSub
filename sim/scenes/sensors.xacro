@@ -21,6 +21,7 @@
         <p>0</p>
         <y>0</y>
       </orientation>
+      <fovy> ${cam_fov} </fovy>
     </virtualCamera>
   </xacro:macro>
 

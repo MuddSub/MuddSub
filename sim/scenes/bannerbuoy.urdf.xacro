@@ -1,0 +1,44 @@
+<?xml version='1.0'?>
+<robot name="Banner Buoy" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find sim)/scenes/materials.xacro" />
+  <pose>0 0 0 0 0 0</pose>
+  <self_collide> 0 </self_collide>
+  <static>true</static>
+
+  <link name="base_link">
+    <inertial>
+      <mass value="20"></mass>
+      <origin x="0" y="0" z="-0.1"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <visual>
+      <origin rpy="${pi} 0 0" xyz="0 0 0"/>
+      <material name="black"/>
+      <geometry>
+        <mesh filename="$(find sim)/scenes/meshes/Triangle.STL" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <link name='panel1'>
+      <inertial>
+        <mass value="20"></mass>
+        <origin x="0" y="0" z="-0.1"/>
+        <inertia ixx="10" ixy="0" ixz="0" iyy="10" iyz="0" izz="10"/>
+      </inertial>
+      <visual name='red_vis'>
+        <geometry>
+          <box size='0.61 1.22 0.01'/>
+        </geometry>
+      </visual>
+    </link>
+
+  <joint name="base_to_child" type="fixed">
+    <parent link="base_link" />
+    <child link="panel1"/>
+
+    <origin xyz = "0.395 -0.63 -1.06" rpy = "0 0 0"/>
+
+  </joint>
+
+</robot>
