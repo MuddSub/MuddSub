@@ -19,3 +19,9 @@
 [submodule "thirdparty/uuv_simulator"]
 	path = thirdparty/uuv_simulator
 	url = https://github.com/muddsub/uuv_simulator
+[submodule "thirdparty/zed-ros-wrapper"]
+	path = thirdparty/zed-ros-wrapper
+	url = https://github.com/stereolabs/zed-ros-wrapper.git
+[submodule "thirdparty/zed-ros-examples"]
+	path = thirdparty/zed-ros-examples
+	url = https://github.com/stereolabs/zed-ros-examples

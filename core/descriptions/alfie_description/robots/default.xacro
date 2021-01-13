@@ -25,6 +25,13 @@
           parameter necessary for the underwater object plugin to be initialized.
         -->
       </plugin>
+
+      <plugin name="ground_truth" filename="libgazebo_ros_p3d.so">
+        <frameName>world</frameName>
+        <bodyName>base_link</bodyName>
+        <topicName>robot_pose_gazebo</topicName>
+        <updateRate>20</updateRate>
+      </plugin>
     </gazebo>
   </xacro:alfie_base>
 
