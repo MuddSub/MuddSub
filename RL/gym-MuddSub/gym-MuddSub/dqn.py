@@ -7,7 +7,7 @@ import random
 import statistics
 import tensorflow as tf
 import collections
-import matplotlib.pyplot as plt
+
 
 # You shouldn't need to change this class or alter the default values of the constructor
 
@@ -29,15 +29,15 @@ class FunctionApproximator:
   To set the Q values for a state, call setQValuesForStates."""
 
   def __init__(self, num_actions=2, state_length=4, alpha=0.01, alpha_decay=0.01, batchsize=256):
-    # initialization 
+    # initialization
     self.alpha = alpha
     self.alpha_decay = alpha_decay
     self.batchsize = batchsize
     self.num_actions = num_actions
     self.state_length = state_length
 
-    # creating the neural network 
-    # state_length -> 24 -> 48 -> num_actions 
+    # creating the neural network
+    # state_length -> 24 -> 48 -> num_actions
     self.model = tf.keras.models.Sequential()
     self.model.add(tf.keras.layers.Dense(24, input_dim=self.state_length, activation='relu'))
     self.model.add(tf.keras.layers.Dense(48, activation='relu'))
@@ -45,17 +45,17 @@ class FunctionApproximator:
 
     self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.alpha, decay=self.alpha_decay))
 
-  def getQValuesForState(self, state):  
-    # given a state, we use the DQN to predict Q values of the all the actions 
+  def getQValuesForState(self, state):
+    # given a state, we use the DQN to predict Q values of the all the actions
     """ state is a NumPy array with shape (1, state_length).
-    
+
     Returns a (NumPy) array of Q-values for that state, indexed by action"""
     return self.model.predict(state)[0]  #[[0,1,2,3,4]]
-  
+
   def getQValuesForStates(self, states):
     """Gets the Q values for a list of states. Each state is a NumPy array with shape (1, state_length).
     Returns it as a numpy array.
-    The  array of Q values for the ith state can be accessed with 
+    The  array of Q values for the ith state can be accessed with
     getQValuesForStates([state0, state1, ..., statei, ..., staten])[i]
 
     It is much quicker to call this than to call getQValuesForState one-by-one."""
@@ -64,14 +64,14 @@ class FunctionApproximator:
     for state in states:
       assert state.shape == (1, self.state_length)
     return self.model.predict(np.vstack(states), batch_size=len(states))
-    
+
   def setQValuesForStates(self, states, qValues):
-    """Sets the qValues for the given states.  states is a Python list of k states. 
-    qValues is a numpy 2-dimensional array. 
+    """Sets the qValues for the given states.  states is a Python list of k states.
+    qValues is a numpy 2-dimensional array.
     qValues is a parallel NumPy array of shape (k, numActions)
     So, qValues[i] is a numpy array of qValues for states[i].
 
-    It is much quicker to call this on a number of states/qValues than to call 
+    It is much quicker to call this on a number of states/qValues than to call
     multiple times with single state/qValue."""
 
     if not isinstance(states, list):
@@ -90,18 +90,18 @@ class FunctionApproximator:
 class ExperienceBuffer:
   """Stores a buffer for doing replay of experiences.
 
-  This acts like a model for doing planning."""  
-  
+  This acts like a model for doing planning."""
+
   def __init__(self, approximator, num_actions=2, state_length=4):
     self.approximator = approximator
     max_capacity = 10000
     # Use a deque which atuomatically pops front values when length gets too big
-    self.dq = collections.deque([], maxlen = max_capacity) 
-    
+    self.dq = collections.deque([], maxlen = max_capacity)
+
 
   def remember(self, s, action, reward, sprime, done):
     """Stores this transition in the experience buffer."""
-    # s' -> sprime -> next state 
+    # s' -> sprime -> next state
     self.dq.append(np.array([s, action, reward, sprime, done]))
 
 
@@ -110,11 +110,11 @@ class ExperienceBuffer:
     Q-learning on them."""
     subsample_len = 1000
 
-    # do random sampling 
+    # do random sampling
     samples = random.sample(self.dq, min(subsample_len,len(self.dq)))
-    
 
-    #col 0: states, col1: actions, col2: rewards, col 3: sprimes(next state), col4: done 
+
+    #col 0: states, col1: actions, col2: rewards, col 3: sprimes(next state), col4: done
 
     samples_copy = np.array(samples)
     states = [np.array(state).reshape(-1,4) for state in samples_copy[:,0]]
@@ -124,7 +124,7 @@ class ExperienceBuffer:
     new_states = [np.array(state).reshape(-1,4) for state in samples_copy[:,3]]
     new_values = np.array(self.approximator.getQValuesForStates(new_states)).reshape(-1,2)
     done = samples_copy[:,4].reshape(-1,1)
-    
+
     # r + max_a'(q(s',a')) -> get the new value
     updated_q = samples_copy[:,2] + np.max(new_values, axis=1)
     actions = samples_copy[:,1]
@@ -137,7 +137,7 @@ class ExperienceBuffer:
         # If done, q=r=0
         values[idx][actions[idx]] = 0
 
-    # Fit the model -> train the nn with the new value 
+    # Fit the model -> train the nn with the new value
     self.approximator.setQValuesForStates(states,values)
 
 class Solver:
@@ -189,7 +189,7 @@ class Solver:
         # We don't need to train anymore.
         break
     return self.approximator
-  
+
   def play(self, num_episodes=10):
     """ Uses the environment to run CartPole for ```num_episodes```.  Doesn't do any learning, just
     takes greedy actions as specified by the approximator."""
@@ -206,14 +206,14 @@ class Solver:
           lengths.append(i)
           print(f'Finished in {i} steps')
           break
+    '''
     plt.rcParams.update({'font.size': 15})
     plt.scatter(np.arange(len(lengths)),lengths)
     plt.title("Episode Lengths with Converged Policy")
     plt.xlabel("Episode Number")
     plt.ylabel("Timesteps")
     print(f"Average steps {np.average(lengths)}")
-    
-
+    '''
 '''
 env = gym.make('CartPole-v1')
 approximator = FunctionApproximator(num_actions, state_length)

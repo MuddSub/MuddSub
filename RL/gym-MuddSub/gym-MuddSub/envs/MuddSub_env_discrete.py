@@ -1,10 +1,17 @@
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
+import os
+import sys
+sys.path.append('/home/elip/catkin_ws/src/MuddSub/RL/object_detection/PyTorch-YOLOv3/')
+print(os.listdir(sys.path[-1]))
 from models import *
 from camera_listener import *
 import numpy as np
 import rospy
+import tf
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Pose
 
 class MuddSubEnv(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -23,15 +30,15 @@ class MuddSubEnv(gym.Env):
 
         # x,y,z, yaw
         self.current_position = self.robot_init[:3]+self.robot_init[-1]
-      
+
         self.action_space = gym.spaces.Discrete(6)
 
     def _take_action(self,action):
-        
+
         scale = 0.01    # movement amount
         degree = 20     # turn amount in degrees
         x,y,z,yaw = self.current_position
-        
+
         if action == "forward":
             x += scale * np.cos(yaw)
             y += scale * np.sin(yaw)
@@ -45,7 +52,7 @@ class MuddSubEnv(gym.Env):
         elif action == "up":
             z -= scale
         elif action == "down":
-            z += scale 
+            z += scale
 
         self.current_position = x,y,z,yaw
 
@@ -99,7 +106,7 @@ class MuddSubEnv(gym.Env):
             done = True
             return None, 0, done, {}
         return state, reward, done, {}
-    
+
     def reset(self):
         # Publisher sets robot state to some init, time to 0
         x,y,z,roll,pitch,yaw = robot_init
@@ -109,7 +116,7 @@ class MuddSubEnv(gym.Env):
         self.publisher.publish(odom)
         self.loopRate.sleep()
 
-        # Return initial state 
+        # Return initial state
         state =self._next_observation()
         return state
 
