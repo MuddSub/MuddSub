@@ -22,8 +22,8 @@
         output="screen">
         <rosparam subst_value="true">
             meshes:
-                lake:
-                    mesh: package://sim/scenes/models/transdec/meshes/TransdecBottom.dae
+                transdec:
+                    mesh: package://uuv_gazebo_worlds/models/transdec/meshes/TransdecBottom.dae
                     model: transdec
         </rosparam>
     </node>
