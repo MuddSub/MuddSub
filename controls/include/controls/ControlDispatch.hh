@@ -9,6 +9,7 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <ros/ros.h>
+#include <geometry_msgs/Wrench.h>
 
 
 namespace MuddSub::Controls
@@ -19,6 +20,10 @@ class ControlDispatch
 public:
   ControlDispatch();
 
+  void publishControl(const controlVector_t& control);
+
+  void iterate();
+
 private:
   std::shared_ptr<Controller> controller_;
   VehicleDynamics dynamics_;
@@ -28,7 +33,9 @@ private:
   ros::Subscriber setpointSub_;
   ros::Subscriber plantStateSub_;
 
-  stateVector_t plantState_;
+  ros::Publisher controlPub_;
+
+  stateVector_t plantState_{stateVector_t::Zero()};
 
   void plantCallback(const nav_msgs::Odometry& msg);
   void setpointCallback(const controls::State& state);

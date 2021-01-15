@@ -12,6 +12,8 @@ ControlDispatch::ControlDispatch()
 
   setpointSub_ = nh_.subscribe("robot_setpoint", 1, &ControlDispatch::setpointCallback, this);
   plantStateSub_ = nh_.subscribe("slam/robot/pose", 1, &ControlDispatch::plantCallback, this);
+
+  controlPub_ = nh_.advertise<geometry_msgs::Wrench>("/controls/robot/wrench", 10);
 }
 
 stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
@@ -53,6 +55,29 @@ void ControlDispatch::setpointCallback(const controls::State& state)
   ROS_INFO("Updated setpoint");
 }
 
+void ControlDispatch::publishControl(const controlVector_t& control)
+{
+  geometry_msgs::Wrench msg;
+
+  msg.force.x = control[0];
+  msg.force.y = control[1];
+  msg.force.z = control[2];
+  msg.torque.x = control[3];
+  msg.torque.y = control[4];
+  msg.torque.z = control[5];
+
+  controlPub_.publish(msg);
+}
+
+void ControlDispatch::iterate()
+{
+  double t = ros::Time::now().toSec();
+  controlVector_t control;
+  controller_->computeControl(plantState_, t, control);
+
+  publishControl(control);
+}
+
 }
 
 int main(int argc, char** argv)
@@ -62,9 +87,10 @@ int main(int argc, char** argv)
 
   MuddSub::Controls::ControlDispatch controller;
 
-  ros::Rate loopRate = 40;
+  ros::Rate loopRate = 20;
   while(ros::ok())
   {
+    controller.iterate();
     ros::spinOnce();
     loopRate.sleep();
   }
