@@ -57,7 +57,7 @@ add_message_files(
   FILES
   DetectionArray.msg
   Detection.msg
-  #BoundingBox2DArray.msg
+  BoundingBox2DArray.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -84,7 +84,12 @@ generate_messages(
   vision_msgs
 
 )
+catkin_install_python(PROGRAMS scripts/VisionPubNode.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
+add_executable(VisionPubNode src/VisionPubNode.cc src/VisionPublisher.cc)
+target_link_libraries(VisionPubNode ${catkin_LIBRARIES})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -129,7 +134,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 

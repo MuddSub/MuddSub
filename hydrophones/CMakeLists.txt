@@ -79,6 +79,12 @@ generate_messages(
   geometry_msgs
 )
 
+catkin_install_python(PROGRAMS scripts/HydrophonesPubNode.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+add_executable(HydrophonesPubNode src/HydrophonesPubNode.cc src/HydrophonesPublisher.cc)
+target_link_libraries(HydrophonesPubNode ${catkin_LIBRARIES})
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -123,7 +129,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
