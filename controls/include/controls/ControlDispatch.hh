@@ -41,6 +41,7 @@ private:
   void setpointCallback(const controls::State& state);
 
   stateVector_t odomToState(const nav_msgs::Odometry& msg);
+  Eigen::IOFormat eigenInLine{Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", ";"};
 
 };
 

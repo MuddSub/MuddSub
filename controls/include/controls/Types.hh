@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ct/core/core.h>
+#include <Eigen/Dense>
 
 namespace MuddSub::Controls
 {
@@ -24,6 +25,5 @@ using ctTime_t = ct::core::ControlledSystem<stateDim, controlDim, double>::time_
 
 /// Type of the controller.
 using controllerPtr_t = std::shared_ptr<ct::core::Controller<stateDim, controlDim, double>>;
-
 
 }

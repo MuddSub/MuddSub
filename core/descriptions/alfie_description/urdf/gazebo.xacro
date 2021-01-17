@@ -5,18 +5,18 @@
     <xacro:property name="alfie_cob" value="0 0 0.1"/>
 
     <!-- Vehicle's actual volume (Gazebo cannot compute the volume out of the mesh) -->
-    <xacro:property name="alfie_volume" value="21"/>
+    <xacro:property name="alfie_volume" value=".021"/>
 
     <!-- Describing the dimensions of the vehicle's bounding box -->
-    <xacro:property name="alfie_length" value=".5"/>
-    <xacro:property name="alfie_width"  value=".5"/>
+    <xacro:property name="alfie_length" value=".25"/>
+    <xacro:property name="alfie_width"  value=".25"/>
     <xacro:property name="alfie_height" value=".25"/>
 
     <xacro:macro name="alfie_hydro_model" params="namespace">
       <!-- List of hydrodynamic models this robot's links -->
       <link name="${namespace}/base_link">
         <!-- This flag will make the link neutrally buoyant -->
-        <neutrally_buoyant>1</neutrally_buoyant>
+        <neutrally_buoyant>0</neutrally_buoyant>
 
         <!-- Link's volume -->
         <volume>${alfie_volume}</volume>
@@ -58,7 +58,7 @@
             or a full matrix (36 coefficients), like the added-mass coefficients above
           -->
           <linear_damping>
-            0 0 0 0 0 0
+            -10 -10 -10 -10 -10 -10
           </linear_damping>
           <!--
             The linear damping coefficients proportional to the forward speed
@@ -101,10 +101,10 @@
 
         <!-- 2) This computes the added-mass and damping parameters for a sphere
         in the fluid with the given radius -->
-        <hydrodynamic_model>
+        <!-- <hydrodynamic_model>
           <type>sphere</type>
-          <radius>.25</radius>
-        </hydrodynamic_model>
+          <radius>.5</radius>
+        </hydrodynamic_model> -->
 
       </link>
     </xacro:macro>

@@ -9,6 +9,7 @@
 #include <ct/core/core.h>
 #include <ct/optcon/optcon.h>
 #include <Eigen/Dense>
+// #include <Eigen/IOFormat>
 #include <ros/ros.h>
 #include <map>
 #include <algorithm>
@@ -58,7 +59,7 @@ public:
   /// Given the current error, find the control action (6DOF wrench.)
   /// This implements the described controller.
   void computeControl(const stateVector_t& state,
-                      const double&,
+                      const double& t,
                       controlVector_t& controlAction);
 
 private:
@@ -82,6 +83,8 @@ private:
 
   /// For integrating and derivatives: Store the previous time
   double previousTime_;
+
+  Eigen::IOFormat eigenInLine{Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", ";"};
 
 };
 

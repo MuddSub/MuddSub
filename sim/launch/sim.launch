@@ -1,3 +1,7 @@
 <launch>
-  <node name="uwsim" pkg="uwsim" type="uwsim" output="screen" args="--configfile $(find sim)/scenes/GateScene.xml --dataPath $(find sim)/scenes/meshes" respawn="false" />
+  <include file="$(find uuv_gazebo_worlds)/launch/lake.launch">
+    <arg name="paused" value="true" />
+  </include>
+  <include file="$(find core)/descriptions/alfie_description/launch/upload.launch" />
+  <include file="$(find core)/launch/alfie_config.launch" />
 </launch>

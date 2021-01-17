@@ -6,7 +6,7 @@ namespace MuddSub::Controls
 
 //Compute the error
 stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
-                                                  const stateVector_t& setpoint) const
+                                         const stateVector_t& setpoint) const
 {
 
 
@@ -23,12 +23,12 @@ stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
   // For angular position (verbose for clarity...)
   auto err = [](const double& stateElement, const double& setpointElement)
   {
-    // Make both from 0-360
+    return 0.;
     double stateNorm = fmod(stateElement, 2*M_PI);
-    if(stateNorm < 0) stateNorm += 360;
+    if(stateNorm < 0) stateNorm += 2*M_PI;
 
     double setpointNorm = fmod(setpointElement, 2*M_PI);
-    if(setpointNorm < 0) setpointNorm += 360;
+    if(setpointNorm < 0) setpointNorm += 2*M_PI;
 
     return stateNorm - setpointNorm;
   };
@@ -47,6 +47,10 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
                                   const double& t,
                                   controlVector_t& controlAction)
 {
+  // Update the PID controllers
+  double deltaT = t - previousTime_;
+  previousTime_ = t;
+
   ct::core::SystemLinearizer<stateDim,controlDim, double> linearizer(vehicleDynamics_);
 
   // Our system linearization doesn't depend on u, so we can just make it zeros
@@ -56,6 +60,8 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
   Eigen::Matrix<double, stateDim, controlDim> B = linearizer.getDerivativeControl(state,u,t);
 
   auto err = computeError(state, setpoint_);
+  std::cout << "Error: " << err.format(eigenInLine) << std::endl;
+
   // Now that we've linearized about the entire state (which needs roll/pitch info)
   //     we actually only keep x,y,z,yaw and those velocities
   const auto& partitionedA = partitionAMatrix(A);
@@ -67,17 +73,13 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
 
   const auto& controlActionLQR = lqr8DoF_.computeControl(partitionedA, partitionedB, error8DoF);
 
-
-  // Update the PID controllers
-  double deltaT = t - previousTime_;
-  previousTime_ = t;
-
-  double controlActionRoll = rollPid_.update(err[3], t);
-  double controlActionPitch = pitchPid_.update(err[4], t);
+  double controlActionRoll = rollPid_.update(err[3], deltaT);
+  double controlActionPitch = pitchPid_.update(err[4], deltaT);
 
   controlAction << controlActionLQR.segment<3>(0), controlActionRoll,
                    controlActionPitch, controlActionLQR[3];
 
+  std::cout << "Control Action Computed " << controlAction.format(eigenInLine) << std::endl;
 }
 
 
