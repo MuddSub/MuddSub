@@ -1,7 +1,10 @@
 <launch>
 
-  <include file="$(find controls)/launch/ControlDispatch.launch" />
-  <include file="$(find uuv_gazebo_worlds)/launch/lake.launch" />
+  <include file="$(find controls)/launch/ControlDispatch.launch"/>
+  <include file="$(find uuv_gazebo_worlds)/launch/lake.launch">
+    <arg name="paused" value="true" />
+  </include>
   <include file="$(find core)/descriptions/alfie_description/launch/upload.launch" />
+  <node name="sim_gazebo_interface" pkg="sim" type="GazeboInterface.py" output="screen"/>
 
 </launch>

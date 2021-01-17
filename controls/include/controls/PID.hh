@@ -1,7 +1,3 @@
-//
-// Created by tanvi on 10/30/2020.
-//
-
 #pragma once
 #include <ros/ros.h>
 

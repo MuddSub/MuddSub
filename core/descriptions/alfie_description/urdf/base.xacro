@@ -58,14 +58,6 @@
       <selfCollide>false</selfCollide>
     </gazebo>
 
-    <underwater_dynamics>
-      <buoyancy value="21"/>
-      <center_of_buoyancy x="0" y = "0" z = "0.1" />
-      <added_mass x="0" y="0" z="0" k="0" m="0" n="0" />
-      <linear_damping_coeffs x="0" y="0" z="0" k="0" m="0" n="0" />
-      <rate value="50" />
-    </underwater_dynamics>
-
     <!-- Set up hydrodynamic plugin given as input parameter -->
     <xacro:insert_block name="gazebo"/>
 

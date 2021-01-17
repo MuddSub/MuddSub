@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ros/ros.h"
+
 /** @brief Simple PID controller
 
   This PID controller has a first-order filter on the derivative term,
@@ -45,9 +47,17 @@ public:
     else if(integralError_ < -1*fabs(windupLimit_))
       integralError_ = -1*fabs(windupLimit_);
 
-    // 1st order filter on derivative
-    derivativeError_ = (err - error_)/deltaT  +
-                        derivativeFilterAlpha_ * derivativeError_;
+    if(deltaT == 0)
+    {
+      ROS_WARN("PID DeltaT Was Zero");
+    }
+    else
+    {
+      // 1st order filter on derivative
+      derivativeError_ = (err - error_)/deltaT  +
+                          derivativeFilterAlpha_ * derivativeError_;
+    }
+
     error_ = err;
     // P + I + D == PID?
     controlEffort_ = kP_ * error_ + kI_ * integralError_ + kD_ * derivativeError_;

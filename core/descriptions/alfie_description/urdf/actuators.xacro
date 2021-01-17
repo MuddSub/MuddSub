@@ -8,7 +8,7 @@
           aware that Gazebo does not use the SNAME convention per default.
     -->
 
-    <xacro:thruster_macro robot_namespace="${namespace}" thruster_id="0">
+    <!-- <xacro:thruster_macro robot_namespace="${namespace}" thruster_id="0">
         <origin xyz="0 0 0" rpy="0 0 ${pi}" />
     </xacro:thruster_macro>
 
@@ -18,7 +18,7 @@
 
     <xacro:thruster_macro robot_namespace="${namespace}" thruster_id="2">
     <origin xyz="0 0 0" rpy="0 -${0.5*pi} 0" />
-    </xacro:thruster_macro>
+    </xacro:thruster_macro> -->
 
 
 </robot>

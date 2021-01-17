@@ -10,10 +10,10 @@ ControlDispatch::ControlDispatch()
   dynamics_.setController(controller_);
   controller_->setDynamics(std::shared_ptr<VehicleDynamics>(&dynamics_));
 
-  setpointSub_ = nh_.subscribe("robot_setpoint", 1, &ControlDispatch::setpointCallback, this);
-  plantStateSub_ = nh_.subscribe("slam/robot/pose", 1, &ControlDispatch::plantCallback, this);
+  setpointSub_ = nh_.subscribe("/robot_setpoint", 1, &ControlDispatch::setpointCallback, this);
+  plantStateSub_ = nh_.subscribe("/slam/robot/pose", 1, &ControlDispatch::plantCallback, this);
 
-  controlPub_ = nh_.advertise<geometry_msgs::Wrench>("/controls/robot/wrench", 10);
+  controlPub_ = nh_.advertise<geometry_msgs::WrenchStamped>("/controls/robot/wrench", 10);
 }
 
 stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
@@ -39,7 +39,7 @@ stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
 void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
   plantState_ = odomToState(msg);
-  ROS_INFO("Updated plant state");
+  std::cout << "Plant State: " << plantState_.format(eigenInLine) << std::endl;
 }
 
 void ControlDispatch::setpointCallback(const controls::State& state)
@@ -52,19 +52,23 @@ void ControlDispatch::setpointCallback(const controls::State& state)
 
   auto stateVector = Eigen::Map<Eigen::Matrix<double, 12, 1>>(dataMutable);
   controller_->setSetpoint(stateVector);
-  ROS_INFO("Updated setpoint");
+  // ROS_INFO("Updated setpoint");
+  std::cout << "Setpoint: " << controller_->getSetpoint().format(eigenInLine) << std::endl;
 }
 
 void ControlDispatch::publishControl(const controlVector_t& control)
 {
-  geometry_msgs::Wrench msg;
+  geometry_msgs::WrenchStamped msg;
 
-  msg.force.x = control[0];
-  msg.force.y = control[1];
-  msg.force.z = control[2];
-  msg.torque.x = control[3];
-  msg.torque.y = control[4];
-  msg.torque.z = control[5];
+  msg.header.stamp = ros::Time::now();
+  msg.header.frame_id = "alfie";
+
+  msg.wrench.force.x = control[0];
+  msg.wrench.force.y = control[1];
+  msg.wrench.force.z = control[2];
+  msg.wrench.torque.x = control[3];
+  msg.wrench.torque.y = control[4];
+  msg.wrench.torque.z = control[5];
 
   controlPub_.publish(msg);
 }
@@ -90,6 +94,7 @@ int main(int argc, char** argv)
   ros::Rate loopRate = 20;
   while(ros::ok())
   {
+    std::cout << "\x1b[2J\x1b[H";
     controller.iterate();
     ros::spinOnce();
     loopRate.sleep();
