@@ -208,7 +208,7 @@ class Solver:
     '''
 
 env = gym.make('MuddSub-v0')
-approximator = FunctionApproximator(num_actions, state_length)
+approximator = FunctionApproximator(num_actions=6, state_length=12)
 experience_buffer = ExperienceBuffer(approximator)
 solver = Solver(env, approximator, experience_buffer)
 trained_approximator = solver.train()
