@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   vision_msgs
- 
+
 )
 
 ## System dependencies are found with CMake's conventions
@@ -90,6 +90,7 @@ catkin_install_python(PROGRAMS scripts/VisionPubNode.py
 
 add_executable(VisionPubNode src/VisionPubNode.cc src/VisionPublisher.cc)
 target_link_libraries(VisionPubNode ${catkin_LIBRARIES})
+add_dependencies(VisionPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

@@ -2,15 +2,15 @@
 
 namespace MuddSub::Vision
 {
-  VisionPublisher::VisionPublisher(ros::NodeHandle n):
-    n_(n)
+  VisionPublisher::VisionPublisher(ros::NodeHandle n, std::string cameraName):
+    n_(n), cameraName_(cameraName)
   {
-    camera_info_pub = n_.advertise<sensor_msgs::CameraInfo>("camera/info", 1000);
-    raw_image_pub = n_.advertise<sensor_msgs::Image>("camera/image/raw", 1000);
-    greyscale_image_pub = n_.advertise<sensor_msgs::Image>("camera/image/greyscale", 1000);
-    compressed_image_pub = n_.advertise<sensor_msgs::CompressedImage>("camera/image/compressed", 1000);
-    bboxes_pub = n_.advertise<vision::BoundingBox2DArray>("camera/bounding_boxes", 1000);
-    detection_pub = n_.advertise<vision::Detection>("vision/detection", 1000);
+    camera_info_pub = n_.advertise<sensor_msgs::CameraInfo>("vision/" + cameraName_ + "/info", 1000);
+    raw_image_pub = n_.advertise<sensor_msgs::Image>("vision/" + cameraName_ + "/image/raw", 1000);
+    greyscale_image_pub = n_.advertise<sensor_msgs::Image>("vision/" + cameraName_ + "/image/greyscale", 1000);
+    compressed_image_pub = n_.advertise<sensor_msgs::CompressedImage>("vision/" + cameraName_ + "/image/compressed", 1000);
+    bboxes_pub = n_.advertise<vision::BoundingBox2DArray>("vision/" + cameraName_ + "/bounding_boxes", 1000);
+    detection_pub = n_.advertise<vision::Detection>("vision/" + cameraName_ + "/detection", 1000);
     detection_array_pub = n_.advertise<vision::DetectionArray>("vision/detection_array", 1000);
   }
 

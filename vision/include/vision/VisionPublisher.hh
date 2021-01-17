@@ -69,6 +69,13 @@ namespace MuddSub::Vision
        */
       ros::NodeHandle n_;
 
+      /**
+       * @brief The camera name
+       *
+       * Each instance of VisionPublisher will publish for a specific camera
+       */
+      std::string cameraName_;
+
     public:
       /**
        * @brief Creates a VisionPublisher instance
@@ -77,7 +84,7 @@ namespace MuddSub::Vision
        *
        * @return ControlsPublisher instance
        */
-      VisionPublisher(ros::NodeHandle n);
+      VisionPublisher(ros::NodeHandle n, std::string cameraName);
 
       /**
        * @brief Use default copy constructor
@@ -148,4 +155,3 @@ namespace MuddSub::Vision
       void publishDetectionArray(vision::DetectionArray& detectionArray);
   };
 } // namespace MuddSub::Vision
-
