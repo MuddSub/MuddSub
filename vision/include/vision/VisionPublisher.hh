@@ -14,28 +14,28 @@ namespace MuddSub::Vision
     {
         private:
       /**
-       * @brief Publisher to camera/info topic
+       * @brief Publisher to vision/<camera_name>/info topic
        *
        * Publishes sensor_msgs/CameraInfo messages
        */
        ros::Publisher camera_info_pub;
 
       /**
-       * @brief Publisher to camera/image/raw topic
+       * @brief Publisher to vision/<camera_name>/image/raw topic
        *
        * Publishes sensor_msgs/Image messages
        */
       ros::Publisher raw_image_pub;
 
       /**
-       * @brief Publisher to camera/image/greyscale topic
+       * @brief Publisher to vision/<camera_name>/image/greyscale topic
        *
        * Publishes sensor_msgs/Image messages
        */
       ros::Publisher greyscale_image_pub;
 
       /**
-       * @brief Publisher to camera/image/compressed topic
+       * @brief Publisher to vision/<camera_name>/image/compressed topic
        *
        * Publishes sensor_msgs/CompressedImage messages
        */
@@ -81,6 +81,7 @@ namespace MuddSub::Vision
        * @brief Creates a VisionPublisher instance
        *
        * @param n NodeHandle to create the Publishers with
+       * @param cameraName The name of the camera to use in the topic names
        *
        * @return ControlsPublisher instance
        */
@@ -94,7 +95,7 @@ namespace MuddSub::Vision
       /**
        * @brief Publishes a sensor_msgs/CameraInfo message
        *
-       * Uses the camera_info_pub Publisher to publish to camera/info
+       * Uses the camera_info_pub Publisher to publish to vision/<camera_name>/info
        *
        * @param cameraInfo The CameraInfo message to publish
        */
@@ -103,7 +104,7 @@ namespace MuddSub::Vision
       /**
        * @brief Publishes a sensor_msgs/Image message
        *
-       * Uses the raw_image_pub Publisher to publish to camera/image/raw
+       * Uses the raw_image_pub Publisher to publish to vision/<camera_name>/image/raw
        *
        * @param rawImage The Image message to publish
        */
@@ -112,7 +113,7 @@ namespace MuddSub::Vision
       /**
        * @brief Publishes a sensor_msgs/Image message
        *
-       * Uses the greyscale_image_pub Publisher to publish to camera/image/greyscale
+       * Uses the greyscale_image_pub Publisher to publish to vision/<camera_name>/image/greyscale
        *
        * @param greyscaleImage The Image message to publish
        */
@@ -121,7 +122,7 @@ namespace MuddSub::Vision
       /**
        * @brief Publishes a sensor_msgs/CompressedImage message
        *
-       * Uses the compressed_image_pub Publisher to publish to camera/image/compressed
+       * Uses the compressed_image_pub Publisher to publish to vision/<camera_name>/image/compressed
        *
        * @param compressedImage The CompressedImage message to publish
        */
