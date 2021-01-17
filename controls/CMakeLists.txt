@@ -18,7 +18,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_message_files(
   FILES
-  State.msg
   ThrusterForceArray.msg
   ThrusterPWMArray.msg
 )
@@ -34,7 +33,8 @@ catkin_package(
 	DEPENDS system_lib
 )
 
-catkin_install_python(PROGRAMS scripts/ControlsPubNode.py
+catkin_install_python(PROGRAMS
+  scripts/ControlsPubNode.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
