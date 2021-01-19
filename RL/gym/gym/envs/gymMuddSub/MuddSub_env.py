@@ -10,12 +10,12 @@ class MuddSubEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     def __init__(self):
         super(MuddSubEnv, self).__init__()
-        loopRate = rospy.Rate(10)
         model_checkpoint = '../checkpoints/1.pth'
         self.gate_position = (3,3,6)
         self.model = Darknet(model_checkpoint)
         self.imageGen = ImageListener()
         rospy.init_node("RL_node",anonymous=True)
+        self.loopRate = rospy.Rate(10)
         setImageSubscriber(self.imageGen)
         self.publisher = setStatePublisher()
         self.robot_init = [0,3,0,0,0,0]
