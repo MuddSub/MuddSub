@@ -28,7 +28,6 @@ class MuddSubEnv(gym.Env):
         # y -> depth [-1,1] 
         # theta -> submarine angle [-1,1] 
         self.action_space = gym.spaces.Box(low= -1, high = 1, shape = (4,), dtype=np.float32)
-        self.action_space = gym.spaces.Discrete(6)
 
     def _take_action(self,action):
         # action is a 3-tuple [-1,1],[-1,1],[-1,1],[-1,1]
