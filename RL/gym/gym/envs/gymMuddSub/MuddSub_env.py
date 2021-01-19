@@ -5,14 +5,19 @@ from models import *
 from camera_listener import *
 import numpy as np
 import rospy
+import sys
+import os
 
 class MuddSubEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     def __init__(self):
         super(MuddSubEnv, self).__init__()
-        model_checkpoint = '../checkpoints/1.pth'
+        base_path = '/home/dyang/catkin_ws/src/MuddSub/RL/gym/gym/envs/gymMuddSub'
+        model_cfg = os.path.join(base_path,'config/yolov3-custom.cfg')
+        model_checkpoint = os.path.join(base_path,'checkpoints/1.pth')
         self.gate_position = (3,3,6)
-        self.model = Darknet(model_checkpoint)
+        self.model = Darknet(model_cfg)
+        self.model.load_state_dict(torch.load(model_checkpoint,map_location=torch.device('cpu')))
         self.imageGen = ImageListener()
         rospy.init_node("RL_node",anonymous=True)
         self.loopRate = rospy.Rate(10)
