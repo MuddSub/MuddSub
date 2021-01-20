@@ -23,10 +23,10 @@ def setImageSubscriber(imageGen):
         img = imageGen.right_image.copy()
         noise = cv2.randn(img,(0,0,0),(0,0,0))
         #imageGen.right_image+=noise
-    rospy.init_node('image_listener', anonymous=True)
+    #rospy.init_node('image_listener', anonymous=True)
     sub_left = rospy.Subscriber('/cameras/front_left/raw', Image, get_image_left)
     sub_right = rospy.Subscriber('/cameras/front_right/raw', Image, get_image_right)
 
-def setStatePublisher(init):
+def setStatePublisher():
     publisher = rospy.Publisher('/robot_state',Odometry,queue_size=10)
     return publisher

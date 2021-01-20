@@ -12,7 +12,7 @@ class MuddSubEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     def __init__(self):
         super(MuddSubEnv, self).__init__()
-        base_path = '/home/dyang/catkin_ws/src/MuddSub/RL/gym/gym/envs/gymMuddSub'
+        base_path = '/home/yoojin/catkin_ws/src/MuddSub/RL/gym/gym/envs/gymMuddSub'
         model_cfg = os.path.join(base_path,'config/yolov3-custom.cfg')
         model_checkpoint = os.path.join(base_path,'checkpoints/1.pth')
         self.gate_position = (3,3,6)
@@ -27,7 +27,7 @@ class MuddSubEnv(gym.Env):
         self.current_step = 0
 
         # x,y,z, yaw
-        self.current_position = self.robot_init[:3]+self.robot_init[-1]
+        self.current_position = self.robot_init[:3]+[self.robot_init[-1]]
         # x,y,theta
         # x -> move forward [-1,1]
         # y -> depth [-1,1] 
