@@ -20,9 +20,10 @@ sudo apt-get install libeigen3-dev
 sudo apt-get install ros-melodic-tf2-geometry-msgs
 sudo apt-get install ros-melodic-vision-msgs
 sudo apt-get install doxygen
+pip install doxypypy
 ```
 
-The first is optional, and provides the tools we use for simulation. The second is a dependency for a library we use for controls. The third gives an alternate build tool to the one which comes standard with ROS. We build with `catkin build` instead of `catkin_make` because it allows standard CMake projects to be compiled within our workspace.
+The first is optional, and provides the tools we use for simulation. The second is a dependency for a library we use for controls. The third gives an alternate build tool to the one which comes standard with ROS. We build with `catkin build` instead of `catkin_make` because it allows standard CMake projects to be compiled within our workspace. The last two are used to generate documentation.
 
 ### Download and Build
 

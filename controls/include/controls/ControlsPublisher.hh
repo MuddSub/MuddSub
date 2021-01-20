@@ -7,6 +7,15 @@
 
 namespace MuddSub::Controls
 {
+  /**
+   * @brief Publishes controls messages describing the robot's desired motion and the required thruster commands.
+   *
+   * The target sum of forces and torques on the robot as a whole at any given point in time are described by geometry_msgs/WrenchStampes messages published to the controls/robot/wrench topic.
+   *
+   * The target force outputs of each thruster required to attain the target sum of forces and torques are described by controls/ThrusterForceArray messages published to the controls/thruster/forces topic.
+   *
+   * The pwm signals required to attain each thruster's force output target are described by controls/ThrusterPWMArray messages published to the controls/thruster/pwms topic.
+   */
   class ControlsPublisher
   {
     private:

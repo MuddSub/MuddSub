@@ -6,6 +6,13 @@
 
 namespace MuddSub::SLAM
 {
+  /**
+   * @brief Publishes SLAM messages describing the states of both the robot and the environment.
+   *
+   * The state of the robot, composed of its coordinates, velocity, and uncertainties are represented by nav_msgs/Odometry messages published to the slam/robot/state topic.
+   *
+   * The map of the environment, composed of landmark coordinates and uncertainties are represented by slam/Map messages published to the slam/map topic.
+   */
   class SLAMPublisher
   {
     private:

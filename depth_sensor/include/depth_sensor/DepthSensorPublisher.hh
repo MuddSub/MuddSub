@@ -7,6 +7,15 @@
 
 namespace MuddSub::DepthSensor
 {
+  /**
+   * @brief Publishes depth sensor data.
+   *
+   * The sensed depth of the robot is published in depth_sensor/Depth messages to the depth_sensor/depth topic.
+   *
+   * The sensed fluid pressure is published in sensor_msgs/FluidPressure messages to the depth_sensor/pressure topic.
+   *
+   * The sensed temperature is published in sensor_msgs/Temperature messages to the depth_sensor/temperature topic.
+   */
   class DepthSensorPublisher
   {
     private:
