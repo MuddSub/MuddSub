@@ -23,16 +23,16 @@ FastSLAM::FastSLAM(const int& datasetId, const int& robotId, DataLoader& data, P
   //   params_ = &p;
   // }
 
-  ROS_INFO("FastSLAM parameters: %d %f %f %f %f %f %f %f",
-    params_.n_,
-    params_.velocitySigma_,
-    params_.angleSigma_,
-    params_.slipSigma_,
-    params_.rangeSigma_,
-    params_.bearingSigma_,
-    params_.rangeWeightStd_,
-    params_.bearingWeightStd_
-  );
+  // ROS_INFO("FastSLAM parameters: %d %f %f %f %f %f %f %f",
+  //   params_.n_,
+  //   params_.velocitySigma_,
+  //   params_.angleSigma_,
+  //   params_.slipSigma_,
+  //   params_.rangeSigma_,
+  //   params_.bearingSigma_,
+  //   params_.rangeWeightStd_,
+  //   params_.bearingWeightStd_
+  // );
 
   n_ = params_.n_;
   createParticles();
@@ -121,7 +121,7 @@ double FastSLAM::runFastSLAM(bool plot)
       }
       else
       {
-        ROS_WARN("Weights were zero %f", weightSum);
+        // ROS_WARN("Weights were zero %f", weightSum);
         std::fill(weights.begin(), weights.end(), 1./n_);
       }
 
@@ -203,7 +203,7 @@ double FastSLAM::runFastSLAM(bool plot)
     plt::plot(xTruth, yTruth);
     plt::scatter(xLandmarks, yLandmarks, 8);
     plt::scatter(xLandmarkTruth, yLandmarkTruth, 8);
-    plt::show();
+    // plt::show();
   }
 
   return rms;
