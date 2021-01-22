@@ -5,67 +5,55 @@ import numpy as np
 from SimulatedAnnealing import SimulatedAnnealing
 from slam.srv import *
 
+import pickle 
 def evaluateFastSLAM(params):
     '''Send request for the FastSLAM evaluation with the given parameters and wait for the response'''
-    rospy.wait_for_service("evalFastSLAM")
+    #print("evaluating parameters",params)
+    rospy.wait_for_service("evalFastSLAM")    
+    rms = None
     try:
         evalFastSLAM = rospy.ServiceProxy("evalFastSLAM", EvalFastSLAM)
         res = evalFastSLAM(int(params[0]), *params[1:])
-        return res.pathRMS
+        rms = res.pathRMS
     except rospy.ServiceException as e:
         print("Service call failed for slam params tuning:", str(e))
+    return rms
+      
 
-particleChanges = 0
 
 if __name__=="__main__":
-    print("start parameter tuning client")
+    print("start parameter evaluation client")
+    # number of times we run fastSlam 
+    data = {}
+    for particle in [50,5]:
+        parameters = np.array([particle, 0.04, 0.0125, 0.07, 0.075, 0.025, 0.03, 0.015])
+        pathRMS = []
+        iteration = 0
+        #[5,10,25,50,75,100]
+        for iterationInc in [5,5,15,25,25,25]:
+        # Setup hyperparameters for simulated annealing algorithm
+            
 
-    # Setup hyperparameters for simulated annealing algorithm
-    default = np.array([5, 0.04, 0.0125, 0.07, 0.075, 0.025, 0.03, 0.015])
-    t0 = 100
-    tf = 0.1
-    tempFx = "slow-decrease"
-    iterations = 1
-    alpha = 10
-    beta = 0.1
-    goodVal = 0
-    steps = [1] + [0.0005] * 7
+            print("progress: total iteration",iteration,"to",iteration+iterationInc,"for ",particle,"particles")
+            
 
-    def randomIndividual():
-        '''Creates a random set of parameters for FastSLAM'''
-        bounds = [(3, 15)] + [(0.0001, 0.2)] * 7
-        individual = []
-        for bound in bounds:
-            lower, upper = bound
-            individual += [np.random.uniform(lower, upper)]
-        individual[0] = int(individual[0])
-        return np.array(individual)
+            for i in range(iterationInc):
+                pathRMS.append(evaluateFastSLAM(parameters))
+                print("particle",particle,"iteration",i+iteration,"rms",pathRMS[-1])
+            
+            npPathRMS = np.array(pathRMS)
+            data[(tuple(parameters),iteration)] = pathRMS
+            print("number of iterations",iteration,"number of particles",parameters[0])
+            print("mean",np.mean(npPathRMS),"std",np.std(npPathRMS),"max",np.max(npPathRMS),"min",np.min(npPathRMS))
+            iteration+= iterationInc
+    print("\nexperiment summary\n")
+    for para in data:
+        parameters, iteration = para
+        pathRMS = data[para]
+        print("number of iterations",iteration,"number of particles",parameters[0])
+        print("mean",np.mean(pathRMS),"std",np.std(pathRMS),"max",np.max(pathRMS),"min",np.min(pathRMS))
 
-    s0 = randomIndividual()
-
-    def evaluation(s):
-        '''Define evaluation function for the simulated annealing algorithm'''
-        pathRMS = evaluateFastSLAM(s)
-        return pathRMS
+    fileObj = open("FastSlamExperiment","wb")
+    pickle.dump(data,fileObj)
 
 
-    def findNeighbors(s):
-        '''Returns a set of parameters neighoring the given one'''
-        global particleChanges
-        neighborIndex = np.random.choice(range(len(s)))
-        diff = steps[neighborIndex] * np.random.choice([1, -1])
-        newS = s.copy()
-        newS[neighborIndex] += diff
-        newS[0] = max(1, newS[0])
-        if neighborIndex == 0:
-            particleChanges += 1
-        return newS
-
-    sa = SimulatedAnnealing(s0, t0, tf, evaluation, \
-            findNeighbors, tempFx, \
-            iterations, goodVal, \
-            alpha, beta)
-    sa.run()
-
-    print("default: cost", evaluation(default))
-    print("Num particle changes", particleChanges)
