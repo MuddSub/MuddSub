@@ -29,7 +29,7 @@ class SimulatedAnnealing:
         self.goodVal = goodVal
         self.findNeighbors = findNeighbors
         self.bestSolution, self.minimalCost, self.firstIter = self.s, float('inf'),0
-        self.history = [(self.cost, s0, 0)]
+        self.history = [(self.cost, s0, 0,self.t, 0)]
 
     def tempUpdate(self):
         tempFx, alpha, beta = self.tempFx, self.alpha, self.beta
@@ -45,7 +45,7 @@ class SimulatedAnnealing:
     def run(self):
         n = 0
         while self.t >= self.tf or (self.goodVal and cost <= self.goodVal) :
-            i = 0
+            
             for i in range(self.iterations):
                 n+=1
                 s1 = self.findNeighbors(self.s)
@@ -73,8 +73,8 @@ class SimulatedAnnealing:
                     self.minimalCost = self.cost
                     self.firstIter = n
                 print("num iteration", n, "cost", self.cost,"temperature", self.t, "probability", prob)
-
-                self.history += [(self.cost, self.s, self.firstIter)]
+                # cost, parameters, first occurance of this parameter, temperature,  current iteration,
+                self.history += [(self.cost, self.s, self.firstIter, self.t, n)]
 
                 # if self.goodVal!=None and self.cost<=self.goodVal:
                 #     print("optimal: cost",self.minimalCost,"solution",self.bestSolution,"@ iter",self.firstIter)
@@ -87,6 +87,8 @@ class SimulatedAnnealing:
         print("optimal: cost", self.minimalCost, "\nsolution", self.bestSolution, "@ iter", self.firstIter)
         self.history.sort(key=lambda s:s[0])
         print("worst: cost", self.history[-1][0], "\nsolution", self.history[-1][1], "@ iter", self.history[-1][2])
+        self.history.sort(key=lambda s:s[-1])
+
 '''
 particleChanges = 0
 

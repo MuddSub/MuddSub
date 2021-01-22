@@ -64,11 +64,11 @@ double FastSLAM::runFastSLAM(bool plot)
 
   int numCorrect{0};
 
-  tqdm bar;
+
   for(auto& keyFrame : robotData)
   {
     if(!ros::ok() || i == numSteps_) break;
-    bar.progress(i, numSteps_);
+    
     double t = keyFrame.time_;
 
     if(keyFrame.type_ == "odometry")
