@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
@@ -20,20 +21,10 @@ class ImageListener:
     right_image = None
 
 def setImageSubscriber(imageGen):
-    print('i got here')
+
     imageGen = ImageListener()
-    bridge = CvBridge()
-    def get_image_left(msg):
-        imageGen.left_image = np.array(bridge.imgmsg_to_cv2(msg))
-        print(len(imageGen.left_image))
-        img = imageGen.left_image.copy()
-        noise = cv2.randn(img,(0,0,0),(50,50,50))
-        #imageGen.left_image+=noise
-    def get_image_right(msg):
-        imageGen.right_image = np.array(bridge.imgmsg_to_cv2(msg))
-        img = imageGen.right_image.copy()
-        noise = cv2.randn(img,(0,0,0),(0,0,0))
-        #imageGen.right_image+=noise
+
+
     #rospy.init_node('image_listener', anonymous=True)
     sub_left = rospy.Subscriber('/cameras/front_left/raw', Image, get_image_left)
     sub_right = rospy.Subscriber('/cameras/front_right/raw', Image, get_image_right)
@@ -52,8 +43,17 @@ class MuddSubEnvDiscrete(gym.Env):
         self.gate_position = (3,3,6)
         self.model = Darknet(model_checkpoint)
         self.imageGen = ImageListener()
+        bridge = CvBridge()
 
-        setImageSubscriber(self.imageGen)
+        def get_image_left(msg):
+            self.imageGen.left_image = np.array(bridge.imgmsg_to_cv2(msg))
+
+        def get_image_right(msg):
+            self.imageGen.right_image = np.array(bridge.imgmsg_to_cv2(msg))
+
+        rospy.Subscriber('/cameras/front_left/raw', Image, get_image_left)
+        rospy.Subscriber('/cameras/front_right/raw', Image, get_image_right)
+
         self.publisher = setStatePublisher()
         self.robot_init = [0,3,0,0,0,0]
         self.current_step = 0
@@ -62,6 +62,7 @@ class MuddSubEnvDiscrete(gym.Env):
         self.current_position = self.robot_init[:3]+[self.robot_init[-1]]
 
         self.action_space = gym.spaces.Discrete(6)
+
 
     def _take_action(self, action):
 
@@ -97,8 +98,12 @@ class MuddSubEnvDiscrete(gym.Env):
     def _next_observation(self):
         # CONSIDER ADDING CURRENT POSITION TO STATE, 6 dimensional
         img_left, img_right = self.getImages()
-        print(len(img_left))
-        print("prediction",self.model(img_left))
+        img_left = torch.from_numpy(img_left)
+        img_right = torch.from_numpy(img_right)
+        img = torch.tensor([img_left,img_right])
+        print("hello", len(img_left))
+
+        print("prediction",self.model(img))
         pred_left = self.model(img_left).numpy()[0][0]
         pred_right = self.model(img_right).numpy()[0][0]
         #if pred_left/pred_right is null or something:
@@ -145,9 +150,9 @@ class MuddSubEnvDiscrete(gym.Env):
     def reset(self):
         # Publisher sets robot state to some init, time to 0
         x,y,z,roll,pitch,yaw = self.robot_init
-        odom_quat = self.euler_to_quaternion(roll, pitch, yaw)
+        qx, qy, qz, qw = self.euler_to_quaternion(roll, pitch, yaw)
         odom = Odometry()
-        odom.pose.pose = Pose(Point(x, y, z), odom_quat)
+        odom.pose.pose = Pose(Point(x, y, z), Quaternion(qx, qy, qz, qw))
         self.publisher.publish(odom)
         self.loopRate.sleep()
 
@@ -159,6 +164,9 @@ class MuddSubEnvDiscrete(gym.Env):
         pass
 
     def getImages(self):
+        print("helP!!!!!")
+        print("line 167",self.imageGen==None)
+        print("line 168",self.imageGen.left_image==None)
         img_left = self.imageGen.left_image
         img_right = self.imageGen.right_image
         return img_left, img_right
@@ -175,4 +183,4 @@ class MuddSubEnvDiscrete(gym.Env):
         # qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
         # qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
         # qw = 1
-        return rot_quat
+        return list(rot_quat)

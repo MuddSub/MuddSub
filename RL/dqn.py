@@ -1,3 +1,4 @@
+#!/usr/bin/env python3 
 from tqdm.notebook import tqdm    # To get nice progress bars
 from collections import deque
 import gym
