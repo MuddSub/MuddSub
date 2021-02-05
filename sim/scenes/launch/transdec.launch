@@ -23,14 +23,9 @@
         <rosparam subst_value="true">
             meshes:
                 transdec:
-                    mesh: package://uuv_gazebo_worlds/models/transdec/meshes/TransdecBottom.dae
+                    mesh: package://sim/scenes/models/transdec/meshes/Alfievis.STL
                     model: transdec
         </rosparam>
     </node>
 
-    <group if="$(arg set_timeout)">
-        <include file="$(find uuv_assistants)/launch/set_simulation_timer.launch">
-            <arg name="timeout" value="$(arg timeout)"/>
-        </include>
-    </group>
 </launch>
