@@ -23,7 +23,7 @@
             <cast_shadows>false</cast_shadows>
             <pose>0 0 0 0 0 0</pose>
             <geometry>
-                <mesh><uri>model://transdec/meshes/TransdecBottom.dae</uri><scale>1 1 1</scale></mesh>
+                <mesh><uri>model://transdec/meshes/Alfievis.STL</uri><scale>1 1 1</scale></mesh>
             </geometry>
             <material>
               <script>
@@ -36,7 +36,7 @@
         <collision name="transdec_bottom">
             <pose>0 0 0 0 0 0</pose>
             <geometry>
-                <mesh><uri>model://transdec/meshes/TransdecBottom.dae</uri><scale>1 1 1</scale></mesh>
+                <mesh><uri>model://transdec/meshes/Alfievis.STL</uri><scale>1 1 1</scale></mesh>
             </geometry>
         </collision>
 
