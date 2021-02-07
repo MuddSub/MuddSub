@@ -46,10 +46,10 @@ class MuddSubEnvDiscrete(gym.Env):
         bridge = CvBridge()
 
         def get_image_left(msg):
-            self.imageGen.left_image = np.array(bridge.imgmsg_to_cv2(msg))
+            self.imageGen.left_image = np.array(cv2.resize(bridge.imgmsg_to_cv2(msg), (416,416)) )
 
         def get_image_right(msg):
-            self.imageGen.right_image = np.array(bridge.imgmsg_to_cv2(msg))
+            self.imageGen.right_image = np.array(cv2.resize(bridge.imgmsg_to_cv2(msg), (416,416)) )
 
         rospy.Subscriber('/cameras/front_left/raw', Image, get_image_left)
         rospy.Subscriber('/cameras/front_right/raw', Image, get_image_right)
@@ -98,20 +98,29 @@ class MuddSubEnvDiscrete(gym.Env):
     def _next_observation(self):
         # CONSIDER ADDING CURRENT POSITION TO STATE, 6 dimensional
         img_left, img_right = self.getImages()
-        img_left = torch.from_numpy(img_left)
-        img_right = torch.from_numpy(img_right)
-        img = torch.tensor([img_left,img_right])
-        print("hello", len(img_left))
 
-        print("prediction",self.model(img))
-        pred_left = self.model(img_left).numpy()[0][0]
-        pred_right = self.model(img_right).numpy()[0][0]
+        img = np.array([img_left, img_right])
+        img = torch.from_numpy(img)
+        img_left = torch.from_numpy(np.array([img_left]))
+        img_right = torch.from_numpy(np.array([img_right]))
+        img = img.permute(0, 3, 2, 1)
+        img = img.float()
+        img_left = img_left.permute(0, 3, 2, 1)
+        img_left = img_left.float()
+        img_right = img_right.permute(0, 3, 2, 1)
+        img_right = img_right.float()
+        print("prediction",self.model(img)[0][0])
+        pred_left = self.model(img_left)
+        pred_right = self.model(img_right)
+        pred_left = non_max_suppression(pred_left, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0]
+        pred_right = non_max_suppression(pred_right, conf_thres=0.5, nms_thres=0.4)[0].numpy()
+        print(pred_left)
         #if pred_left/pred_right is null or something:
         #    return -1
 
-        if pred_left == None:
+        if pred_left.all() == None:
           pred_left = np.array([-1,-1])
-        if pred_right == None:
+        if pred_right.all() == None:
           pred_right = np.array([-1,-1])
 
         visionState = np.concatenate(pred_left,pred_right)
@@ -164,9 +173,6 @@ class MuddSubEnvDiscrete(gym.Env):
         pass
 
     def getImages(self):
-        print("helP!!!!!")
-        print("line 167",self.imageGen==None)
-        print("line 168",self.imageGen.left_image==None)
         img_left = self.imageGen.left_image
         img_right = self.imageGen.right_image
         return img_left, img_right
