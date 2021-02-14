@@ -4,20 +4,20 @@ import random
 def decision(probability):
     return random.random() < probability
 
-infinity = 10000
+infinity = float('inf')
 class Node(object):
 
-    def __init__(self, i, j, end):
+    def __init__(self, x, y, end):
         self.isOpen = False 
         self.isClosed = False
         self.isObstacle = False
-        self.i = i
-        self.j = j
+        self.x = x
+        self.y = y
         self.f = infinity
         self.h = 0
-        self.string = "0"
+        self.string = "."
         if(end != None):
-            self.h = ((end.i - self.i)**2 + (end.j - self.j)**2)**0.5
+            self.h = ((end.x - self.x)**2 + (end.y - self.y)**2)**0.5
         self.g = infinity
         self.parent = None 
     
@@ -32,54 +32,54 @@ class Node(object):
         
     
 
-def makeGrid(width, height, prob, start_i, start_j, end_i, end_j):
-    endNode = Node(end_i,end_j, None)
+def makeGrid(width, height, prob, start_x, start_y, end_x, end_y):
+    endNode = Node(end_x,end_y, None)
     grid = []
     for i in range(width):
         arr = []
         for j in range(height):
             node = Node(i,j,endNode)
-            if(decision(prob) and (i != start_i or j != start_j)):
+            if(decision(prob) and (i != start_x or j != start_y)):
                 node.isObstacle = True
             arr.append(node)
         grid.append(arr)
-    grid[end_i][end_j] = endNode
+    grid[end_x][end_y] = endNode
     
     return grid
 
 
-def solveGrid(grid, start_i, start_j, end_i, end_j):
+def solveGrid(grid, start_x, start_y, end_x, end_y):
     q = PriorityQueue()
-    grid[start_i][start_j].isOpen = True 
-    grid[start_i][start_j].g = 0
-    grid[start_i][start_j].f = grid[start_i][start_j].h + grid[start_i][start_j].g
+    grid[start_x][start_y].isOpen = True 
+    grid[start_x][start_y].g = 0
+    grid[start_x][start_y].f = grid[start_x][start_y].h + grid[start_x][start_y].g
     #q_finished = PriorityQueue()
     #put starting node node in the queue
-    q.put(grid[start_i][start_j])
+    q.put(grid[start_x][start_y])
     while(not q.empty()):
         
         #take the node from the priority list 
         nownode = q.get()
-        nownode.isFinished = True
+        nownode.isClosed = True
         #nownode.isOpen = False
         nownode.string = "2"
         #q_finished.put(nownode)
-        if(nownode.i == end_i and nownode.j == end_j):
+        if(nownode.x == end_x and nownode.y == end_y):
             #if we are at the end, then we are done
             return
         
         #check the neighbors
         dy = [1,1,1,0,0,-1,-1,-1]
-        dx = [-1,0,1,-1,-1,-1,0,1]
+        dx = [-1,0,1,-1,1,-1,0,1]
         for i in range(8):
-            #check if in range
-            if (0 <= nownode.i + dx[i] < len(grid) and 0 <= nownode.j + dy[i] < len(grid[0])):
-                neighbor = grid[nownode.i + dx[i]][nownode.j + dy[i]]
+            #check if index out of bounds 
+            if (0 <= nownode.x + dx[i] < len(grid) and 0 <= nownode.y + dy[i] < len(grid[0])):
+                neighbor = grid[nownode.x + dx[i]][nownode.y + dy[i]]
                 if(neighbor.isObstacle):
                     continue
                 if(neighbor.isClosed):
                     continue
-                distance = ((nownode.i - neighbor.i)**2 + (nownode.j - neighbor.j)**2)**0.5
+                distance = ((nownode.x - neighbor.x)**2 + (nownode.y - neighbor.y)**2)**0.5
                 if(nownode.g + distance < neighbor.g or not neighbor.isOpen):
                     #update f_cost
                     neighbor.g = nownode.g + distance 
@@ -94,17 +94,20 @@ def solveGrid(grid, start_i, start_j, end_i, end_j):
 
 
 def makeParent(grid, node):
-    grid[node.i][node.j].string = "3"
+    grid[node.x][node.y].string = "3"
     if(node.parent == None): return 
     makeParent(grid, node.parent)
 
 
 
 def main():
-
+    #".": cell
+    #"1": obstacle
+    #"2": visited 
+    #"3": actual path
     width = 10
     length = 10
-    grid = makeGrid(width,length,0.2,0,0,width-1,length-1)
+    grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
     solveGrid(grid, 0, 0, width-1, length-1)
     makeParent(grid, grid[width-1][length-1])
     for i in range(len(grid)):
