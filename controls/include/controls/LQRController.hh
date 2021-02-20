@@ -65,6 +65,32 @@ public:
                                   const lqrStateVector_t& controlAction);
 
 
+  /// @Param: Q: state error cost matrix to set
+  inline void setQ(const QMatrix_t Q)
+  {
+    Q_ = Q;
+  };
+
+  /// @Param: R: Effort cost matrix to set
+  inline void setR(const QMatrix_t R)
+  {
+    R_ = R;
+  };
+
+  /// Sets the error cost matrix to diagonal with each entry equal to q
+  /// @param q: value for each entry on the diagonal of the cost matrix
+  inline void setQUniformDiag(const double& q)
+  {
+    Q_ = QMatrix_t::Identity() * q;
+  }
+
+  /// Sets the effort cost matrix to diagonal with each entry equal to r
+  /// @param r: value for each entry on the diagonal of the cost matrix
+  inline void setRUniformDiag(const double& r)
+  {
+    R_ = QMatrix_t::Identity() * r;
+  }
+
 private:
   /// Solver for optimal control problem
   ct::optcon::LQR<lqrStateDim, lqrControlDim> lqrSolver_;

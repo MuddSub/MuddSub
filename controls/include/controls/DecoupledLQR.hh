@@ -64,6 +64,8 @@ public:
 
 private:
 
+  ros::NodeHandle nh_;
+
   /// Simple PID controllers for roll and pitch
   PidController rollPid_, pitchPid_;
 

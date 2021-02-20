@@ -1,5 +1,7 @@
 <launch>
 
+  <param name="slam_use_ground_truth" value="true" />
+
   <include file="$(find controls)/launch/ControlDispatch.launch"/>
   <include file="$(find uuv_gazebo_worlds)/launch/lake.launch">
     <arg name="paused" value="true" />
