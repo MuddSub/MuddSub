@@ -1,38 +1,62 @@
 #!/usr/bin/env python
 
 import rospy
-from sensor_msgs.msg import CameraInfo, Image, CompressedImage
+#from sensor_msgs.msg import CameraInfo, Image, CompressedImage
 from vision.msg import Detection, DetectionArray, BoundingBox2DArray
 
-
 class VisionPublisher:
+    """
+    Publishes vision messages describing obstacles detected by the computer vision algorithm.
+
+    The collection of all bounding boxes surrounding their respective objects are described by vision/BoundingBox2DArray messages published to the vision/{cameraName}/bounding_boxes topic.
+
+    The label, range, bearing,and confidence of a single detected obstacle is described by vision/Detection messages published to the vision/{cameraName}/detection topic.
+
+    All collection of all vision/Detection messages is described by the vision/DetectionArray messages published to the vision/detection_array topic.
+
+    Attributes:
+        cameraName: The name of the camera that captured the obstacle
+        bboxes_pub: Publisher to vision/{cameraName}/bounding_boxes topic. Publishes vision/BoundingBox2DArray messages.
+        detection_pub: Publisher to vision/{cameraName}/detection topic. Publishes vision/Detection messages.
+        detection_array_pub: Publisher to vision/detection_array topic. Publishes vision/DetectionArray messages.
+    """
+
     def __init__(self, cameraName):
+        """Initialize VisionPublisher instance."""
         self.cameraName = cameraName
-        self.camera_info_pub = rospy.Publisher('vision/' + cameraName + '/info', CameraInfo, queue_size=10)
-        self.raw_image_pub = rospy.Publisher('vision/' + cameraName + '/image/raw', Image, queue_size=10)
-        self.greyscale_image_pub = rospy.Publisher('vision/' + cameraName + '/image/raw', Image, queue_size=10)
-        self.compressed_image_pub = rospy.Publisher('vision/' + cameraName + '/image/compressed', CompressedImage, queue_size=10)
         self.bboxes_pub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
         self.detection_pub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
         self.detection_array_pub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
 
-    def publishCameraInfo(self, cameraInfo):
-        self.camera_info_pub.publish(cameraInfo)
+    def publishBoundingBoxes(self, boundingBoxes):
+        """
+        Publish a vision/BoundingBox2DArray message.
 
-    def publishRawImage(self, rawImage):
-        self.raw_image_pub.publish(rawImage)
+        Uses the bboxes_pub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
 
-    def publishGreyscaleImage(self, greyscaleImage):
-        self.greyscale_image_pub.publish(greyscaleImage)
-
-    def publishCompressedImage(self, compressedImage):
-        self.compressed_image_pub.publish(compressedImage)
-
-    def publishBoundingBox(self, boundingBox):
-        self.bboxes_pub.publish(boundingBox)
+        Args:
+            boundingBoxes: The vision/BoundingBox2DArray message.
+        """
+        self.bboxes_pub.publish(boundingBoxes)
 
     def publishDetection(self, detection):
+        """
+        Publishes a vision/Detection message.
+
+        Uses the detection_pub Publisher to publish to vision/{cameraName}/detection topic.
+
+        Args:
+            detection: The vision/Detection message.
+        """
         self.detection_pub.publish(detection)
 
     def publishDetectionArray(self, detectionArray):
+        """
+        Publishes a vision/DetectionArray message.
+
+        Uses the detection_array Publisher to publish to vision/detection_array topic.
+
+        Args:
+            detectionArray: The vision/DetectionArray message.
+        """
         self.detection_array_pub.publish(detectionArray)
