@@ -63,6 +63,20 @@ class MuddSubEnvDiscrete(gym.Env):
 
         self.action_space = gym.spaces.Discrete(6)
 
+    def euler_to_quaternion(self, roll, pitch, yaw):
+
+        # Create a rotation object from Euler angles specifying axes of rotation
+        rot = Rotation.from_euler('xyz', [roll, pitch, yaw], degrees=False)
+
+        # Convert to quaternions and print
+        rot_quat = rot.as_quat()
+
+        # qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
+        # qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
+        # qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
+        # qw = 1=
+        return Quaternion(list(rot_quat)[0], list(rot_quat)[1], list(rot_quat)[2], list(rot_quat)[3])
+
 
     def _take_action(self, action):
 
@@ -89,7 +103,7 @@ class MuddSubEnvDiscrete(gym.Env):
 
         roll = 0
         pitch = 0
-        odom_quat = euler_to_quaternion(yaw, pitch, roll)
+        odom_quat = self.euler_to_quaternion(roll, pitch, yaw)
         odom = Odometry()
         odom.pose.pose = Pose(Point(x, y, z), odom_quat)
         print(odom)
@@ -113,7 +127,7 @@ class MuddSubEnvDiscrete(gym.Env):
         pred_left = self.model(img_left)
         pred_right = self.model(img_right)
         pred_left = non_max_suppression(pred_left, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0]
-        pred_right = non_max_suppression(pred_right, conf_thres=0.5, nms_thres=0.4)[0].numpy()
+        pred_right = non_max_suppression(pred_right, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0]
         print(pred_left)
         #if pred_left/pred_right is null or something:
         #    return -1
@@ -123,8 +137,8 @@ class MuddSubEnvDiscrete(gym.Env):
         if pred_right.all() == None:
           pred_right = np.array([-1,-1])
 
-        visionState = np.concatenate(pred_left,pred_right)
-        state = np.concatenate(visionState, self.current_position)
+        visionState = np.concatenate((pred_left,pred_right))
+        state = np.concatenate((visionState, self.current_position))
         return state
 
     def _distanceToGate(self):
@@ -151,7 +165,7 @@ class MuddSubEnvDiscrete(gym.Env):
         done = self._checkAtGate()
 
         state = self._next_observation()
-        if state == -1:
+        if state[:4].all() == -1:
             done = True
             return None, 0, done, {}
         return state, reward, done, {}
@@ -159,14 +173,13 @@ class MuddSubEnvDiscrete(gym.Env):
     def reset(self):
         # Publisher sets robot state to some init, time to 0
         x,y,z,roll,pitch,yaw = self.robot_init
-        qx, qy, qz, qw = self.euler_to_quaternion(roll, pitch, yaw)
         odom = Odometry()
-        odom.pose.pose = Pose(Point(x, y, z), Quaternion(qx, qy, qz, qw))
+        odom.pose.pose = Pose(Point(x, y, z), self.euler_to_quaternion(roll, pitch, yaw))
         self.publisher.publish(odom)
         self.loopRate.sleep()
 
         # Return initial state
-        state =self._next_observation()
+        stateself =self._next_observation()
         return stateself
 
     def render(self, mode='human', close=False):
@@ -176,17 +189,3 @@ class MuddSubEnvDiscrete(gym.Env):
         img_left = self.imageGen.left_image
         img_right = self.imageGen.right_image
         return img_left, img_right
-
-    def euler_to_quaternion(self, roll, pitch, yaw):
-
-        # Create a rotation object from Euler angles specifying axes of rotation
-        rot = Rotation.from_euler('xyz', [roll, pitch, yaw], degrees=False)
-
-        # Convert to quaternions and print
-        rot_quat = rot.as_quat()
-
-        # qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
-        # qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
-        # qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
-        # qw = 1
-        return list(rot_quat)
