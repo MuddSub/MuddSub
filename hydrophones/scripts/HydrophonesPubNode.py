@@ -26,7 +26,7 @@ def hydrophonesPubNode():
         pinger_range.max_range = 2.0
         pinger_range.range = 1.5
 
-        pinger_bearing = Vector3(1.0, 2.0, 3.0)
+        pinger_bearing = 1.56
         pinger_range_confidence = 0.7
         pinger_bearing_confidence = 0.8
 

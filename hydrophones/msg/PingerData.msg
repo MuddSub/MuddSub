@@ -1,5 +1,5 @@
 Header header
 sensor_msgs/Range range
-geometry_msgs/Vector3 bearing
+float64 bearing
 float64 range_confidence
 float64 bearing_confidence
