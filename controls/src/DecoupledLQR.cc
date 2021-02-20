@@ -21,20 +21,25 @@ stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
   velocity = state.segment<6>(6) - setpoint.segment<6>(6);
 
   // For angular position (verbose for clarity...)
-  auto err = [](const double& stateElement, const double& setpointElement)
+  auto angleErr = [](const double& stateElement, const double& setpointElement)
   {
-    return 0.;
     double stateNorm = fmod(stateElement, 2*M_PI);
     if(stateNorm < 0) stateNorm += 2*M_PI;
 
     double setpointNorm = fmod(setpointElement, 2*M_PI);
     if(setpointNorm < 0) setpointNorm += 2*M_PI;
 
-    return stateNorm - setpointNorm;
+    double result = fmod(stateNorm - setpointNorm, 2*M_PI);
+    if(result > M_PI)
+      result -= 2*M_PI;
+    else if(result < -M_PI)
+      result += 2*M_PI;
+
+    return result;
   };
 
-  for(auto i = 0; i < 3; ++i)
-    attitude[i] = err(state[i+3], setpoint[i+3]);
+  for(int i = 0; i < 3; ++i)
+    attitude[i] = angleErr(state[i+3], setpoint[i+3]);
 
   // pack 'em up and send 'em off
   Eigen::Matrix<double, 1, stateDim> result;
@@ -70,6 +75,11 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
 
   Eigen::Matrix<double, stateDimLQR, 1> error8DoF;
   error8DoF << err.segment<3>(0), err[5], err.segment<3>(6), err[11];
+
+  // TODO: This is a very expensive way to do it... shouldn't poll on every iteration
+  double kQ, kR;
+  if(nh_.getParam("/controls/kQ", kQ)) lqr8DoF_.setQUniformDiag(kQ);
+  if(nh_.getParam("/controls/kR", kR)) lqr8DoF_.setQUniformDiag(kR);
 
   const auto& controlActionLQR = lqr8DoF_.computeControl(partitionedA, partitionedB, error8DoF);
 

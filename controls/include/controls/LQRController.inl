@@ -4,8 +4,6 @@ namespace MuddSub::Controls
 template<size_t lqrStateDim, size_t lqrControlDim>
 LQRController<lqrStateDim, lqrControlDim>::LQRController()
 {
-  // Q_ and R_ start as identity; by default, just make R nice and small
-  R_ *= .001;
 }
 
 template<size_t lqrStateDim, size_t lqrControlDim>
