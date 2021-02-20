@@ -30,16 +30,18 @@ def visionPubNode():
         obstacle1_header = Header()
         obstacle1_header.frame_id = "gate"
         obstacle1_range = 1.0
-        obstacle1_bearing = Vector3(1.0, 2.0, 3.0)
+        obstacle1_theta = 1.56
+        obstacle1_phi = 0.2
         obstacle1_confidence = 0.8 #where 1 is 100%
-        detection1 = Detection(obstacle1_header, obstacle1_range, obstacle1_bearing, obstacle1_confidence)
+        detection1 = Detection(obstacle1_header, obstacle1_range, obstacle1_theta, obstacle1_phi, obstacle1_confidence)
 
         obstacle2_header = Header()
         obstacle2_header.frame_id = "ball"
         obstacle2_range = 2.0
-        obstacle2_bearing = Vector3(4.0, 5.0, 6.0)
+        obstacle1_theta = 1.23
+        obstacle1_phi = 3.13
         obstacle2_confidence = 0.7 #where 1 is 100%
-        detection2 = Detection(obstacle2_header, obstacle2_range, obstacle2_bearing, obstacle2_confidence)
+        detection2 = Detection(obstacle2_header, obstacle2_range, obstacle2_theta, obstacle2_phi, obstacle2_confidence)
 
         #Create DetectionArray messages
         allDetections = [detection1, detection2]

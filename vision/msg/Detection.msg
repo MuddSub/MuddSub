@@ -1,5 +1,6 @@
 Header header
 std_msgs/String label
 float64 range
-geometry_msgs/Vector3 bearing
+float64 theta
+float64 phi
 float64 confidence
