@@ -9,6 +9,9 @@
   <!-- Loading vehicle's specific macros -->
   <xacro:include filename="$(find core)/descriptions/alfie_description/urdf/snippets.xacro"/>
 
+  <!-- DVL A50 -->
+  <xacro:include filename="$(find sim)/plugins/urdf/dvl.xacro" />
+
   <!--
     Vehicle's parameters (remember to enter the model parameters below)
   -->

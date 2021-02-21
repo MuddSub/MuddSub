@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find uuv_gazebo_worlds)/launch/lake.launch">
+    <arg name="paused" value="true" />
+  </include>
+  <include file="$(find core)/launch/alfie_config.launch" />
+</launch>
