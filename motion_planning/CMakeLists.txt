@@ -53,12 +53,12 @@ include_directories(include
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(TrajectoryPubNode
-	src/TrajectoryPubNode.cc
-  src/TrajectoryPublisher.cc
+add_executable(MotionPlanningPubNode
+	src/MotionPlanningPubNode.cc
+  src/MotionPlanningPublisher.cc
 )
-add_dependencies(TrajectoryPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(TrajectoryPubNode ${catkin_LIBRARIES})
+add_dependencies(MotionPlanningPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(MotionPlanningPubNode ${catkin_LIBRARIES})
 
 add_executable(path_server
 	src/PathServer.cc

@@ -5,7 +5,7 @@
 
 namespace MuddSub::MotionPlanning
 {
-  class TrajectoryPublisher
+  class MotionPlanningPublisher
   {
     private:
       /**
@@ -13,7 +13,7 @@ namespace MuddSub::MotionPlanning
        *
        * Publishes nav_msgs/Path messages
        */
-      ros::Publisher trajectory_pub;
+      ros::Publisher motion_planning_pub;
 
       /**
        * @brief Node handle
@@ -24,23 +24,23 @@ namespace MuddSub::MotionPlanning
 
     public:
       /**
-       * @brief Creates a TrajectoryPublisher instance
+       * @brief Creates a MotionPlanningPublisher instance
        *
        * @param n NodeHandle to create the Publishers with
        *
-       * @return TrajectoryPublisher instance
+       * @return MotionPlanningPublisher instance
        */
-      TrajectoryPublisher(ros::NodeHandle n);
+      MotionPlanningPublisher(ros::NodeHandle n);
 
       /**
        * @brief Use default copy constructor
        */
-      TrajectoryPublisher(const TrajectoryPublisher&) = default;
+      MotionPlanningPublisher(const MotionPlanningPublisher&) = default;
 
       /**
        * @brief Publishes a nav_msgs/Path message
        *
-       * Uses the trajectory_pub Publisher to publish to motion_planning/trajectory
+       * Uses the motion_planning_pub Publisher to publish to motion_planning/trajectory
        *
        * @param trajectory The Path message to publish
        */

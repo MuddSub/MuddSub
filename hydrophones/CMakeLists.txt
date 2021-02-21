@@ -84,6 +84,7 @@ catkin_install_python(PROGRAMS scripts/HydrophonesPubNode.py
 )
 
 add_executable(HydrophonesPubNode src/HydrophonesPubNode.cc src/HydrophonesPublisher.cc)
+add_dependencies(HydrophonesPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(HydrophonesPubNode ${catkin_LIBRARIES})
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

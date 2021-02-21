@@ -38,8 +38,8 @@ def visionPubNode():
         obstacle2_header = Header()
         obstacle2_header.frame_id = "ball"
         obstacle2_range = 2.0
-        obstacle1_theta = 1.23
-        obstacle1_phi = 3.13
+        obstacle2_theta = 1.23
+        obstacle2_phi = 3.13
         obstacle2_confidence = 0.7 #where 1 is 100%
         detection2 = Detection(obstacle2_header, obstacle2_range, obstacle2_theta, obstacle2_phi, obstacle2_confidence)
 
