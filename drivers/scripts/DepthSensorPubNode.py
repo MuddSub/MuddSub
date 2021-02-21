@@ -3,7 +3,7 @@
 import rospy
 from DepthSensorPublisher import DepthSensorPublisher
 from std_msgs.msg import Header
-from depth_sensor.msg import Depth
+from drivers.msg import Depth
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Temperature
 
@@ -32,6 +32,7 @@ def depthSensorPubNode():
         depthSensorPublisher.publishPressure(pressure)
         depthSensorPublisher.publishTemperature(temperature)
         rate.sleep()
+
 
 if __name__ == '__main__':
     try:

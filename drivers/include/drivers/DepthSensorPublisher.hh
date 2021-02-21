@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ros/ros.h"
-#include "depth_sensor/Depth.h"
+#include "drivers/Depth.h"
 #include "sensor_msgs/FluidPressure.h"
 #include "sensor_msgs/Temperature.h"
 
@@ -69,7 +69,7 @@ namespace MuddSub::DepthSensor
        *
        * @param depth The Depth message to publish
        */
-      void publishDepth(depth_sensor::Depth& depth);
+      void publishDepth(drivers::Depth& depth);
 
       /**
        * @brief Publishes a sensor_msgs/FluidPressure message

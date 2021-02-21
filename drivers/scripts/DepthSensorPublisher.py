@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from depth_sensor.msg import Depth
+from drivers.msg import Depth
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Temperature
 
@@ -16,7 +16,7 @@ class DepthSensorPublisher:
     The sensed temperature is published in sensor_msgs/Temperature messages to the depth_sensor/temperature topic.
 
     Attributes:
-        depth_pub: Publisher to depth_sensor/depth. Publishes depth_sensor/Depth messages.
+        depth_pub: Publisher to depth_sensor/depth. Publishes drivers/Depth messages.
         pressure_pub: Publisher to depth_sensor/pressure. Publishes sensor_msgs/FluidPrssure messages.
         temperature_pub: Publisher to depth_sensor/temperature. Publishes sensor_msgs/Temperature messages.
     """
@@ -29,12 +29,12 @@ class DepthSensorPublisher:
 
     def publishDepth(self, depth):
         """
-        Publish a depth_sensor/Depth message.
+        Publish a drivers/Depth message.
 
         Uses the depth_pub Publisher to publish to depth_sensor/depth.
 
         Args:
-            depthStamped: The depth_sensor/Depth message.
+            depthStamped: The drivers/Depth message.
         """
         self.depth_pub.publish(depth)
 

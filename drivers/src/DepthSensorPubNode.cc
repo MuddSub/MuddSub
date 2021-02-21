@@ -1,4 +1,4 @@
-#include "depth_sensor/DepthSensorPublisher.hh"
+#include "drivers/DepthSensorPublisher.hh"
 
 using namespace MuddSub::DepthSensor;
 
