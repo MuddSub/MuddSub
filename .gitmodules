@@ -25,3 +25,5 @@
 [submodule "thirdparty/zed-ros-examples"]
 	path = thirdparty/zed-ros-examples
 	url = https://github.com/stereolabs/zed-ros-examples
+[submodule "thirdparty/uuv_simulator/"]
+	branch = master

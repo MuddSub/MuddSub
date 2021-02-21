@@ -9,9 +9,15 @@
   -->
 
   <!-- DVL  -->
-  <!-- <xacro:default_dvl namespace="${namespace}" parent_link="${namespace}/base_link">
-    <origin xyz="-.163 0 .0375" rpy="0 0 0"/>
-  </xacro:default_dvl> -->
+  <xacro:dvl_a50 namespace="${namespace}" parent_link="${namespace}/base_link"
+    suffix=""
+    reference_frame="world_ned"
+    update_rate="7"
+    topic="dvl"
+    noise_sigma="0"
+    noise_amplitude="0">
+    <origin xyz=".1 0 0.00635" rpy="${pi} 0 0" />
+  </xacro:dvl_a50>
 
 
   <!-- Mount a camera  -->
