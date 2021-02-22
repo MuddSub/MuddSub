@@ -8,7 +8,7 @@ from sensor_msgs.msg import Range
 from geometry_msgs.msg import Vector3
 
 def hydrophonesExampleNode():
-    rospy.init_node('hydrophonesPublisher', anonymous=True)
+    rospy.init_node('hydrophones_example_node', anonymous=True)
     hydrophonesPublisher = HydrophonesPublisher()
     rate = rospy.Rate(1)
 

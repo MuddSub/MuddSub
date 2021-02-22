@@ -14,33 +14,19 @@ namespace MuddSub::Vision
     {
         private:
 
-      /**
-       * @brief Publishes vision/BoundingBox2DArray messages to vision/bounding_boxes topic
-       *
-       */
+      /// @brief Publishes vision/BoundingBox2DArray messages to vision/bounding_boxes topic
       ros::Publisher bboxesPub_;
 
-      /**
-       * @brief Publishes vision/Detection messages to vision/detection topic
-       *
-       */
+      /// @brief Publishes vision/Detection messages to vision/detection topic
       ros::Publisher detectionPub_;
 
-      /**
-       * @brief Publishes vision/DetectionArray messages to vision/detection_array topic
-       *
-       */
+      /// @brief Publishes vision/DetectionArray messages to vision/detection_array topic
       ros::Publisher detectionArrayPub_;
 
-      /**
-       * @brief Node handle is the main access point to communications with the ROS system.
-       */
+      /// @brief Node handle, the main access point to communications with the ROS system.
       ros::NodeHandle n_;
 
-      /**
-       * @brief The name of the camera that took the image that will be used for the detection and bounding boxes.
-       *
-       */
+      /// @brief The name of the camera that took the image that will be used for the detection and bounding boxes.
       std::string cameraName_;
 
     public:
@@ -54,14 +40,10 @@ namespace MuddSub::Vision
        */
       VisionPublisher(ros::NodeHandle n, std::string cameraName);
 
-      /**
-      * @brief Explicitely deteleted constructor
-      */
+      /// @brief Explicitely deleted default constructor
       VisionPublisher() = delete;
 
-      /**
-       * @brief Use default copy constructor
-       */
+      /// @brief Use default copy constructor
       VisionPublisher(const VisionPublisher&) = default;
 
       /**

@@ -10,20 +10,20 @@ class MotionPlanningPublisher:
     The robot's trajectory, composed of an array of positions, orientations, and times, is represented by nav_msgs/Path messages published to the motion_planning/trajectory topic.
 
     Attributes:
-        _motion_planning_pub: Publisher to motion_planning/trajectory. Publishes nav_msgs/Path messages.
+        _pathPub: Publisher to motion_planning/trajectory. Publishes nav_msgs/Path messages.
     """
 
     def __init__(self):
         """Initialize MotionPlanningPublisher instance."""
-        self._motion_planning_pub = rospy.Publisher('motion_planning/trajectory', Path, queue_size=10)
+        self._pathPub = rospy.Publisher('motion_planning/trajectory', Path, queue_size=10)
 
     def publishTrajectory(self, trajectory):
         """
         Publish a nav_msgs/Path message.
 
-        Uses the _motion_planning_pub Publisher to publish to motion_planning/trajectory.
+        Uses the _pathPub Publisher to publish to motion_planning/trajectory.
 
         Args:
             trajectory: The nav_msgs/Path message.
         """
-        self._motion_planning_pub.publish(trajectory)
+        self._pathPub.publish(trajectory)

@@ -16,39 +16,39 @@ class VisionPublisher:
 
     Attributes:
         cameraName: The name of the camera that captured the obstacle
-        bboxes_pub: Publisher to vision/{cameraName}/bounding_boxes topic. Publishes vision/BoundingBox2DArray messages.
-        detection_pub: Publisher to vision/{cameraName}/detection topic. Publishes vision/Detection messages.
-        detection_array_pub: Publisher to vision/detection_array topic. Publishes vision/DetectionArray messages.
+        bboxesPub: Publisher to vision/{cameraName}/bounding_boxes topic. Publishes vision/BoundingBox2DArray messages.
+        detectionPub: Publisher to vision/{cameraName}/detection topic. Publishes vision/Detection messages.
+        detectionArrayPub: Publisher to vision/detection_array topic. Publishes vision/DetectionArray messages.
     """
 
     def __init__(self, cameraName):
         """Initialize VisionPublisher instance."""
         self._cameraName = cameraName
-        self._bboxes_pub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
-        self._detection_pub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
-        self._detection_array_pub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
+        self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
+        self._detectionPub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
+        self._detectionArrayPub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
 
     def publishBoundingBoxes(self, boundingBoxes):
         """
         Publish a vision/BoundingBox2DArray message.
 
-        Uses the bboxes_pub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
+        Uses the bboxesPub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
 
         Args:
             boundingBoxes: The vision/BoundingBox2DArray message.
         """
-        self._bboxes_pub.publish(boundingBoxes)
+        self._bboxesPub.publish(boundingBoxes)
 
     def publishDetection(self, detection):
         """
         Publishes a vision/Detection message.
 
-        Uses the detection_pub Publisher to publish to vision/{cameraName}/detection topic.
+        Uses the detectionPub Publisher to publish to vision/{cameraName}/detection topic.
 
         Args:
             detection: The vision/Detection message.
         """
-        self._detection_pub.publish(detection)
+        self._detectionPub.publish(detection)
 
     def publishDetectionArray(self, detectionArray):
         """
@@ -59,4 +59,4 @@ class VisionPublisher:
         Args:
             detectionArray: The vision/DetectionArray message.
         """
-        self._detection_array_pub.publish(detectionArray)
+        self._detectionArrayPub.publish(detectionArray)

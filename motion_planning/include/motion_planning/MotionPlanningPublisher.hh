@@ -8,10 +8,10 @@ namespace MuddSub::MotionPlanning
   class MotionPlanningPublisher
   {
     private:
-      /// @brief Publisher to motion_planning/trajectory topic
-      ros::Publisher motionPlanningPub_;
+      /// @brief Publishes nav_msgs/Path messages to motion_planning/trajectory topic
+      ros::Publisher pathPub_;
 
-      /// @brief Node handle NodeHandle is the main access point to communications with the ROS system.
+      /// @brief Node handle, the main access point to communications with the ROS system.
       ros::NodeHandle n_;
 
     public:
@@ -24,7 +24,7 @@ namespace MuddSub::MotionPlanning
        */
       MotionPlanningPublisher(ros::NodeHandle n);
 
-      /// @brief Explecitly delete default constructor
+      /// @brief Explicitly deleted default constructor
       MotionPlanningPublisher() = delete;
 
       /// @brief Use default copy constructor
@@ -33,7 +33,7 @@ namespace MuddSub::MotionPlanning
       /**
        * @brief Publishes a nav_msgs/Path message
        *
-       * Uses the motionPlanningPub_ Publisher to publish to motion_planning/trajectory
+       * Uses the pathPub_ Publisher to publish to motion_planning/trajectory
        *
        * @param trajectory The Path message to publish
        */

@@ -32,10 +32,10 @@ namespace MuddSub::StateMachine
        */
       StateMachinePublisher(ros::NodeHandle n);
 
-      /// @brief Explecitly delete default constructor
+      /// @brief Explicitly deleted default constructor
       StateMachinePublisher() = delete;
 
-      /// @brief Use default copy constructor
+      /// @brief Use default cfopy constructor
       StateMachinePublisher(const StateMachinePublisher&) = default;
 
       /**
