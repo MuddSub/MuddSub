@@ -15,7 +15,7 @@ class HydrophonesPublisher:
 
     def __init__(self):
         """Initialize Hydrophones instance."""
-        self.hydrophones_data_pub = rospy.Publisher('hydrophones/data', PingerData, queue_size=10)
+        self._hydrophones_data_pub = rospy.Publisher('hydrophones/data', PingerData, queue_size=10)
 
     def publishData(self, data):
         """
@@ -26,4 +26,4 @@ class HydrophonesPublisher:
         Args:
             data: The hydrophones/PingerData message.
         """
-        self.hydrophones_data_pub.publish(data)
+        self._hydrophones_data_pub.publish(data)

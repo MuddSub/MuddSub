@@ -23,10 +23,10 @@ class VisionPublisher:
 
     def __init__(self, cameraName):
         """Initialize VisionPublisher instance."""
-        self.cameraName = cameraName
-        self.bboxes_pub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
-        self.detection_pub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
-        self.detection_array_pub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
+        self._cameraName = cameraName
+        self._bboxes_pub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
+        self._detection_pub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
+        self._detection_array_pub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
 
     def publishBoundingBoxes(self, boundingBoxes):
         """
@@ -37,7 +37,7 @@ class VisionPublisher:
         Args:
             boundingBoxes: The vision/BoundingBox2DArray message.
         """
-        self.bboxes_pub.publish(boundingBoxes)
+        self._bboxes_pub.publish(boundingBoxes)
 
     def publishDetection(self, detection):
         """
@@ -48,7 +48,7 @@ class VisionPublisher:
         Args:
             detection: The vision/Detection message.
         """
-        self.detection_pub.publish(detection)
+        self._detection_pub.publish(detection)
 
     def publishDetectionArray(self, detectionArray):
         """
@@ -59,4 +59,4 @@ class VisionPublisher:
         Args:
             detectionArray: The vision/DetectionArray message.
         """
-        self.detection_array_pub.publish(detectionArray)
+        self._detection_array_pub.publish(detectionArray)
