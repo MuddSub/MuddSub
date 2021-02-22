@@ -7,6 +7,6 @@
     <arg name="paused" value="true" />
   </include>
   <include file="$(find core)/descriptions/alfie_description/launch/upload.launch" />
-  <node name="sim_gazebo_interface" pkg="sim" type="GazeboInterface.py" output="screen"/>
+  <node name="sim_gazebo_interface" pkg="sim" type="gazebo_interface.py" output="screen"/>
 
 </launch>

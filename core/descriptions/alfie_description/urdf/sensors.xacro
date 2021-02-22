@@ -25,4 +25,11 @@
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:default_camera> -->
 
+  <xacro:default_imu_macro
+    namespace="${namespace}"
+    parent_link="${namespace}/base_link"
+    inertial_reference_frame="world_ned">
+    <origin xyz="0 0 0" rpy="${pi} 0 0"/>
+  </xacro:default_imu_macro>
+
 </robot>
