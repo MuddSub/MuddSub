@@ -7,7 +7,7 @@ from hydrophones.msg import PingerData
 from sensor_msgs.msg import Range
 from geometry_msgs.msg import Vector3
 
-def hydrophonesPubNode():
+def hydrophonesExampleNode():
     rospy.init_node('hydrophonesPublisher', anonymous=True)
     hydrophonesPublisher = HydrophonesPublisher()
     rate = rospy.Rate(1)
@@ -36,6 +36,6 @@ def hydrophonesPubNode():
 
 if __name__ == '__main__':
     try:
-        hydrophonesPubNode()
+        hydrophonesExampleNode()
     except rospy.ROSInterruptException:
         pass

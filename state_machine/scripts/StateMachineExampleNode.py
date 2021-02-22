@@ -8,7 +8,7 @@ from geometry_msgs.msg import Vector3
 from state_machine.msg import Gripper
 from state_machine.msg import Torpedo
 
-def stateMachinePubNode():
+def stateMachineExampleNode():
     rospy.init_node('state_machine_example_node', anonymous=True)
     stateMachinePublisher = StateMachinePublisher()
     rate = rospy.Rate(1)
@@ -43,6 +43,6 @@ def stateMachinePubNode():
 
 if __name__ == '__main__':
     try:
-        stateMachinePubNode()
+        stateMachineExampleNode()
     except rospy.ROSInterruptException:
         pass

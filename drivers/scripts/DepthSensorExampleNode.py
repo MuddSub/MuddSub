@@ -7,7 +7,7 @@ from drivers.msg import Depth
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Temperature
 
-def depthSensorPubNode():
+def depthSensorExampleNode():
     rospy.init_node('depth_sensor_example_node', anonymous=True)
     depthSensorPublisher = DepthSensorPublisher()
     rate = rospy.Rate(1)
@@ -36,6 +36,6 @@ def depthSensorPubNode():
 
 if __name__ == '__main__':
     try:
-        depthSensorPubNode()
+        depthSensorExampleNode()
     except rospy.ROSInterruptException:
         pass
