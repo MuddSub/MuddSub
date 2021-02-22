@@ -44,9 +44,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(DepthSensorPubNode
-	src/DepthSensorPubNode.cc
+add_executable(DepthSensorExampleNode
+	src/DepthSensorExampleNode.cc
   src/DepthSensorPublisher.cc
 )
-add_dependencies(DepthSensorPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(DepthSensorPubNode ${catkin_LIBRARIES})
+add_dependencies(DepthSensorExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(DepthSensorExampleNode ${catkin_LIBRARIES})

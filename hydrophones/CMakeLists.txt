@@ -79,13 +79,13 @@ generate_messages(
   geometry_msgs
 )
 
-catkin_install_python(PROGRAMS scripts/HydrophonesPubNode.py
+catkin_install_python(PROGRAMS scripts/HydrophonesExampleNode.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-add_executable(HydrophonesPubNode src/HydrophonesPubNode.cc src/HydrophonesPublisher.cc)
-add_dependencies(HydrophonesPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(HydrophonesPubNode ${catkin_LIBRARIES})
+add_executable(HydrophonesExampleNode src/HydrophonesExampleNode.cc src/HydrophonesPublisher.cc)
+add_dependencies(HydrophonesExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(HydrophonesExampleNode ${catkin_LIBRARIES})
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################

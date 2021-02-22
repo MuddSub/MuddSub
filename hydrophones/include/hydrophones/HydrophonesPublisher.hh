@@ -9,16 +9,13 @@ namespace MuddSub::Hydrophones
     {
         private:
       /**
-       * @brief Publisher to hydrophones/data topic
+       * @brief Publisher hydrophones/PingerData messages to hydrophones/data topic
        *
-       * Publishes hydrophones/PingerData messages
        */
-       ros::Publisher hydrophones_data_pub;
+       ros::Publisher hydrophonesDataPub_;
 
      /**
-       * @brief Node handle
-       *
-       * NodeHandle is the main access point to communications with the ROS system.
+       * @brief Node handle, the main access point to communications with the ROS system.
        */
       ros::NodeHandle n_;
 
@@ -36,6 +33,11 @@ namespace MuddSub::Hydrophones
        * @brief Use default copy constructor
        */
       HydrophonesPublisher(const HydrophonesPublisher&) = default;
+
+      /**
+      * @brief Explicitly deleted constructor
+      */
+      HydrophonesPublisher() = delete;
 
       /**
        * @brief Publishes a hydrophones/PingerData message

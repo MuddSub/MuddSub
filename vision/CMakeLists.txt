@@ -84,13 +84,13 @@ generate_messages(
   vision_msgs
 
 )
-catkin_install_python(PROGRAMS scripts/VisionPubNode.py
+catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-add_executable(VisionPubNode src/VisionPubNode.cc src/VisionPublisher.cc)
-target_link_libraries(VisionPubNode ${catkin_LIBRARIES})
-add_dependencies(VisionPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(VisionExampleNode src/VisionExampleNode.cc src/VisionPublisher.cc)
+target_link_libraries(VisionExampleNode ${catkin_LIBRARIES})
+add_dependencies(VisionExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

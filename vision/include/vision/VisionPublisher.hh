@@ -13,66 +13,33 @@ namespace MuddSub::Vision
     class VisionPublisher
     {
         private:
-      /**
-       * @brief Publisher to vision/<camera_name>/info topic
-       *
-       * Publishes sensor_msgs/CameraInfo messages
-       */
-       ros::Publisher camera_info_pub;
 
       /**
-       * @brief Publisher to vision/<camera_name>/image/raw topic
+       * @brief Publishes vision/BoundingBox2DArray messages to vision/bounding_boxes topic
        *
-       * Publishes sensor_msgs/Image messages
        */
-      ros::Publisher raw_image_pub;
+      ros::Publisher bboxesPub_;
 
       /**
-       * @brief Publisher to vision/<camera_name>/image/greyscale topic
+       * @brief Publishes vision/Detection messages to vision/detection topic
        *
-       * Publishes sensor_msgs/Image messages
        */
-      ros::Publisher greyscale_image_pub;
+      ros::Publisher detectionPub_;
 
       /**
-       * @brief Publisher to vision/<camera_name>/image/compressed topic
+       * @brief Publishes vision/DetectionArray messages to vision/detection_array topic
        *
-       * Publishes sensor_msgs/CompressedImage messages
        */
-      ros::Publisher compressed_image_pub;
+      ros::Publisher detectionArrayPub_;
 
       /**
-       * @brief Publisher to vision/bounding_boxes topic
-       *
-       * Publishes vision/BoundingBox2DArray messages
-       */
-      ros::Publisher bboxes_pub;
-
-      /**
-       * @brief Publisher to vision/detection topic
-       *
-       * Publishes vision/Detection messages
-       */
-      ros::Publisher detection_pub;
-
-      /**
-       * @brief Publisher to vision/detection_array topic
-       *
-       * Publishes vision/DetectionArray messages
-       */
-      ros::Publisher detection_array_pub;
-
-      /**
-       * @brief Node handle
-       *
-       * NodeHandle is the main access point to communications with the ROS system.
+       * @brief Node handle is the main access point to communications with the ROS system.
        */
       ros::NodeHandle n_;
 
       /**
-       * @brief The camera name
+       * @brief The name of the camera that took the image that will be used for the detection and bounding boxes.
        *
-       * Each instance of VisionPublisher will publish for a specific camera
        */
       std::string cameraName_;
 
@@ -88,45 +55,14 @@ namespace MuddSub::Vision
       VisionPublisher(ros::NodeHandle n, std::string cameraName);
 
       /**
+      * @brief Explicitely deteleted constructor
+      */
+      VisionPublisher() = delete;
+
+      /**
        * @brief Use default copy constructor
        */
       VisionPublisher(const VisionPublisher&) = default;
-
-      /**
-       * @brief Publishes a sensor_msgs/CameraInfo message
-       *
-       * Uses the camera_info_pub Publisher to publish to vision/<camera_name>/info
-       *
-       * @param cameraInfo The CameraInfo message to publish
-       */
-      void publishCameraInfo(sensor_msgs::CameraInfo& cameraInfo);
-
-      /**
-       * @brief Publishes a sensor_msgs/Image message
-       *
-       * Uses the raw_image_pub Publisher to publish to vision/<camera_name>/image/raw
-       *
-       * @param rawImage The Image message to publish
-       */
-      void publishRawImage(sensor_msgs::Image& rawImage);
-
-      /**
-       * @brief Publishes a sensor_msgs/Image message
-       *
-       * Uses the greyscale_image_pub Publisher to publish to vision/<camera_name>/image/greyscale
-       *
-       * @param greyscaleImage The Image message to publish
-       */
-      void publishGreyscaleImage(sensor_msgs::Image& greyscaleImage);
-
-      /**
-       * @brief Publishes a sensor_msgs/CompressedImage message
-       *
-       * Uses the compressed_image_pub Publisher to publish to vision/<camera_name>/image/compressed
-       *
-       * @param compressedImage The CompressedImage message to publish
-       */
-      void publishCompressedImage(sensor_msgs::CompressedImage& compressedImage);
 
       /**
        * @brief Publishes a vision/BoundingBox2DArray message

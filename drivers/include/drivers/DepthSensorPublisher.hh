@@ -10,41 +10,29 @@ namespace MuddSub::DepthSensor
   /**
    * @brief Publishes depth sensor data.
    *
-   * The sensed depth of the robot is published in depth_sensor/Depth messages to the depth_sensor/depth topic.
+   * The sensed depth of the robot is published in drivers/depth_sensor/Depth messages to the drivers/depth_sensor/depth topic.
    *
-   * The sensed fluid pressure is published in sensor_msgs/FluidPressure messages to the depth_sensor/pressure topic.
+   * The sensed fluid pressure is published in sensor_msgs/FluidPressure messages to the drivers/depth_sensor/pressure topic.
    *
-   * The sensed temperature is published in sensor_msgs/Temperature messages to the depth_sensor/temperature topic.
+   * The sensed temperature is published in sensor_msgs/Temperature messages to the drivers/depth_sensor/temperature topic.
    */
   class DepthSensorPublisher
   {
     private:
       /**
-       * @brief Publisher to depth_sensor/depth topic
+       * @brief Publisher to drivers/depth_sensor/depth topic
        *
-       * Publishes depth_sensor/Depth messages
+       * Publishes drivers/depth_sensor/Depth messages
        */
-      ros::Publisher depth_pub;
+      ros::Publisher depthPub_;
 
-      /**
-       * @brief Publisher to depth_sensor/pressure topic
-       *
-       * Publishes sensor_msgs/FluidPressure messages
-       */
-      ros::Publisher pressure_pub;
+      /// @brief Publishes sensor_msgs/FluidPressure messages to drivers/depth_sensor/pressure topic
+      ros::Publisher pressurePub_;
 
-      /**
-       * @brief Publisher to depth_sensor/temperature topic
-       *
-       * Publishes sensor_msgs/Temperature messages
-       */
-      ros::Publisher temperature_pub;
+      /// @brief Publishes sensor_msgs/Temperature messages to drivers/depth_sensor/temperature topic
+      ros::Publisher temperaturePub_;
 
-      /**
-       * @brief Node handle
-       *
-       * NodeHandle is the main access point to communications with the ROS system.
-       */
+      /// @brief Node handle, the main access point to communications with the ROS system.
       ros::NodeHandle n_;
 
     public:
@@ -57,15 +45,16 @@ namespace MuddSub::DepthSensor
        */
       DepthSensorPublisher(ros::NodeHandle n);
 
-      /**
-       * @brief Use default copy constructor
-       */
+      /// @brief Explicitly deleted default constructor
+      DepthSensorPublisher() = delete;
+
+      /// @brief Use default copy constructor
       DepthSensorPublisher(const DepthSensorPublisher&) = default;
 
       /**
-       * @brief Publishes a depth_sensor/Depth message
+       * @brief Publishes a drivers/depth_sensor/Depth message
        *
-       * Uses the depth_pub Publisher to publish to depth_sensor/depth
+       * Uses the depthPub_ Publisher to publish to drivers/depth_sensor/depth
        *
        * @param depth The Depth message to publish
        */
@@ -74,7 +63,7 @@ namespace MuddSub::DepthSensor
       /**
        * @brief Publishes a sensor_msgs/FluidPressure message
        *
-       * Uses the pressure_pub Publisher to publish to depth_sensor/pressure
+       * Uses the pressurePub_ Publisher to publish to drivers/depth_sensor/pressure
        *
        * @param pressure The FluidPressure message to publish
        */
@@ -83,7 +72,7 @@ namespace MuddSub::DepthSensor
       /**
        * @brief Publishes a sensor_msgs/Temperature message
        *
-       * Uses the temperature_pub Publisher to publish to depth_sensor/temperature
+       * Uses the temperaturePub_ Publisher to publish to drivers/depth_sensor/temperature
        *
        * @param temperature The Temperature message to publish
        */

@@ -19,32 +19,16 @@ namespace MuddSub::Controls
   class ControlsPublisher
   {
     private:
-      /**
-       * @brief Publisher to controls/robot/wrench topic
-       *
-       * Publishes geometry_msgs/WrenchStamped messages
-       */
-      ros::Publisher wrench_pub;
+      /// @brief Publishes to geometry_msgs/WrenchStamped messages controls/robot/wrench topic
+      ros::Publisher wrenchPub_;
 
-      /**
-       * @brief Publisher to controls/thruster/forces topic
-       *
-       * Publishes controls/ThrusterForceArray messages
-       */
-      ros::Publisher forces_pub;
+      /// @brief Publishes controls/ThrusterForceArray messages to controls/thruster/forces topic
+      ros::Publisher forcesPub_;
 
-      /**
-       * @brief Publisher to controls/thruster/pwms topic
-       *
-       * Publishes controls/ThrusterPWMArray messages
-       */
-      ros::Publisher pwms_pub;
+      /// @brief Publishes controls/ThrusterPWMArray messages to controls/thruster/pwms topic
+      ros::Publisher pwmsPub_;
 
-      /**
-       * @brief Node handle
-       *
-       * NodeHandle is the main access point to communications with the ROS system.
-       */
+      /// @brief Node handle, the main access point to communications with the ROS system.
       ros::NodeHandle n_;
 
     public:
@@ -57,15 +41,16 @@ namespace MuddSub::Controls
        */
       ControlsPublisher(ros::NodeHandle n);
 
-      /**
-       * @brief Use default copy constructor
-       */
+      /// @brief Explicitly deleted default constructor
+      ControlsPublisher() = delete;
+
+      /// @brief Use default copy constructor
       ControlsPublisher(const ControlsPublisher&) = default;
 
       /**
        * @brief Publishes a geometry_msgs/WrenchStamped message
        *
-       * Uses the wrench_pub Publisher to publish to controls/robot/wrench
+       * Uses the wrenchPub_ Publisher to publish to controls/robot/wrench
        *
        * @param wrenchStamped The WrenchStamped message to publish
        */
@@ -74,7 +59,7 @@ namespace MuddSub::Controls
       /**
        * @brief Publishes a controls/ThrusterForceArray message
        *
-       * Uses the forces_pub Publisher to publish to controls/thruster/forces
+       * Uses the forcesPub_ Publisher to publish to controls/thruster/forces
        *
        * @param forces The ThrusterForceArray message to publish
        */
@@ -83,7 +68,7 @@ namespace MuddSub::Controls
       /**
        * @brief Publishes a controls/ThrusterPWMArray message
        *
-       * Uses the pwms_pub Publisher to publish to controls/thruster/pwms
+       * Uses the pwmsPub_ Publisher to publish to controls/thruster/pwms
        *
        * @param pwms The ThrusterPWMArray message to publish
        */

@@ -8,7 +8,7 @@ from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Vector3, Pose2D
 
 def visionPubNode():
-    rospy.init_node('VisionPubNode', anonymous=True)
+    rospy.init_node('vision_pub_node', anonymous=True)
     visionPublisher = VisionPublisher("test_camera")
     rate = rospy.Rate(1)
 
