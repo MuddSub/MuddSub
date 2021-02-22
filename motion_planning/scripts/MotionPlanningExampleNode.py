@@ -53,6 +53,6 @@ def motionPlanningExampleNode():
 
 if __name__ == '__main__':
     try:
-        trajectoryExampleNode()
+        motionPlanningExampleNode()
     except rospy.ROSInterruptException:
         pass
