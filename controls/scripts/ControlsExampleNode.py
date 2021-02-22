@@ -9,8 +9,8 @@ from geometry_msgs.msg import Vector3
 from controls.msg import ThrusterForceArray
 from controls.msg import ThrusterPWMArray
 
-def controlsPubNode():
-    rospy.init_node('ControlsPubNode', anonymous=True)
+def controlsExampleNode():
+    rospy.init_node('controls_example_node', anonymous=True)
     controlsPublisher = ControlsPublisher()
     rate = rospy.Rate(1)
 
@@ -39,6 +39,6 @@ def controlsPubNode():
 
 if __name__ == '__main__':
     try:
-        controlsPubNode()
+        controlsExampleNode()
     except rospy.ROSInterruptException:
         pass

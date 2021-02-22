@@ -14,8 +14,8 @@ from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from slam.msg import Map
 
-def slamPubNode():
-    rospy.init_node('SLAMPubNode', anonymous=True)
+def slamExampleNode():
+    rospy.init_node('slam_example_node', anonymous=True)
     slamPublisher = SLAMPublisher()
     rate = rospy.Rate(1)
 
@@ -47,6 +47,6 @@ def slamPubNode():
 
 if __name__ == '__main__':
     try:
-        slamPubNode()
+        slamExampleNode()
     except rospy.ROSInterruptException:
         pass

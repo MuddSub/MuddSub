@@ -16,25 +16,13 @@ namespace MuddSub::SLAM
   class SLAMPublisher
   {
     private:
-      /**
-       * @brief Publisher to slam/robot/state topic
-       *
-       * Publishes nav_msgs/Odometry messages
-       */
-      ros::Publisher state_pub;
+      /// @brief Publishes nav_msgs/Odometry messages to slam/robot/state topic
+      ros::Publisher statePub_;
 
-      /**
-       * @brief Publisher to slam/map topic
-       *
-       * Publishes slam/Map messages
-       */
-      ros::Publisher map_pub;
+      /// @brief Publishes slam/Map messages to slam/map topic
+      ros::Publisher mapPub_;
 
-      /**
-       * @brief Node handle
-       *
-       * NodeHandle is the main access point to communications with the ROS system.
-       */
+      /// @brief Node handle, the main access point to communications with the ROS system.
       ros::NodeHandle n_;
 
     public:
@@ -47,15 +35,16 @@ namespace MuddSub::SLAM
        */
       SLAMPublisher(ros::NodeHandle n);
 
-      /**
-       * @brief Use default copy constructor
-       */
+      /// @brief Explicitly deleted default constructor
+      SLAMPublisher() = delete;
+
+      /// @brief Use default copy constructor
       SLAMPublisher(const SLAMPublisher&) = default;
 
       /**
        * @brief Publishes a nav_msgs/Odometry message
        *
-       * Uses the state_pub Publisher to publish to slam/robot/state
+       * Uses the statePub_ Publisher to publish to slam/robot/state
        *
        * @param odometry The Odometry message to publish
        */
@@ -64,7 +53,7 @@ namespace MuddSub::SLAM
       /**
        * @brief Publishes a slam/Map message
        *
-       * Uses the map_pub Publisher to publish to slam/map
+       * Uses the mapPub_ Publisher to publish to slam/map
        *
        * @param map The Map message to publish
        */

@@ -5,17 +5,17 @@ namespace MuddSub::SLAM
   SLAMPublisher::SLAMPublisher(ros::NodeHandle n):
     n_(n)
   {
-    state_pub = n_.advertise<nav_msgs::Odometry>("slam/robot/state", 1000);
-    map_pub = n_.advertise<slam::Map>("slam/map", 1000);
+    statePub_ = n_.advertise<nav_msgs::Odometry>("slam/robot/state", 1000);
+    mapPub_ = n_.advertise<slam::Map>("slam/map", 1000);
   }
 
   void SLAMPublisher::publishState(nav_msgs::Odometry& odometry)
   {
-    state_pub.publish(odometry);
+    statePub_.publish(odometry);
   }
 
   void SLAMPublisher::publishMap(slam::Map& map)
   {
-    map_pub.publish(map);
+    mapPub_.publish(map);
   }
 }
