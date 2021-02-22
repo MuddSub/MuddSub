@@ -129,12 +129,12 @@ include_directories(
 #   src/${PROJECT_NAME}/state_machine.cpp
 # )
 
-add_executable(StateMachinePubNode
-	src/StateMachinePubNode.cc
+add_executable(StateMachineExampleNode
+	src/StateMachineExampleNode.cc
   src/StateMachinePublisher.cc
 )
-add_dependencies(StateMachinePubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(StateMachinePubNode ${catkin_LIBRARIES})
+add_dependencies(StateMachineExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(StateMachineExampleNode ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

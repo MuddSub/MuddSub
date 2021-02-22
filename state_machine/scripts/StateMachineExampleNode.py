@@ -9,7 +9,7 @@ from state_machine.msg import Gripper
 from state_machine.msg import Torpedo
 
 def stateMachinePubNode():
-    rospy.init_node('StateMachinePubNode', anonymous=True)
+    rospy.init_node('state_machine_example_node', anonymous=True)
     stateMachinePublisher = StateMachinePublisher()
     rate = rospy.Rate(1)
 

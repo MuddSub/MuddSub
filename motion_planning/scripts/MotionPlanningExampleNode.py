@@ -2,15 +2,15 @@
 
 import rospy
 from std_msgs.msg import Header
-from TrajectoryPublisher import TrajectoryPublisher
+from MotionPlanningPublisher import MotionPlanningPublisher
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 
-def trajectoryPubNode():
-    rospy.init_node('TrajectoryPubNode', anonymous=True)
-    trajectoryPublisher = TrajectoryPublisher()
+def motionPlanningPubNode():
+    rospy.init_node('motion_planning_example_node', anonymous=True)
+    motionPlanningPublisher = MotionPlanningPublisher()
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
@@ -48,7 +48,7 @@ def trajectoryPubNode():
         trajectory.poses.append(waypoint2)
 
         # Publish messages
-        trajectoryPublisher.publishTrajectory(trajectory)
+        motionPlanningPublisher.publishTrajectory(trajectory)
         rate.sleep()
 
 if __name__ == '__main__':

@@ -10,32 +10,16 @@ namespace MuddSub::StateMachine
   class StateMachinePublisher
   {
     private:
-      /**
-       * @brief Publisher to state_machine/objective topic
-       *
-       * Publishes actionlib_msgs/GoalID messages
-       */
-      ros::Publisher objective_pub;
+      /// @brief Publisher to state_machine/objective topic
+      ros::Publisher objectivePub_;
 
-      /**
-       * @brief Publisher to state_machine/gripper topic
-       *
-       * Publishes state_machine/Gripper messages
-       */
-      ros::Publisher gripper_pub;
+      /// @brief Publisher to state_machine/gripper topic
+      ros::Publisher gripperPub_;
 
-      /**
-       * @brief Publisher to state_machine/torpedo topic
-       *
-       * Publishes state_machine/Torpedo messages
-       */
-      ros::Publisher torpedo_pub;
+      /// @brief Publisher to state_machine/torpedo topic
+      ros::Publisher torpedoPub_;
 
-      /**
-       * @brief Node handle
-       *
-       * NodeHandle is the main access point to communications with the ROS system.
-       */
+      /// @brief Node handle NodeHandle is the main access point to communications with the ROS system.
       ros::NodeHandle n_;
 
     public:
@@ -48,15 +32,16 @@ namespace MuddSub::StateMachine
        */
       StateMachinePublisher(ros::NodeHandle n);
 
-      /**
-       * @brief Use default copy constructor
-       */
+      /// @brief Explecitly delete default constructor
+      StateMachinePublisher() = delete;
+
+      /// @brief Use default copy constructor
       StateMachinePublisher(const StateMachinePublisher&) = default;
 
       /**
        * @brief Publishes an actionlib_msgs/GoalID message
        *
-       * Uses the objective_pub Publisher to publish to state_machine/objective
+       * Uses the objectivePub_ Publisher to publish to state_machine/objective
        *
        * @param objective The GoalID message to publish
        */
@@ -65,19 +50,19 @@ namespace MuddSub::StateMachine
       /**
        * @brief Publishes a state_machine/Gripper message
        *
-       * Uses the gripper_pub Publisher to publish to state_machine/gripper
+       * Uses the gripperPub_ Publisher to publish to state_machine/gripper
        *
-       * @param gripper_command The Gripper message to publish
+       * @param gripperCommand The Gripper message to publish
        */
-      void publishGripperCommand(state_machine::Gripper& gripper_command);
+      void publishGripperCommand(state_machine::Gripper& gripperCommand);
 
       /**
        * @brief Publishes a state_machine/Torpedo message
        *
-       * Uses the torpedo_pub Publisher to publish to state_machine/torpedo
+       * Uses the torpedoPub_ Publisher to publish to state_machine/torpedo
        *
-       * @param torpedo_command The Torpedo message to publish
+       * @param torpedoCommand The Torpedo message to publish
        */
-      void publishTorpedoCommand(state_machine::Torpedo& torpedo_command);
+      void publishTorpedoCommand(state_machine::Torpedo& torpedoCommand);
   };
 } // namespace MuddSub::StateMachine
