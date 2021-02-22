@@ -8,7 +8,7 @@ from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
 
-def motionPlanningPubNode():
+def motionPlanningExampleNode():
     rospy.init_node('motion_planning_example_node', anonymous=True)
     motionPlanningPublisher = MotionPlanningPublisher()
     rate = rospy.Rate(1)
@@ -53,6 +53,6 @@ def motionPlanningPubNode():
 
 if __name__ == '__main__':
     try:
-        trajectoryPubNode()
+        motionPlanningExampleNode()
     except rospy.ROSInterruptException:
         pass
