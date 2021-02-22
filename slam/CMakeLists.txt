@@ -129,12 +129,12 @@ include_directories(
 #   src/${PROJECT_NAME}/slam.cpp
 # )
 
-add_executable(SLAMPubNode
-	src/SLAMPubNode.cc
+add_executable(SLAMExampleNode
+	src/SLAMExampleNode.cc
   src/SLAMPublisher.cc
 )
-add_dependencies(SLAMPubNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(SLAMPubNode ${catkin_LIBRARIES})
+add_dependencies(SLAMExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(SLAMExampleNode ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

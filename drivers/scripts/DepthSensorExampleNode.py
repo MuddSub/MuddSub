@@ -8,7 +8,7 @@ from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Temperature
 
 def depthSensorPubNode():
-    rospy.init_node('DepthSensorPubNode', anonymous=True)
+    rospy.init_node('depth_sensor_example_node', anonymous=True)
     depthSensorPublisher = DepthSensorPublisher()
     rate = rospy.Rate(1)
 

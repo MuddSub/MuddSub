@@ -13,33 +13,33 @@ class SLAMPublisher:
     The map of the environment, composed of landmark coordinates and uncertainties are represented by slam/Map messages published to the slam/map topic.
 
     Attributes:
-        state_pub: Publisher to slam/robot/state. Publishes nav_msgs/Odometry messages.
-        map_pub: Publisher to slam/map. Publishes slam/map messages.
+        _statePub: Publisher to slam/robot/state. Publishes nav_msgs/Odometry messages.
+        _mapPub: Publisher to slam/map. Publishes slam/map messages.
     """
 
     def __init__(self):
         """Initialize SLAMPublisher instance."""
-        self.state_pub = rospy.Publisher('slam/robot/state', Odometry, queue_size=10)
-        self.map_pub = rospy.Publisher('slam/map', Map, queue_size=10)
+        self._statePub = rospy.Publisher('slam/robot/state', Odometry, queue_size=10)
+        self._mapPub = rospy.Publisher('slam/map', Map, queue_size=10)
 
     def publishState(self, state):
         """
         Publish a nav_msgs/Odometry message.
 
-        Uses the state_pub Publisher to publish to slam/robot/state.
+        Uses the _statePub Publisher to publish to slam/robot/state.
 
         Args:
             state: The nav_msgs/Odometry message.
         """
-        self.state_pub.publish(state)
+        self._statePub.publish(state)
 
     def publishMap(self, map):
         """
         Publish a slam/Map message.
 
-        Uses the map_pub Publisher to publish to slam/map.
+        Uses the _mapPub Publisher to publish to slam/map.
 
         Args:
             map: The slam/Map message.
         """
-        self.map_pub.publish(map)
+        self._mapPub.publish(map)
