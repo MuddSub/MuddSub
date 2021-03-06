@@ -1,5 +1,8 @@
+from matplotlib import pyplot as plt 
 from queue import PriorityQueue
 import random
+from matplotlib import colors
+import numpy as np
 
 def decision(probability):
     return random.random() < probability
@@ -27,7 +30,9 @@ class Node(object):
         return self.f > other.f
     def __str__(self):
         
-        if(self.isObstacle):  return "1"
+        if(self.isObstacle):  
+            self.string = "1"
+            return "1"
         return self.string
         
     
@@ -98,13 +103,49 @@ def makeParent(grid, node):
     if(node.parent == None): return 
     makeParent(grid, node.parent)
 
+def printGrid(grid):
+    """Create a graphical representation of the grid in matplotlib"""
+    data = []
+    for i in range(len(grid)):
+        newarray = []
+        for j in range(len(grid[0])):
+            if(grid[i][j].string == "."):
+                newarray += [0]
+            elif(grid[i][j].string == "1"):
+                newarray += [1]
+            elif(grid[i][j].string == "2"):
+                newarray += [2]
+            else:
+                newarray += [3]
+        data += [newarray]
+    print(data)
+    height = len(grid)
+    width = len(grid[0])
+
+    # create discrete colormap
+    cmap = colors.ListedColormap(['lightblue', 'red', 'yellowgreen', 'green'])
+    bounds = [0,1,2,3,4]
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+
+    fig, ax = plt.subplots()
+    ax.imshow(data, cmap=cmap, norm=norm)
+
+    # draw gridlines
+    ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
+    ax.set_xticks(np.arange(-0.5, width, 1))
+    ax.set_yticks(np.arange(-0.5, height, 1))
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+
+    plt.show()
+
 
 
 def main():
-    #".": cell
-    #"1": obstacle
-    #"2": visited 
-    #"3": actual path
+    #".": cell (light blue)
+    #"1": obstacle (red)
+    #"2": visited (yellow green)
+    #"3": actual path (green)
     width = 10
     length = 10
     grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
@@ -114,6 +155,8 @@ def main():
         for j in range(len(grid[0])):
             print(grid[i][j], end = " ")
         print("\n")
+    printGrid(grid)
+    
     
 
 if __name__ == "__main__":
