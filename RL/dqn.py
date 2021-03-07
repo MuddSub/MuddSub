@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 from tqdm.notebook import tqdm    # To get nice progress bars
 from collections import deque
 import gym
@@ -36,6 +36,7 @@ class FunctionApproximator:
     self.alpha_decay = alpha_decay
     self.batchsize = batchsize
     self.num_actions = num_actions
+    # state composition pixel values for top right and bottom left corners of image from both cameras, x, y, z, yaw
     self.state_length = state_length
 
     # creating the neural network
@@ -65,6 +66,7 @@ class FunctionApproximator:
       raise ValueError(f'states should be a Python list')
     for state in states:
       assert state.shape == (1, self.state_length)
+
     return self.model.predict(np.vstack(states), batch_size=len(states))
 
   def setQValuesForStates(self, states, qValues):
@@ -75,7 +77,6 @@ class FunctionApproximator:
 
     It is much quicker to call this on a number of states/qValues than to call
     multiple times with single state/qValue."""
-
     if not isinstance(states, list):
       raise ValueError(f'states should be a Python list')
     if not isinstance(qValues, np.ndarray):
@@ -94,11 +95,12 @@ class ExperienceBuffer:
 
   This acts like a model for doing planning."""
 
-  def __init__(self, approximator, num_actions=2, state_length=4):
+  def __init__(self, approximator, num_actions=6, state_length=12):
     self.approximator = approximator
     max_capacity = 10000
     # Use a deque which atuomatically pops front values when length gets too big
-    self.dq = collections.deque([], maxlen = max_capacity)
+    self.dq = deque([], maxlen = max_capacity)
+    self.num_actions = num_actions
 
 
   def remember(self, s, action, reward, sprime, done):
@@ -119,14 +121,14 @@ class ExperienceBuffer:
     #col 0: states, col1: actions, col2: rewards, col 3: sprimes(next state), col4: done
 
     samples_copy = np.array(samples)
-    states = [np.array(state).reshape(-1,4) for state in samples_copy[:,0]]
+    states = [np.array(state).reshape(1, approximator.state_length) for state in samples_copy[:,0]]
 
-    values = self.approximator.getQValuesForStates(states).reshape(-1,2)
+    values = self.approximator.getQValuesForStates(states).reshape(-1,self.num_actions)
 
-    new_states = [np.array(state).reshape(-1,4) for state in samples_copy[:,3]]
-    new_values = np.array(self.approximator.getQValuesForStates(new_states)).reshape(-1,2)
-    done = samples_copy[:,4].reshape(-1,1)
+    new_states = [np.array(state).reshape(1, approximator.state_length) for state in samples_copy[:,3]]
 
+    new_values = np.array(self.approximator.getQValuesForStates(new_states))#.reshape(-1,2)
+    done = samples_copy[:,4]
     # r + max_a'(q(s',a')) -> get the new value
     updated_q = samples_copy[:,2] + np.max(new_values, axis=1)
     actions = samples_copy[:,1]
@@ -134,8 +136,11 @@ class ExperienceBuffer:
     # Get updated q[s,a] pairs
     for idx, value in enumerate(values):
       # Update values of correct action
-      values[idx][actions[idx]] = updated_q[idx]
-      if done[idx]:
+      indexedAction = actions[0]
+      a = values[idx]
+      b = updated_q[idx]
+      a[indexedAction] = b
+      if done[0]:
         # If done, q=r=0
         values[idx][actions[idx]] = 0
 
@@ -149,6 +154,7 @@ class Solver:
     self.approximator = approximator
     self.experience_buffer = experience_buffer
     self.epsilon_min = epsilon_min
+    self.state_length = 12
 
   def getAction(self, state, epsilon):
     """Returns the action to take from the given state.  Uses passed-in epsilon
@@ -156,7 +162,7 @@ class Solver:
     # TODO: You'll need to do epsilon-greedy, and will need to use the approximator
     # to determine the greedy action
     if random.random() > epsilon:
-      values = self.approximator.getQValuesForState(state.reshape(1,4))
+      values = self.approximator.getQValuesForState(state.reshape(1,self.state_length))
       action = np.argmax(values)
       return action
     return self.env.action_space.sample() # Returns a random action
@@ -193,7 +199,7 @@ class Solver:
         action = self.getAction(observation, 0)
         #print(f'transition on state {observation}, action {action}')
         observation, reward, done, info = env.step(action)
-        observation= np.array(observation).reshape(-1,4)
+        observation= np.array(observation).reshape(-1,self.state_length)
         #print(f' resulted in new state {observation}, reward {reward}')
         if done:
           lengths.append(i)

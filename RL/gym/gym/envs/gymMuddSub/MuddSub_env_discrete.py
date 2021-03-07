@@ -126,9 +126,10 @@ class MuddSubEnvDiscrete(gym.Env):
         print("prediction",self.model(img)[0][0])
         pred_left = self.model(img_left)
         pred_right = self.model(img_right)
-        pred_left = non_max_suppression(pred_left, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0]
-        pred_right = non_max_suppression(pred_right, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0]
-        print(pred_left)
+        pred_left = non_max_suppression(pred_left, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0][:4]
+        pred_right = non_max_suppression(pred_right, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0][:4]
+
+        print("pred_left", pred_left)
         #if pred_left/pred_right is null or something:
         #    return -1
 
