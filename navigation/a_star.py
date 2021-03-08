@@ -8,6 +8,8 @@ def decision(probability):
     return random.random() < probability
 
 infinity = float('inf')
+
+
 class Node(object):
 
     def __init__(self, x, y, end):
@@ -30,10 +32,16 @@ class Node(object):
         return self.f > other.f
     def __str__(self):
         
-        if(self.isObstacle):  
-            self.string = "1"
-            return "1"
+        
         return self.string
+    
+    def setObstacle(self, isObstacle):
+        self.isObstacle = isObstacle
+        if(self.isObstacle):
+            if(self.isObstacle):  
+                self.string = "1"
+            
+            
         
     
 
@@ -45,7 +53,7 @@ def makeGrid(width, height, prob, start_x, start_y, end_x, end_y):
         for j in range(height):
             node = Node(i,j,endNode)
             if(decision(prob) and (i != start_x or j != start_y)):
-                node.isObstacle = True
+                node.setObstacle(True)
             arr.append(node)
         grid.append(arr)
     grid[end_x][end_y] = endNode
@@ -118,7 +126,7 @@ def printGrid(grid):
             else:
                 newarray += [3]
         data += [newarray]
-    print(data)
+    #print(data)
     height = len(grid)
     width = len(grid[0])
 
@@ -131,7 +139,7 @@ def printGrid(grid):
     ax.imshow(data, cmap=cmap, norm=norm)
 
     # draw gridlines
-    ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=2)
+    ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=1)
     ax.set_xticks(np.arange(-0.5, width, 1))
     ax.set_yticks(np.arange(-0.5, height, 1))
     ax.set_xticklabels([])
@@ -140,6 +148,35 @@ def printGrid(grid):
     plt.show()
 
 
+def solveGridDFS(grid, start_x, start_y, end_x, end_y):
+    distance =[]
+    for i in range(len(grid)):
+        newarr = []
+        for j in range(len(grid[0])):
+            newarr.append(infinity)
+        distance.append(newarr)
+    
+    distance[end_x][end_y] = 0
+    DFS(grid, distance, end_x, end_y)
+
+    return distance[start_x][start_y]
+
+
+def DFS(grid, distance, x, y):
+    dy = [1,1,1,0,0,-1,-1,-1]
+    dx = [-1,0,1,-1,1,-1,0,1]
+    for i in range(8):
+        #check if index out of bounds 
+        if (0 <= x + dx[i] < len(grid) and 0 <= y + dy[i] < len(grid[0])):
+            neighbor = grid[x + dx[i]][y + dy[i]]
+            if(neighbor.isObstacle):
+                    continue
+            d = ((x - neighbor.x)**2 + (y - neighbor.y)**2)**0.5
+
+            if(distance[neighbor.x][neighbor.y] > distance[x][y] + d):
+                distance[neighbor.x][neighbor.y] = distance[x][y] + d
+                DFS(grid, distance, neighbor.x, neighbor.y)
+    
 
 def main():
     #".": cell (light blue)
@@ -151,11 +188,23 @@ def main():
     grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
     solveGrid(grid, 0, 0, width-1, length-1)
     makeParent(grid, grid[width-1][length-1])
-    for i in range(len(grid)):
+    """for i in range(len(grid)):
         for j in range(len(grid[0])):
             print(grid[i][j], end = " ")
-        print("\n")
+            pass
+        print("\n")"""
+
+    actualDistance = solveGridDFS(grid, 0, 0, width-1, length-1)
+    astarDistance = grid[width-1][length-1].f
+
+    print("We are printing the DFS shortest path versus the A*. If they are both the same, then we can conclude that A* has found the shortest path")
+
+    print(actualDistance, astarDistance)
+
     printGrid(grid)
+
+
+
     
     
 
