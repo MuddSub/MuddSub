@@ -2,21 +2,21 @@ import numpy as np
 
 class EKF():
   def __init__(self):
-    self.stateEstimate = None
-    self.stateCovariance = None
+    self.state_estimate = None
+    self.state_covariance = None
     pass
 
-  def computeMeasJacobianWRTLandmark(range, bearing, robotState):
+  def computeMeasJacobianWRTLandmark(self,range, bearing, robotState):
     pass
   
-  def computeMeasJacobianWRTPose(range, bearing, robotState):
+  def computeMeasJacobianWRTPose(self,range, bearing, robotState):
     pass
 
-  def computeMotion():
+  def computeMotion(self):
     pass
   # prob need more computation 
   
-  def correct(range, bearing, robotState):
+  def correct(self,range, bearing, robotState):
     pass
 
 class State():

@@ -1,8 +1,8 @@
 class FastSLAM2():
-  def __init__():
+  def __init__(self):
     self.data_input = None
     pass
-  def run():
+  def run(self):
     # propage motion 
 
     # data association 
@@ -13,7 +13,7 @@ class FastSLAM2():
 
     pass
 
-  def evalaute():
+  def evalaute(self):
     pass
 
 
