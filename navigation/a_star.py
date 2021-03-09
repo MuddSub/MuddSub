@@ -54,7 +54,6 @@ def makeGridfromMaze(width, height,text):
 
     text = text.strip()
     print(len(text))
-
     grid = []
     counter = 0
     for i in range(width):
@@ -101,7 +100,7 @@ def solveGrid(grid, start_x, start_y, end_x, end_y):
     q.put(grid[start_x][start_y])
     while(not q.empty()):
 
-        animateGrid(grid)
+        #animateGrid(grid)
 
         #take the node from the priority list 
         nownode = q.get()
@@ -231,6 +230,8 @@ def DFS(grid, distance, x, y):
     
 
 def main():
+
+    print("hello")
     start_time = time.time()
     #".": cell (light blue)
     #"1": obstacle (red)
@@ -272,11 +273,10 @@ def main():
         print("\n")
     print("Process finished --- %s seconds ---" % (time.time() - start_time))
 
-    animateGrid(grid)
-    plt.grid(True)
-    plt.show()
-            pass
-        print("\n")
+    #animateGrid(grid)
+    #plt.grid(True)
+    #plt.show()
+            
 
     actualDistance = solveGridDFS(grid, 0, 0, width-1, length-1)
     astarDistance = grid[width-1][length-1].f
@@ -285,7 +285,7 @@ def main():
 
     print(actualDistance, astarDistance)
 
-    printGrid(grid)    
+    printGrid(grid)  
     
 
 if __name__ == "__main__":
