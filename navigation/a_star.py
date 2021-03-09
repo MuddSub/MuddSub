@@ -3,6 +3,7 @@ from queue import PriorityQueue
 import random
 from matplotlib import colors
 import numpy as np
+import time
 
 def decision(probability):
     return random.random() < probability
@@ -99,7 +100,9 @@ def solveGrid(grid, start_x, start_y, end_x, end_y):
     #put starting node node in the queue
     q.put(grid[start_x][start_y])
     while(not q.empty()):
-        
+
+        animateGrid(grid)
+
         #take the node from the priority list 
         nownode = q.get()
         nownode.isClosed = True
@@ -140,6 +143,26 @@ def makeParent(grid, node):
     if(node.parent == None): return 
     makeParent(grid, node.parent)
 
+def animateGrid(grid):
+    """Create a graphical representation of the grid in matplotlib"""
+
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if(grid[i][j].string == "1"):
+                plt.plot(i, j, "sr", ms = 25)
+            elif(grid[i][j].string == "2"):
+                plt.plot(i, j, "sy", ms = 25)
+            else:
+                plt.plot(i, j, "sg", ms = 25)
+
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if(grid[i][j].string == "."):
+                plt.plot(i, j, "sb", ms = 25)
+    plt.axis([-.5, len(grid)-.5, -.5, len(grid[0])-.5])
+    plt.grid(True)
+    plt.pause(0.01)
+
 def printGrid(grid):
     """Create a graphical representation of the grid in matplotlib"""
     data = []
@@ -171,8 +194,8 @@ def printGrid(grid):
     ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=1)
     ax.set_xticks(np.arange(-0.5, width, 1))
     ax.set_yticks(np.arange(-0.5, height, 1))
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
+    # ax.set_xticklabels([])
+    # ax.set_yticklabels([])
 
     plt.show()
 
@@ -208,6 +231,7 @@ def DFS(grid, distance, x, y):
     
 
 def main():
+    start_time = time.time()
     #".": cell (light blue)
     #"1": obstacle (red)
     #"2": visited (yellow green)
@@ -245,6 +269,12 @@ def main():
     for i in range(len(grid)):
         for j in range(len(grid[0])):
             print(grid[i][j], end = " ")
+        print("\n")
+    print("Process finished --- %s seconds ---" % (time.time() - start_time))
+
+    animateGrid(grid)
+    plt.grid(True)
+    plt.show()
             pass
         print("\n")
 
@@ -255,13 +285,8 @@ def main():
 
     print(actualDistance, astarDistance)
 
-    printGrid(grid)
-
-
-
-    
+    printGrid(grid)    
     
 
 if __name__ == "__main__":
     main()
-    
