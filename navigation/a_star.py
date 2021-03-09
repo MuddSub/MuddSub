@@ -40,9 +40,38 @@ class Node(object):
         if(self.isObstacle):
             if(self.isObstacle):  
                 self.string = "1"
+            else:
+                self.string = "0"
             
-            
-        
+#https://www.dcode.fr/maze-generator           
+def makeGridfromMaze(width, height,text):
+    end_x = width - 1
+    end_y = height - 1
+    start_x = 0
+    start_y = 0
+    endNode = Node(end_x, end_y, None)
+
+    text = text.strip()
+    print(len(text))
+
+    grid = []
+    counter = 0
+    for i in range(width):
+        arr = []
+        for j in range(height):
+            node = Node(i,j,endNode)
+            character = text[counter]
+            if(character == '1' and (i != start_x or j != start_y)):
+                node.setObstacle(True)
+            arr.append(node)
+            counter += 1
+        grid.append(arr)
+    print(len(grid), len(grid[0]))
+    grid[end_x][end_y] = endNode
+    
+    return grid
+    
+
     
 
 def makeGrid(width, height, prob, start_x, start_y, end_x, end_y):
@@ -183,16 +212,41 @@ def main():
     #"1": obstacle (red)
     #"2": visited (yellow green)
     #"3": actual path (green)
-    width = 10
-    length = 10
-    grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
+    width = 21
+    length = 32
+    text = """
+0001111111111111111111111111111
+0000000001000000000000001001001
+1111001001111111001001111001001
+1000001000001001001000001000001
+1001001111111001111001111001111
+1001001000000000000000000000001
+1001001001111111111001001111001
+1001000000000001000001000001001
+1111111111001111111111001111001
+1000001000000000001001001000001
+1001111001111001001001111001111
+1000000000001001000001000000001
+1001111111001001111111001111111
+1001000001001000001000000001001
+1001001111001001111111111001001
+1000001001001000000001000001001
+1111001001001001111001111001001
+1000001000001001000001001000001
+1001111111001111001111001111001
+1000001000001000001000000000001
+11111111111111111111111111110000
+"""
+    print(len(text))
+    grid = makeGridfromMaze(21, 32, text)
+    #grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
     solveGrid(grid, 0, 0, width-1, length-1)
     makeParent(grid, grid[width-1][length-1])
-    """for i in range(len(grid)):
+    for i in range(len(grid)):
         for j in range(len(grid[0])):
             print(grid[i][j], end = " ")
             pass
-        print("\n")"""
+        print("\n")
 
     actualDistance = solveGridDFS(grid, 0, 0, width-1, length-1)
     astarDistance = grid[width-1][length-1].f
