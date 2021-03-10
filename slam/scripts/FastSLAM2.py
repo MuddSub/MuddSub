@@ -3,13 +3,13 @@ class FastSLAM2():
     self.data_input = None
     pass
   def run(self):
-    # propage motion 
+    # propage motion
 
-    # data association 
+    # data association
 
-    # correct and weights 
+    # correct and weights
 
-    # resampling 
+    # resampling
 
     pass
 
@@ -17,24 +17,23 @@ class FastSLAM2():
     pass
 
 
-class Dataloader():
+class DataLoader():
   '''
-  pull info at a fixed frequency. 
-  data loader will pull avaliable info 
+  pull info at a fixed frequency.
+  data loader will pull avaliable info
   from sensors in the time frame
-  
+
   odometry: 50 miliseconds a part.
 
-  pull info if it is not "outdated" 
+  pull info if it is not "outdated"
   '''
   def __init__(self, frequency):
     pass
-  
+
   def update(self):
-    odometry_meas = None 
+    odometry_meas = None
     landmark_meas = None
-    return None 
-  
+    return None
+
   def groundTruth(self):
-    pass 
-  
+    pass
