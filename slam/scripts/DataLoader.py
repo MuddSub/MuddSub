@@ -33,12 +33,24 @@ class Robot:
         self.buildDict()
 
     # Initialize the frame duration and reset indices
-    def initFrames(self, frameDuration):
+    def initFrames(self, frameDuration, startTime=None):
         self.frameDuration = frameDuration
-        self.frameTime = self.odometry[0][0]
+        self.frameTime = startTime or self.odometry[0][0]
         self.groundtruthIndex = 0
         self.measurementsIndex = 0
         self.odometryIndex = 0
+
+        while (self.groundtruthIndex < len(self.groundtruth) and
+               self.groundtruth[self.groundtruthIndex][0] < self.frameTime):
+            self.groundtruthIndex += 1
+        
+        while (self.measurementsIndex < len(self.measurements) and
+               self.measurements[self.measurementsIndex][0] < self.frameTime):
+            self.measurementsIndex += 1
+
+        while (self.odometryIndex < len(self.odometry) and
+               self.odometry[self.odometryIndex][0] < self.frameTime):
+            self.odometryIndex += 1
 
     # Get next data frame. Includes one or more odometry commands, measurements, and/or groundtruths
     def getNext(self):
@@ -47,20 +59,20 @@ class Robot:
         odometry = []
         nextFrameTime = self.frameTime + self.frameDuration
 
-        if self.groundtruthIndex < len(self.groundtruth):
-            while self.frameTime <= self.groundtruth[self.groundtruthIndex][0] < nextFrameTime:
-                groundtruth.append(self.groundtruth[self.groundtruthIndex])
-                self.groundtruthIndex += 1
+        while (self.groundtruthIndex < len(self.groundtruth) and
+               self.frameTime <= self.groundtruth[self.groundtruthIndex][0] < nextFrameTime):
+            groundtruth.append(self.groundtruth[self.groundtruthIndex])
+            self.groundtruthIndex += 1
 
-        if self.measurementsIndex < len(self.measurements):
-            while self.frameTime <= self.measurements[self.measurementsIndex][0] < nextFrameTime:
-                measurements.append(self.measurements[self.measurementsIndex])
-                self.measurementsIndex += 1
+        while (self.measurementsIndex < len(self.measurements) and
+               self.frameTime <= self.measurements[self.measurementsIndex][0] < nextFrameTime):
+            measurements.append(self.measurements[self.measurementsIndex])
+            self.measurementsIndex += 1
 
-        if self.odometryIndex < len(self.odometry):
-            while self.frameTime <= self.odometry[self.odometryIndex][0] < nextFrameTime:
-                odometry.append(self.odometry[self.odometryIndex])
-                self.odometryIndex += 1
+        while (self.odometryIndex < len(self.odometry) and
+               self.frameTime <= self.odometry[self.odometryIndex][0] < nextFrameTime):
+            odometry.append(self.odometry[self.odometryIndex])
+            self.odometryIndex += 1
 
         self.frameTime = nextFrameTime
         return (self.frameTime, groundtruth, measurements, odometry)
@@ -85,7 +97,7 @@ class Robot:
                 print("Unrecogonized Barcode: {}. Skipping".format(barcode))
                 continue
             else:
-                subject = barcodeDict[barcode]
+                subject = self.barcodes[barcode]
             self.measurements.append((row.Time, subject, row.Range, row.Bearing))
 
 class Data:
@@ -149,4 +161,4 @@ if __name__ == '__main__':
     parser.add_argument('directory', type=str, help='Directory with input files')
     args = parser.parse_args()
     data = Data(args.directory)
-    pickle.dump(data, open("./datasets/Jar", "wb"))
+    pickle.dump(data, open("datasets/Jar/dataset1.pkl", "wb"))
