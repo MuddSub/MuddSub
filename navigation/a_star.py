@@ -237,8 +237,8 @@ def main():
     #"1": obstacle (red)
     #"2": visited (yellow green)
     #"3": actual path (green)
-    width = 21
-    length = 32
+    width = 100
+    length = 100
     text = """
 0001111111111111111111111111111
 0000000001000000000000001001001
@@ -263,8 +263,8 @@ def main():
 11111111111111111111111111110000
 """
     print(len(text))
-    grid = makeGridfromMaze(21, 32, text)
-    #grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
+    #grid = makeGridfromMaze(21, 32, text)
+    grid = makeGrid(width,length,0.3,0,0,width-1,length-1)
     solveGrid(grid, 0, 0, width-1, length-1)
     makeParent(grid, grid[width-1][length-1])
     for i in range(len(grid)):
