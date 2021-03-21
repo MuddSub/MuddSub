@@ -20,7 +20,6 @@ public:
   bool operator< (const KeyFrame& other) {
     return time_ < other.time_;
   };
-
 };
 
 inline bool operator< (const KeyFrame& frame, const double t){
