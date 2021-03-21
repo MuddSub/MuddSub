@@ -6,3 +6,4 @@ core/descriptions/alfie.urdf
 hydrophones/data/*
 *__pycache__*
 *.vscode
+docs/*
