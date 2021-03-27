@@ -58,7 +58,7 @@ C_CG = robot_mass* [(CG_y*vel_p + CG_z*vel_yaw), -(CG_x*vel_p - vel_z), -(CG_x*v
 
 C_Interia = [0, -Iyz*vel_p-Ixz*vel_r+Izz*vel_yaw, Iyz*vel_yaw+Ixy*vel_r-Iyy*vel_p,
            Iyz*vel_p+Ixz*vel_r-Izz*vel_yaw, 0, -Ixz*vel_yaw-Ixy*vel_p+Ixx*vel_r,
-           -Iyz*vel_yaw-Ixy*vel_r-Iyy*vel_p, Ixz*vel_yaw+Ixy*vel_p-Ixx*vel_r, 0]          
+           -Iyz*vel_yaw-Ixy*vel_r-Iyy*vel_p, Ixz*vel_yaw+Ixy*vel_p-Ixx*vel_r, 0]
 
 C_a = [ 0, 0, 0, 0, -M_aZ*vel_z, M_aY*vel_y,
         0, 0, 0, M_aZ*vel_z, 0, -M_aX*vel_x,
@@ -68,7 +68,7 @@ C_a = [ 0, 0, 0, 0, -M_aZ*vel_z, M_aY*vel_y,
         -M_aY*vel_y, M_aX*vel_x, 0, -M_ap*vel_p, -M_ar * vel_r, 0]
 
 C_rb = [np.zeros(3), C_CG, -np.transpose(C_CG), C_Interia]
-    
+
 Ad = sparse.csc_matrix((C_a + C_rb)) #fix sparese matrix (maybe numpy add?)
 """
 
@@ -89,28 +89,29 @@ Ad = sparse.csc_matrix([
 ])
 
 #vectorized thruster forces, each column is a thruster
+#Wrench x y z r p y
 Bd = sparse.csc_matrix([
-  [0.,      -0.0726,  0.,     0.0726,0.,      -0.0726,  0.,     0.0726],
-  [-0.0726,  0.,      0.0726, 0.    ,-0.0726,  0.,      0.0726, 0.    ],
-  [-0.0152,  0.0152, -0.0152, 0.0152,-0.0152,  0.0152, -0.0152, 0.0152],
-  [-0.,     -0.0006, -0.,     0.0006,-0.,     -0.0006, -0.,     0.0006],
-  [0.0006,   0.,     -0.0006, 0.0000,0.0006,   0.,     -0.0006, 0.0000],
-  [0.0106,   0.0106,  0.0106, 0.0106,0.0106,   0.0106,  0.0106, 0.0106],
-  [0,       -1.4512,  0.,     1.4512,0,       -1.4512,  0.,     1.4512],
-  [-1.4512,  0.,      1.4512, 0.    ,-1.4512,  0.,      1.4512, 0.    ],
-  [-0.3049,  0.3049, -0.3049, 0.3049,-0.3049,  0.3049, -0.3049, 0.3049],
-  [-0.,     -0.0236,  0.,     0.0236,-0.,     -0.0236,  0.,     0.0236],
-  [0.0236,   0.,     -0.0236, 0.    ,0.0236,   0.,     -0.0236, 0.    ],
-  [0.2107,   0.2107,  0.2107, 0.2107,0.2107,   0.2107,  0.2107, 0.2107]])
+  [0.,              0.,              0.,              (dt^2)/(2*mass), 0.,              0.             ], #roll
+  [0.,              0.,              0.,              0.,              (dt^2)/(2*mass), 0.             ], #pitch
+  [0.,              0.,              0.,              0.,              0.,              (dt^2)/(2*mass)], #yaw
+  [(dt^2)/(2*mass), 0.,              0.,              0.,              0.,              0.             ], #x
+  [0.,              (dt^2)/(2*mass), 0.,              0.,              0.,              0.             ], #y
+  [0.,              0.,              (dt^2)/(2*mass), 0.,              0.,              0.             ], #z
+  [0.,              0.,              0.,              dt/mass,         0.,              0.             ], #roll'
+  [0.,              0.,              0.,              0.,              dt/mass,         0.             ], #pitch'
+  [0.,              0.,              0.,              0.,              0.,              dt/mass        ], #yaw'
+  [dt/mass,         0.,              0.,              0.,              0.,              0.             ], #x'
+  [0.,              dt/mass,         0.,              0.,              0.,              0.             ], #y'
+  [0.,              0.,              dt/mass,         0.,              0.,              0.             ]])#z'
 
 [nx, nu] = Bd.shape #nx is number of states, nu is number of thrusters
 
 #Constraints in kgf = 9.81kgN
 umin = np.array([-4.1, -4.1, -4.1, -4.1, -4.1, -4.1, -4.1, -4.1]) #reverse thruster power
 umax = np.array([5.25, 5.25, 5.25, 5.25, 5.25, 5.25, 5.25, 5.25]) #forward thruster power
-xmin = np.array([-np.pi/6,-np.pi/6,-np.inf,-np.inf,-np.inf,0.1,
+xmin = np.array([-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,0.1,
                  -np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf]) #[roll pitch yaw x y z, and linear and angular velocities]
-xmax = np.array([ np.pi/6, np.pi/6, np.inf, np.inf, np.inf, 10,
+xmax = np.array([ np.inf, np.inf, np.inf, np.inf, np.inf, 10,
                   np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]) #[roll pitch yaw x y z, and linear and angular velocities]
 
 #how much we care about being off of our target state for each state variable
@@ -168,13 +169,14 @@ for i in range(nsim):
 
     # Apply first control input to the plant
     ctrl = res.x[-N*nu:-(N-1)*nu]
-    x0 = Ad.dopip
-    
-    t(x0) + Bd.dot(ctrl)
+    x0 = Ad.dot(x0) + Bd.dot(ctrl)
+
+    x0[0] = x0[0] % (2 * np.pi)
+    x0[1] = x0[1] % (2 * np.pi)
+    x0[2] = x0[2] % (2 * np.pi)
 
     # Update initial state
     l[:nx] = -x0
     u[:nx] = -x0
     prob.update(l=l, u=u)
     print(i)
-
