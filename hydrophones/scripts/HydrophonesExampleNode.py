@@ -2,14 +2,19 @@
 
 import rospy
 from std_msgs.msg import Header
-from HydrophonesPublisher import HydrophonesPublisher
+from HydrophonesPublisher import *
 from hydrophones.msg import PingerData
 from sensor_msgs.msg import Range
 from geometry_msgs.msg import Vector3
+import dynamic_reconfigure.client
+
 
 def hydrophonesExampleNode():
     rospy.init_node('hydrophones_example_node', anonymous=True)
     hydrophonesPublisher = HydrophonesPublisher()
+    client = dynamic_reconfigure.client.Client('hydrophones_example_node')
+    params = { 'my_string_parameter' : 'value', 'my_int_parameter' : 5 }
+    
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
@@ -32,6 +37,8 @@ def hydrophonesExampleNode():
 
         pinger_data = PingerData(header, pinger_range, pinger_bearing, pinger_range_confidence, pinger_bearing_confidence)
         hydrophonesPublisher.publishData(pinger_data)
+        config = client.update_configuration(params)
+
         rate.sleep()
 
 if __name__ == '__main__':
