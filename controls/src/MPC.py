@@ -3,37 +3,31 @@ Overview of MPC variables:
  Ad: a dynamic matrix of the robots state variables (i.e. center of gravity(velocity) + intertia) for each x,y,z,roll, pitch, yaw, and change in linear and angular velocity
  Bd: The 8 thrusters of the robot with vecotrized forces from each
  Q: The associated weights of each function to minimize error (i.e. how much weight error in z dimension (depth) has over error in y(range))
-
  Model constraints
  umin: max reverse force of thrusters in kg(f), minimum control effort
  umax: max forward force of thrusters in kg(f), maximum control effort
  xmin: minimum output for all states in order of roll pitch yaw x y z, and velocities
  xmax: maximum otuput for all states in order of roll pitch yaw x y z, and velocities
  nsim: number of times model optimizes
-
  x0: plantState from slam (pose)
  xr: setState from trajectory
  N: prediction horizon - number of steps MPC looks into the future
  P: diagnal matrix with weights of model (Q), entries of the minimized error matrix Q repeated (N+1) times and 0.1 (4*N) times.
-
  Matrix Math Overview:
  Intermediate Q stacks arrays of -Q.(xr), and adds zeros at the end
  Ax krons a matrix of 1s and 0s with Ad, our model of our path plan from navigation
  Bu stacks a bunch of matrics and krons the result with Bd, our future prediction
  Aeq hstacked Ax and Bu
-
  Main function overview:
  loop
  res = prob.solve()
  ctrl = res.x[-N*nu:-(N-1)*nu]
  x0 = Ad.dot(x0) + Bd.dot(ctrl), updates current position
  updates position and control effort into our initial states for mpc
-
 ROS Subscribers and Nodes:
  #Inputs
  self.trajectorySub = rospy.Subscriber("/controls/trajectory", Path, self.trajectoryCB) #navigation's trajectory
  self.poseSub = rospy.Subscriber("slam/robot/pose", Odometry, self.poseCB) #ask if msg type slam is /pose or /state
-
  #Outputs
  self.wrenchPub = rospy.Publisher("/controls/robot/wrench",geometry_msgs.msg.WrenchStamped, queue_size= 1) #total thruster output force and torque
 '''
@@ -42,35 +36,21 @@ import numpy as np
 import scipy as sp
 from scipy import sparse
 import osqp #matrix optimizer
+import vehicleDynamics
 
 """
-#TODO: change to real values of robot, current guesses
-dt = 0.1 #change in time between steps
-robot_mass = 52 #kg, replace with real weight
-CG_x, CG_y, CG_z = 0,0, -.1
-vel_x, vel_y, vel_z, vel_r, vel_p, vel_yaw = 1,0,0,0,0,0 #change to input from dvl?
-Ixx, Ixy, Ixz, Iyy, Iyz, Izz = 1,1,.5,0,1,.25 #ake inertia adjustable
-M_aX, M_aY, M_aZ, M_ar, M_ap, M_ay = 1,.25,0,0,0,0 #addedc mass coef
+//https://github.com/MuddSub/MuddSub/blob/develop/controls/controls/scripts/VehicleDynamics.py
+//read in yaml file: controls/cfg/dynamics.yaml from ros?
+//code review ask what rate means
 
-C_CG = robot_mass* [(CG_y*vel_p + CG_z*vel_yaw), -(CG_x*vel_p - vel_z), -(CG_x*vel_yaw + vel_y),
-          -(CG_y*vel_r + vel_z) , (CG_z*vel_yaw + CG_x*vel_r), -(CG_y*vel_yaw - vel_x),
-          -(CG_z*vel_r - vel_y), -(CG_z*vel_p + vel_x), (CG_x*vel_r+CG_y*vel_p)]
+//linearizedSystem = control.linearize(self.nonlinearIoSys, self.x, self.u)
+//dt = a/self.rate
+Taken from: https://github.com/MuddSub/MuddSub/blob/develop/base/controls/cfg/dynamics.yaml
 
-C_Interia = [0, -Iyz*vel_p-Ixz*vel_r+Izz*vel_yaw, Iyz*vel_yaw+Ixy*vel_r-Iyy*vel_p,
-           Iyz*vel_p+Ixz*vel_r-Izz*vel_yaw, 0, -Ixz*vel_yaw-Ixy*vel_p+Ixx*vel_r,
-           -Iyz*vel_yaw-Ixy*vel_r-Iyy*vel_p, Ixz*vel_yaw+Ixy*vel_p-Ixx*vel_r, 0]
-
-C_a = [ 0, 0, 0, 0, -M_aZ*vel_z, M_aY*vel_y,
-        0, 0, 0, M_aZ*vel_z, 0, -M_aX*vel_x,
-        0, 0, 0, -M_aY*vel_y, -M_aX*vel_x, 0,
-        0, -M_aZ*vel_z, -M_aY*vel_y, 0, -M_ay*vel_yaw, -M_ap*vel_p,
-        M_aZ*vel_z, 0, -M_aX*vel_x, -M_ay*vel_yaw, 0, -M_ar*vel_r,
-        -M_aY*vel_y, M_aX*vel_x, 0, -M_ap*vel_p, -M_ar * vel_r, 0]
-
-C_rb = [np.zeros(3), C_CG, -np.transpose(C_CG), C_Interia]
-
-Ad = sparse.csc_matrix((C_a + C_rb)) #fix sparese matrix (maybe numpy add?)
 """
+rate = 50
+dt = 1/rate 
+mass = 20 #kg
 
 #A temporary matrix of the correct dimensions of models dynamics
 Ad = sparse.csc_matrix([
@@ -91,12 +71,12 @@ Ad = sparse.csc_matrix([
 #vectorized thruster forces, each column is a thruster
 #Wrench x y z r p y
 Bd = sparse.csc_matrix([
-  [0.,              0.,              0.,              (dt^2)/(2*mass), 0.,              0.             ], #roll
-  [0.,              0.,              0.,              0.,              (dt^2)/(2*mass), 0.             ], #pitch
-  [0.,              0.,              0.,              0.,              0.,              (dt^2)/(2*mass)], #yaw
-  [(dt^2)/(2*mass), 0.,              0.,              0.,              0.,              0.             ], #x
-  [0.,              (dt^2)/(2*mass), 0.,              0.,              0.,              0.             ], #y
-  [0.,              0.,              (dt^2)/(2*mass), 0.,              0.,              0.             ], #z
+  [0.,              0.,              0.,              ((dt**2)/(2*mass)), 0.,              0.             ], #roll
+  [0.,              0.,              0.,              0.,              (dt**2)/(2*mass), 0.             ], #pitch
+  [0.,              0.,              0.,              0.,              0.,              (dt**2)/(2*mass)], #yaw
+  [(dt**2)/(2*mass), 0.,              0.,              0.,              0.,              0.             ], #x
+  [0.,              (dt**2)/(2*mass), 0.,              0.,              0.,              0.             ], #y
+  [0.,              0.,              (dt**2)/(2*mass), 0.,              0.,              0.             ], #z
   [0.,              0.,              0.,              dt/mass,         0.,              0.             ], #roll'
   [0.,              0.,              0.,              0.,              dt/mass,         0.             ], #pitch'
   [0.,              0.,              0.,              0.,              0.,              dt/mass        ], #yaw'
@@ -107,8 +87,8 @@ Bd = sparse.csc_matrix([
 [nx, nu] = Bd.shape #nx is number of states, nu is number of thrusters
 
 #Constraints in kgf = 9.81kgN
-umin = np.array([-4.1, -4.1, -4.1, -4.1, -4.1, -4.1, -4.1, -4.1]) #reverse thruster power
-umax = np.array([5.25, 5.25, 5.25, 5.25, 5.25, 5.25, 5.25, 5.25]) #forward thruster power
+umin = np.array([-4.1, -4.1, -4.1, -4.1, -4.1, -4.1]) #reverse thruster power
+umax = np.array([5.25, 5.25, 5.25, 5.25, 5.25, 5.25]) #forward thruster power
 xmin = np.array([-np.inf,-np.inf,-np.inf,-np.inf,-np.inf,0.1,
                  -np.inf,-np.inf,-np.inf,-np.inf,-np.inf,-np.inf]) #[roll pitch yaw x y z, and linear and angular velocities]
 xmax = np.array([ np.inf, np.inf, np.inf, np.inf, np.inf, 10,
@@ -116,9 +96,9 @@ xmax = np.array([ np.inf, np.inf, np.inf, np.inf, np.inf, 10,
 
 #how much we care about being off of our target state for each state variable
 #roll pitch yaw x y z and their respective velocities
-Q = sparse.diags([1, 1, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10])
+Q = sparse.diags([100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100])
 QN = Q
-R = 0.1*sparse.eye(8)
+R = sparse.eye(6)
 
 # initial comes from slam and reference comes from navigation
 #TEMPORARY
