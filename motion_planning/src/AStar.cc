@@ -3,9 +3,12 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include<time.h>
+#include <time.h>
 #include <queue>
-#include "navigation/AStar.hh"
+#include "motion_planning/AStar.hh"
+namespace MuddSub::MotionPlanning
+{
+
 double  AStar::Node::infinity   = std::numeric_limits<double>::infinity();
 AStar::AStar(int width, int height, int depth, double prob, int startx, int starty, int startz, int endx, int endy,
              int endz)
@@ -203,8 +206,13 @@ AStar::Node::Node()
     Node(0,0,0,NULL);
 }
 
+
+}
+
+
 int main()
 {
+
     std::cout<<"hello"<<std::endl;
     std::priority_queue<std::string> l;
     l.push("hello");
@@ -214,7 +222,7 @@ int main()
     std::cout<<l.top()<<std::endl;
 
     std::cout<<l.top()<<std::endl;
-    AStar* pStar = new AStar(1,10,10);
+    MuddSub::MotionPlanning::AStar* pStar = new   MuddSub::MotionPlanning::AStar(1,10,10);
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }

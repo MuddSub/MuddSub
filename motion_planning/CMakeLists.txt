@@ -57,6 +57,8 @@ add_executable(path_server
 	src/PathServer.cc
   src/PathServerNode.cc
 )
+
+
 target_link_libraries(
 	path_server
   ${catkin_LIBRARIES}
@@ -65,3 +67,18 @@ add_dependencies(
   path_server
   ${motion_planning_EXPORTED_TARGETS}
 )
+
+add_executable(astar
+	src/AStar.cc
+)
+
+target_link_libraries(
+	astar
+  ${catkin_LIBRARIES}
+)
+add_dependencies(
+  astar
+  ${motion_planning_EXPORTED_TARGETS}
+)
+
+
