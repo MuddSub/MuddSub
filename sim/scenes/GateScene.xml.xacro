@@ -71,14 +71,14 @@
     <name>Alfie</name>
     <file>$(find core)/descriptions/alfie.urdf</file>
     <position>
-      <x> 0</x>
+      <x> 0 </x>
       <y> 0 </y>
-      <z> 0 </z>
+      <z> 1 </z>
     </position>
     <orientation>
       <r>0</r>
       <p>0</p>
-      <y>-1.57</y>
+      <y>0</y>
     </orientation>
     <xacro:include filename="$(find sim)/scenes/sensors.xacro" />
     <xacro:camera name="front_left" down="0"/>
@@ -102,7 +102,7 @@
     </orientation>
   </vehicle>
 
- <vehicle>
+ <!-- <vehicle>
    <name> buoy </name>
    <file>$(find sim)/scenes/buoy.urdf</file>
    <position>
@@ -129,7 +129,7 @@
     <p>0</p>
     <y>0</y>
   </orientation>
-</vehicle>
+</vehicle> -->
 
   <object>
     <name>terrain</name>
