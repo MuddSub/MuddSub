@@ -6,6 +6,10 @@ from scipy.linalg import sqrtm
 
 '''
 s: pose --> robot pose (7 states)
+sigma_s_t,n_t: pose_cov_expected: the pose cov for the **new** distribution in data association.  
+sigma_s_t,n_t: pose_mean_expected: the pose mean for the **new** distribution in data association. 
+s_nt, t: sampled pose: the pose sampled from the **new** distribution from data association 
+
 mu: land_mean --> landmark position mean (x,y) 
 sigma: land_cov --> landmark position covariance
 
@@ -30,8 +34,10 @@ rho+: land_exist_log_inc --> log odds value to add to land_exist_log when positi
 rho-: land_exist_log_neg --> log odds value to subtract to land_exist_log when negative evidence of the landmark is seen
 
 Q: Q --> fused measurement covariance. meas_cov + meas_jac_land @ land_cov @ meas_jac_land
+    (2,2)
 Q: Q_inv --> Q inverse
-K: K --> Kalman gain
+K: K --> Kalman gain (2,2)
+I: identity matrix with the shape of KGtheta, !!!!!! Problem: size mismatched
 
 w: weight 
 
@@ -39,14 +45,26 @@ p_nt: prob_match --> probability of landmark associates with given measurement
 '''
 
 class LandmarkEKF():
-  def __init__(self, landmark_state_estimate, landmark_state_convariance, seed):
-    self.prev_state_estimate = np.ones(2)
-    self.prev_state_covariance = np.ones((2,2))
-    self.Q_inverse = None 
+  def __init__(self, land_mean=np.zeros(2), land_cov = np.eye(2),seed=0):
+    self.prev_land_mean = land_mean
+    self.prev_land_cov = land_cov
 
-    self.state_estimate = np.ones(2)
-    self.state_covariance = np.ones((2,2))
-    
+    self.land_mean_est = np.zeros(2)
+    self.land_cov_est = np.zeros((2,2))
+
+    self.meas = np.zeros(2)
+    self.meas_diff = np.zeros(2)
+
+    self.meas_jac_pose, self.meas_jac_land = np.zeros((2,7)),np.zeros((2,7))
+
+    self.pose_cov, self.meas_cov = np.zeros((7,7)),np.zeros((2,2))
+    self.pose_cov_inv = self.pose_cov
+
+    self.Q = np.zeros((2,2))
+    self.Q_inv = np.zeros((2,2)) 
+    #self.K = np.zeros((2,2))
+    self.I = np.zeros((2,2)) #!!!!!! Problem: size mismatched
+
     self.random = np.random.default_rng(seed)
     self.prob_data_association = 0
     
@@ -59,95 +77,93 @@ class LandmarkEKF():
   def logOdds(self, probability):
     return np.log(probability / (1 - probability))
 
-  def computeMeasurementModel(self, est_robot_state):
-    if len(est_robot_state)==7:
-      x,y,theta, vx, vy, omega, theta_p = est_robot_state
-    else:
-      x, y = est_robot_state
-
-    lx, ly = self.prev_state_estimate
-
-    est_range = ((lx-x)**2+(ly-y)**2)**.5
-    est_bearing = np.arctan2((ly-y)/(lx-x))-theta
-
-    return [est_range, est_bearing]
-
-  def computeMeasJacobians(self, est_robot_state):
-    lx, ly = self.prev_state_estimate
-    x,y,theta, vx, vy, omega, theta_p = est_robot_state
-    est_range_sqr = ((lx-x)**2+(ly-y)**2)
-    est_range = est_range_sqr**.5
-    Gs = np.zeros((2,7))
-
-    Gs[0,0] = -(lx-x) / est_range
-    Gs[1,0] = -(ly-y) / est_range
-    Gs[0,1] = (ly-y) / est_range_sqr
-    Gs[0,0] = -(lx-x) / est_range_sqr
-    self.Gs = Gs
-    self.Gtheta = -1 * Gs
-    return self.Gs, self.Gtheta
+  def computeMeasModel(self, pose):
+    x,y,theta, vx, vy, omega, theta_p = pose
     
-  '''  
-  def computeMeasJacobianWRTLandmark(self, est_robot_state):
-    return self.Gtheta
-    
-  def computeMeasJacobianWRTPose(self, est_robot_state):
-    return self.Gs
-  '''
+    lx, ly = self.prev_land_mean
 
-  def dataAssociation(self, est_robot_state, motion_convariance, measurements, meas_covariance):
-    est_robot_pose = np.array([est_robot_state[0],est_robot_state[1]])
-    meas_range, meas_bearing = measurements   
-    
+    range_est = ((lx-x)**2+(ly-y)**2)**.5
+    bearing_est = np.arctan2((ly-y)/(lx-x))-theta
 
-    est_range, est_bearing = self.computeMeasurementModel(est_robot_state)     
-    
-    Gs, Gtheta = self.computeMeasJacobians( est_robot_state)
+    return np.array([range_est, bearing_est])
 
-    meas_diff = np.array([meas_range - est_range, meas_bearing - est_bearing])
-    self.meas_diff = meas_diff
+  def computeMeasJacobians(self, pose):
+    lx, ly = self.prev_land_mean
+    x,y, theta, vx, vy, omega, theta_p = pose
     
-    Q = meas_covariance + Gtheta @ self.prev_state_covariance @ Gtheta.T
-    self.Q_inverse = np.linalg.inv(Q)
-    Q_inverse = self.Q_inverse
-    
-    motion_convariance_inverse = np.linalg.inv(motion_convariance)
-    
-    sampling_convariance = np.linalg.inv(Gs @ Q_inverse @ Gs + motion_convariance_inverse)
-    sampling_mean = sampling_convariance @ Gs.T @ Q_inverse @ meas_diff +est_robot_pose
+    range_est_sqr = ((lx-x)**2+(ly-y)**2)
+    range_est = range_est_sqr**.5
 
-    sampled_robot_pose = sampling_mean + self.random.normal(0,sampling_convariance)
-  
-    Q_inverse_sqrt_root = np.linalg.inv(sqrtm(np.abs(2*np.pi*Q)))
+    meas_jac_pose = np.zeros((2,7))
 
-    improved_range, improved_bearing = np.array(self.computeMeasurementModel(sampled_robot_pose))
+    meas_jac_pose[0,0] = -(lx-x) / range_est
+    meas_jac_pose[1,0] = -(ly-y) / range_est
+    meas_jac_pose[0,1] = (ly-y) / range_est_sqr
+    meas_jac_pose[0,0] = -(lx-x) / range_est_sqr
     
-    improved_diff = np.array([improved_range - est_range, improved_bearing - est_bearing])
+    self.meas_jac_pose = meas_jac_pose
+    self.meas_jac_land = -1 * meas_jac_pose
     
-    exponent = -1.0/2*(improved_diff).T @ Q_inverse @ (improved_diff)
-    self.prob_data_association = Q_inverse_sqrt_root * np.exp(exponent)
+  def computeDataAssociation(self, pose_est, pose_cov_est, meas, meas_cov):
+
+    # range_meas, bearing_meas = meas 
+    self.meas = meas 
+    self.meas_cov = meas_cov
+    meas_est = self.computeMeasModel(pose_est) # range_est, bearing_est      
+    self.meas_diff = meas - meas_est #np.array([range_meas - range_est, bearing_meas - bearing_est])
+
+    self.pose_cov = pose_cov_est
+    self.pose_cov_inv = np.linalg.inv(self.pose_cov)
+
+    self.computeMeasJacobians( pose_est)
+    
+    self.Q = self.meas_cov + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T
+    self.Q_inv = np.linalg.inv(self.Q)
+    
+    pose_cov_expected = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + self.pose_cov_inv)
+    pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
+
+    pose_sampled = pose_mean_expected + self.random.normal(0,pose_cov_expected)
+    meas_improved = self.computeMeasModel(pose_sampled) #range_improved, bearing_improved
+    improved_diff = meas - meas_improved 
+    exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
+    
+    two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))    
+    
+    self.prob_data_association = two_pi_Q_inv_sqrt * np.exp(exponent)
     
     return self.prob_data_association
 
 
-  def motion_and_correct(self, motion_convariance, meas_covariance, range, bearing, robotState):
+  def updateObserved(self):
 
-    Gtheta, Gs = self.Gtheta, self.Gs
+    self.land_exist_log += self.land_exist_log_inc
 
-    self.land_exist_prob += self.land_exist_log_inc
+    K =  self.prev_land_cov @ self.meas_jac_land.T @ self.Q_inv 
 
-    K =  self.prev_state_covariance @ self.Gtheta.T @ self.Q_inverse 
+    self.land_mean_est = self.prev_land_mean + K @ self.meas_diff
 
-    self.state_estimate = self.prev_state_estimate + K @ self.meas_diff
+    self.land_cov_est = (self.I - K @ self.meas_jac_land) @ self.prev_land_cov #!!!!!! Problem: size mismatched
 
-    self.state_covariance = (np.eyes(7) - K @ Gtheta) @ self.prev_state_covariance
-
-    L = Gs @ motion_convariance @ Gs.T + Gtheta @ self.prev_state_covariance @ Gtheta.T + meas_covariance
+    L = self.meas_jac_pose @ self.pose_cov @ self.meas_jac_pose.T \
+         + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T \
+         + self.meas_cov
     L_inv = np.linalg.inv(L)
-    exponent = -1.0/2*(self.meas_diff ).T @ L_inv @ (self.meas_diff )
-    w = np.linalg.inv(sqrtm(np.abs(2*np.pi* L ))) * np.exp(exponent)
+    two_pi_L_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*L)))
+    exponent = -.5* self.meas_diff.T @ L_inv @ (self.meas_diff )
+    weight = two_pi_L_inv_sqrt * np.exp(exponent)
 
-    return w
+    return weight
+
+  def updateUnobserved(self,pose,sensor_range):
+    range_meas, _ = self.computeMeasModel(pose)
+    if range_meas <= sensor_range:
+      self.land_exist_log -= self.land_exist_log_dec
+    if self.land_exist_log<=0:
+      return False
+    return True
+  def updateNewLandmark(self):
+    pass
 
 class State():
   def __init__(self, x, y, theta):
@@ -163,44 +179,68 @@ class Particle():
 
   p_0: prob_new_land --> Likelihood of a new feature. When p_0 > p_nt for all p_nt, we have observed a new landmark
   '''
-  def __init__(self, state,params, particle_id, seed):
+  def __init__(self, state,params, particle_id, seed=0):
     self.id = particle_id
     self.random = np.random.default_rng(seed)
+    self.next_idx = 0
     
-    self.weight = 1
+    self.weight = 0
 
-    self.robot_state = np.zeros(7)
-    self.robot_state_hist = []
+    self.pose = np.zeros(7)
+    self.pose_hist = []
 
     self.num_landmarks = params['num_landmarks']
-    self.landmarks = dict() # landmark_id: EKF
-
+    self.landmarks = {} # id: EFK
 
     self.v_sigma = params['v_sigma']
     self.omega_sigma = params['omega_sigma']
     self.theta_sigma = params['theta_sigma']
     # more! 
 
+    self.prob_accept = .5
+    self.sensor_range = 10
     
     pass
 
-  def propagateMotion(self, control, measurement, meas_covariance, landmark_key, dt):
-    self.robot_state_hist.append(self.robot_state)
-    est_robot_state, motion_convariance = self.computeMotionModel(self.robot_state, control, dt)
-     
+  # need to modify data association to match observation with specific features 
+  # possible solution: create a dictionary of landmark class, each has a list of landmark in that class
+  # instead of maximizing in a single update, use update if above certain threadhold 
+  # to enable multiple updates. 
+  def propagateMotion(self, control, meas, meas_cov, landmark_key, dt):
+    self.pose_hist.append(self.pose)
+    pose_est, pose_cov_est = self.computeMotionModel(self.pose, control, dt)
+    # TO DO INItiALIze landmarks 
     # we might not need this -- we have accurate data association 
-    prob_data_association_ls = []
-    for landmark in self.landmarks:
-      prob_data_association = landmark.dataAssociation(est_robot_state, motion_convariance, measurement, meas_covariance)
-      prob_data_association_ls.append(prob_data_association)
-    landmark_key = np.argmax(np.array(prob_data_association_ls))
-    updated_landmark = self.landmarks[landmark_key]
-    updated_landmark.motion_and_correct(est_robot_state, motion_convariance, measurement, meas_covariance)
-
-    # do correct 
-
-  # set a method that deals with unknown landmark 
-
+    prob_assocaite_ls = []
+    for _,landmark in self.landmarks.items():
+      prob_assocaite = landmark.computeDataAssociation(pose_est, pose_cov_est, meas, meas_cov)
+      prob_assocaite_ls.append(prob_assocaite)
+    
+    obs_idx = -1
+    if len(prob_assocaite_ls)>0:
+      obs_idx = np.argmax(np.array(prob_assocaite_ls))
+    
+    if len(prob_associate_ls)>0 and prob_assocaite_ls[obs_idx] < self.prob_accept:
+      for landmark in self.landmarks:
+        landmark.updateUnobserved(pose_est)
+      self.weight = self.prob_accept
+      new_landmark = LandmarkEKF()
+      new_landmark.updateNewLandmark()
+      self.landmarks[self.next_idx]=new_landmark
+      self.next_idx+=1
+    else:
+      to_remove = []
+      for (idx, landmark), prob_assocaite in zip(self.landmarks.items(),prob_assocaite_ls):
+        if idx == obs_idx:
+          self.weight = landmark.updateObserved()
+        else:
+          keep = landmark.updateUnobserved()
+          if not keep:
+            to_remove.append(idx)
+      for idx in to_remove:
+        self.landmarks.pop(idx)
+      return self.weight
+  '''
   def correct(self,landmark_key = None, new_landmark=False):
     if new_landmark:
       landmark_key = len(self.landmarks)
@@ -210,7 +250,7 @@ class Particle():
       # particle correction 
     # find nearby landmark 
     # and downweight 
-    
+  '''
   def computeMotionModel(self, prev_pose, control, dt):
     vx, vy, theta_imu, omega_imu = control
     prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_v_p = prev_pose
