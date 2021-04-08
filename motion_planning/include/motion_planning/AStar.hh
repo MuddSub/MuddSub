@@ -1,9 +1,12 @@
 
 #pragma once
-#include <navigation/AStar.cc>
+//#include <src/AStar.cc>
 #include <limits>
 #include <math.h>
-namespace MuddSub::Navigation
+#include <ros/ros.h>
+
+namespace MuddSub::MotionPlanning
+{
 class AStar
 {
 private:
@@ -53,4 +56,3 @@ public:
     //double static distance (int x1, int y1, int z1, int x2, int y2, int z2);
 };
 }
-
