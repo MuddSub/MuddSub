@@ -27,7 +27,7 @@ g: measurement_model
 R: meas_cov: measurement covariance
 
 h: motion_model (on pose)
-P: pose_cov: measurement covariance
+P: pose_cov: pose (motion model) covariance
 
 tau: land_exist_log --> log odds of the probability that the landmark exists
 rho+: land_exist_log_inc --> log odds value to add to land_exist_log when positive evidence of the landmark is seen
@@ -52,12 +52,14 @@ class LandmarkEKF():
     self.land_mean_est = np.zeros(2)
     self.land_cov_est = np.zeros((2,2))
 
+    self.sampled_pose = np.zeros(7)
+
     self.meas = np.zeros(2)
     self.meas_diff = np.zeros(2)
 
     self.meas_jac_pose, self.meas_jac_land = np.zeros((2,7)),np.zeros((2,7))
 
-    self.pose_cov, self.meas_cov = np.zeros((7,7)),np.zeros((2,2))
+    self.pose_cov, self.meas_cov = np.zeros((7,7)), np.zeros((2,2))
     self.pose_cov_inv = self.pose_cov
 
     self.Q = np.zeros((2,2))
@@ -89,7 +91,7 @@ class LandmarkEKF():
 
   def computeMeasJacobians(self, pose):
     lx, ly = self.prev_land_mean
-    x,y, theta, vx, vy, omega, theta_p = pose
+    x, y, theta, vx, vy, omega, theta_p = pose
     
     range_est_sqr = ((lx-x)**2+(ly-y)**2)
     range_est = range_est_sqr**.5
@@ -99,23 +101,23 @@ class LandmarkEKF():
     meas_jac_pose[0,0] = -(lx-x) / range_est
     meas_jac_pose[1,0] = -(ly-y) / range_est
     meas_jac_pose[0,1] = (ly-y) / range_est_sqr
-    meas_jac_pose[0,0] = -(lx-x) / range_est_sqr
-    
+    meas_jac_pose[1,1] = -(lx-x) / range_est_sqr
+    meas_jac_pose[1,2] = -1
     self.meas_jac_pose = meas_jac_pose
-    self.meas_jac_land = -1 * meas_jac_pose
+    self.meas_jac_land = -1 * meas_jac_pose[:2,:2]
     
-  def computeDataAssociation(self, pose_est, pose_cov_est, meas, meas_cov):
+  def computeDataAssociation(self, pose_est, pose_cov, meas, meas_cov):
 
     # range_meas, bearing_meas = meas 
-    self.meas = meas 
+    self.meas = meas
     self.meas_cov = meas_cov
-    meas_est = self.computeMeasModel(pose_est) # range_est, bearing_est      
+    meas_est = self.computeMeasModel(pose_est) # range_est, bearing_est
     self.meas_diff = meas - meas_est #np.array([range_meas - range_est, bearing_meas - bearing_est])
 
-    self.pose_cov = pose_cov_est
+    self.pose_cov = pose_cov
     self.pose_cov_inv = np.linalg.inv(self.pose_cov)
 
-    self.computeMeasJacobians( pose_est)
+    self.computeMeasJacobians(pose_est)
     
     self.Q = self.meas_cov + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T
     self.Q_inv = np.linalg.inv(self.Q)
@@ -123,17 +125,15 @@ class LandmarkEKF():
     pose_cov_expected = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + self.pose_cov_inv)
     pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
 
-    pose_sampled = pose_mean_expected + self.random.normal(0,pose_cov_expected)
+    self.sampled_pose = pose_mean_expected + self.random.normal(0,pose_cov_expected)
     meas_improved = self.computeMeasModel(pose_sampled) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
     
-    two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))    
+    two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))
     
     self.prob_data_association = two_pi_Q_inv_sqrt * np.exp(exponent)
-    
     return self.prob_data_association
-
 
   def updateObserved(self):
 
@@ -162,7 +162,8 @@ class LandmarkEKF():
     if self.land_exist_log<=0:
       return False
     return True
-  def updateNewLandmark(self):
+
+  def updateNewLandmark(self, pose_est, pose_cov_est, meas, meas_cov):
     pass
 
 class State():
@@ -188,6 +189,7 @@ class Particle():
 
     self.pose = np.zeros(7)
     self.pose_hist = []
+    self.pose_cov = np.eyes(7)
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -197,8 +199,14 @@ class Particle():
     self.theta_sigma = params['theta_sigma']
     # more! 
 
-    self.prob_accept = .5
+    self.prob_threshold = .5
     self.sensor_range = 10
+
+    #TODO Figure out how to get variance for x and y
+    self.x_sigma = 1
+    self.y_sigma = 1
+
+    self.pose_cov = np.eyes([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
     
     pass
 
@@ -208,30 +216,30 @@ class Particle():
   # to enable multiple updates. 
   def propagateMotion(self, control, meas, meas_cov, landmark_key, dt):
     self.pose_hist.append(self.pose)
-    pose_est, pose_cov_est = self.computeMotionModel(self.pose, control, dt)
+    pose_est = self.computeMotionModel(self.pose, control, dt)
     # TO DO INItiALIze landmarks 
     # we might not need this -- we have accurate data association 
-    prob_assocaite_ls = []
+    prob_associate_ls = []
     for _,landmark in self.landmarks.items():
-      prob_assocaite = landmark.computeDataAssociation(pose_est, pose_cov_est, meas, meas_cov)
-      prob_assocaite_ls.append(prob_assocaite)
+      prob_associate = landmark.computeDataAssociation(pose_est, self.pose_cov, meas, meas_cov)
+      prob_associate_ls.append(prob_associate)
     
-    obs_idx = -1
-    if len(prob_assocaite_ls)>0:
-      obs_idx = np.argmax(np.array(prob_assocaite_ls))
+    observed_land_idx = None
+    if len(prob_associate_ls)>0:
+      observed_land_idx = np.argmax(np.array(prob_associate_ls))
     
-    if len(prob_associate_ls)>0 and prob_assocaite_ls[obs_idx] < self.prob_accept:
+    if len(prob_associate_ls)==0 or prob_associate_ls[observed_land_idx] < self.prob_threshold:
       for landmark in self.landmarks:
         landmark.updateUnobserved(pose_est)
-      self.weight = self.prob_accept
+      self.weight = self.prob_threshold
       new_landmark = LandmarkEKF()
-      new_landmark.updateNewLandmark()
+      new_landmark.updateNewLandmark(pose_est, pose_cov_est, meas, meas_cov)
       self.landmarks[self.next_idx]=new_landmark
       self.next_idx+=1
     else:
       to_remove = []
-      for (idx, landmark), prob_assocaite in zip(self.landmarks.items(),prob_assocaite_ls):
-        if idx == obs_idx:
+      for (idx, landmark), prob_associate in zip(self.landmarks.items(),prob_associate_ls):
+        if idx == observed_land_idx:
           self.weight = landmark.updateObserved()
         else:
           keep = landmark.updateUnobserved()
@@ -257,24 +265,26 @@ class Particle():
     
     v = (vx**2+vy**2)**.5
 
-    rand_vx, rand_vy = self.random.normal(0,self.v_sigma,2)
-    rand_prev_vx, rand_prev_vy = self.random.normal(0,self.v_sigma,2)
-    rand_theta = self.random.normal(0, self.theta_sigma,1)
-    rand_omega = self.random.normal(0, self.omega_sigma,1)
+    pose_noise = self.random.normal(0, self.pose_cov, 7)
+    # rand_vx, rand_vy, rand_prev_vx, rand_prev_vy, rand_theta, rand_omega = self.random.normal(0, self.pose_cov, 7)
+    # rand_vx, rand_vy = self.random.normal(0,self.v_sigma,2)
+    # rand_prev_vx, rand_prev_vy = self.random.normal(0,self.v_sigma,2)
+    # rand_theta = self.random.normal(0, self.theta_sigma,1)
+    # rand_omega = self.random.normal(0, self.omega_sigma,1)
     
-    x = prev_x + (vx+rand_vx) * dt  
-    y = prev_y + (vy+rand_vy) * dt 
+    x = prev_x + vx * dt
+    y = prev_y + vy * dt
 
-    theta = theta_imu + rand_theta
+    theta = theta_imu
 
-    vx = v * np.cos(theta) + rand_prev_vx
-    vy = v * np.sin(theta) + rand_prev_vy
+    vx = v * np.cos(theta)
+    vy = v * np.sin(theta)
 
     omega = (theta - prev_theta) / dt # NOT SURE
 
     theta_p = prev_theta
 
-    est_state = (x,y,theta, vx, vy, omega, theta_p)
+    pose = np.array([x,y,theta, vx, vy, omega, theta_p]) + pose_noise
 
     '''
     dx = np.array([1,0,0,dt,0,0,0])
@@ -287,5 +297,7 @@ class Particle():
 
     motion_jocabian = np.array([dx,dy,dtheta, dvx, dvy, domega, dtheta_p])
     '''
-    motion_convariance = np.eyes([rand_vx*dt, rand_vy*dt])
-    return est_state, motion_convariance
+
+    # pose_cov = np.eyes([rand_vx*dt, rand_vy*dt])
+    # pose_cov = np.eyes([0, 0, self.theta_sigma, self.v_sigma, self.v_sigma, ])
+    return pose
