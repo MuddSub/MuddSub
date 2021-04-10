@@ -78,7 +78,7 @@ class LandmarkEKF():
     self.land_exist_log_inc = self.logOdds(0.8) # 0.8 works out to around 1.38, rho positive in the FastSLAM 2.0 algorithm
     self.land_exist_log_dec = self.logOdds(0.2) # 0.2 works out to around -1.38, rho negative in the FastSLAM 2.0 algorithm
 
-
+    self.label = []
   def logOdds(self, probability):
     return np.log(probability / (1 - probability))
 
@@ -202,8 +202,14 @@ class LandmarkEKF():
 
 class Particle():
   '''
+  params: a dictionary. contains keys:
+    initial_pose: initial pose vector
+    num_landmarks: initial number of landmarks
+    v_sigma: velocity variance
+    omega_sigma: angular velocity variance
+    theta_sigma: angle variance
+  
   Note: use deep copy!
-
   p_0: prob_new_land --> Likelihood of a new feature. When p_0 > p_nt for all p_nt, we have observed a new landmark
   '''
   def __init__(self, particle_id, params, seed=0):
@@ -213,9 +219,10 @@ class Particle():
     
     self.weight = 0
 
-    self.pose = np.zeros(7)
-    self.pose_hist = []
+    # self.pose = np.zeros(7)
+    self.pose = params['initial_pose']
     self.pose_cov = np.eye(7)
+    self.pose_est = np.zeros(7)
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -234,40 +241,38 @@ class Particle():
 
     self.pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
     
-    pass
-
+    self.observed_land_idx = None
   # need to modify data association to match observation with specific features 
   # possible solution: create a dictionary of landmark class, each has a list of landmark in that class
   # instead of maximizing in a single update, use update if above certain threshold
   # to enable multiple updates. 
-  def propagateMotion(self, control, meas, meas_cov, landmark_key, dt):
-    # Store old pose
-    self.pose_hist.append(self.pose)
-
+  
+  def propagateMotion(self, control, dt):
     # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
     # the probability of data assocation
-    pose_est = self.computeMotionModel(self.pose, control, dt)
+    self.pose_est = self.computeMotionModel(self.pose, control, dt)
 
-    # TODO Initialize landmarks 
+  def updateEKFs(self, meas, meas_cov):
+    # TODO Initialize landmarks label/landmark key
     # we might not need this -- we have accurate data association 
 
     # Get list of data association probabilities
     prob_associate_ls = []
     for _,landmark in self.landmarks.items():
-      prob_associate = landmark.samplePose(pose_est, self.pose_cov, meas, meas_cov)
+      prob_associate = landmark.samplePose(self.pose_est, self.pose_cov, meas, meas_cov)
       prob_associate_ls.append(prob_associate)
     
     # Get the index of the landmark with the maximum data association probability
-    observed_land_idx = None
+    self.observed_land_idx = None
     if len(prob_associate_ls) > 0:
-      observed_land_idx = np.argmax(np.array(prob_associate_ls))
+      self.observed_land_idx = np.argmax(np.array(prob_associate_ls))
     
     # Store landmarks we want to remove
     to_remove = []
 
     # If we have no landmarks or if the observed landmark's data association probability is below a threshold, 
     # create a new landmark. Otherwise, update the observed landmark. Both cases update unobserved landmarks as well.
-    if len(prob_associate_ls) == 0 or prob_associate_ls[observed_land_idx] < self.prob_threshold:
+    if len(prob_associate_ls) == 0 or prob_associate_ls[self.observed_land_idx] < self.prob_threshold:
       # Update unobserved landmarks
       for (idx, landmark) in self.landmarks.items():
         keep = landmark.updateUnobserved()
@@ -276,7 +281,7 @@ class Particle():
 
       # Initialize new landmark EKF
       new_landmark = LandmarkEKF()
-      sampled_pose = pose_est + self.computePoseNoise()
+      sampled_pose = self.pose_est + self.computePoseNoise()
       new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
       self.landmarks[self.next_idx]=new_landmark
       self.next_idx+=1
@@ -287,7 +292,7 @@ class Particle():
     else:
       # Loop through landmarks and update the observed one and unobserved ones
       for idx, landmark in self.landmarks.items():
-        if idx == observed_land_idx:
+        if idx == self.observed_land_idx:
           self.pose = landmark.sampled_pose
           self.weight = landmark.updateObserved()
         else:
