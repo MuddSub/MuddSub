@@ -49,9 +49,13 @@ class LandmarkEKF():
     self.prev_land_mean = land_mean
     self.prev_land_cov = land_cov
 
-    self.land_mean_est = np.zeros(2)
-    self.land_cov_est = np.zeros((2,2))
+    self.land_mean = np.zeros(2)
+    self.land_cov = np.zeros((2,2))
 
+    # In FastSLAM 2.0, the pose is sampled taking into account the measurement and the data association variable. 
+    # If the data association variable is not known, the sampled pose is used to calculate the probability of having
+    # observed the landmark given the measurement, and the landmark that maximizes this probability is chosen. That
+    # is why the sampled pose is saved in the EKF.
     self.sampled_pose = np.zeros(7)
 
     self.meas = np.zeros(2)
@@ -65,7 +69,7 @@ class LandmarkEKF():
     self.Q = np.zeros((2,2))
     self.Q_inv = np.zeros((2,2)) 
     #self.K = np.zeros((2,2))
-    self.I = np.zeros((2,2)) #!!!!!! Problem: size mismatched
+    self.I = np.eye(2) #!!!!!! Problem: size mismatched
 
     self.random = np.random.default_rng(seed)
     self.prob_data_association = 0
@@ -89,6 +93,13 @@ class LandmarkEKF():
 
     return np.array([range_est, bearing_est])
 
+  def computeMeasModelInverse(self, pose):
+    x, y, theta, vx, vy, omega, theta_p = pose
+    range_meas, bearing_meas = self.meas
+    lx = x + range_meas * np.cos(theta + bearing_meas)
+    ly = y + range_meas * np.sin(theta + bearing_meas)
+    return np.array([lx, ly])
+
   def computeMeasJacobians(self, pose):
     lx, ly = self.prev_land_mean
     x, y, theta, vx, vy, omega, theta_p = pose
@@ -107,7 +118,6 @@ class LandmarkEKF():
     self.meas_jac_land = -1 * meas_jac_pose[:2,:2]
     
   def computeDataAssociation(self, pose_est, pose_cov, meas, meas_cov):
-
     # range_meas, bearing_meas = meas 
     self.meas = meas
     self.meas_cov = meas_cov
@@ -126,7 +136,7 @@ class LandmarkEKF():
     pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
 
     self.sampled_pose = pose_mean_expected + self.random.normal(0,pose_cov_expected)
-    meas_improved = self.computeMeasModel(pose_sampled) #range_improved, bearing_improved
+    meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
     
@@ -136,15 +146,14 @@ class LandmarkEKF():
     return self.prob_data_association
 
   def updateObserved(self):
-
     self.land_exist_log += self.land_exist_log_inc
-
     K =  self.prev_land_cov @ self.meas_jac_land.T @ self.Q_inv 
 
-    self.land_mean_est = self.prev_land_mean + K @ self.meas_diff
-
-    self.land_cov_est = (self.I - K @ self.meas_jac_land) @ self.prev_land_cov #!!!!!! Problem: size mismatched
-
+    # Compute new landmark mean and covariance
+    self.land_mean = self.prev_land_mean + K @ self.meas_diff
+    self.land_cov = (self.I - K @ self.meas_jac_land) @ self.prev_land_cov #!!!!!! Problem: size mismatched
+    
+    # Compute particle weight
     L = self.meas_jac_pose @ self.pose_cov @ self.meas_jac_pose.T \
          + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T \
          + self.meas_cov
@@ -153,18 +162,36 @@ class LandmarkEKF():
     exponent = -.5* self.meas_diff.T @ L_inv @ (self.meas_diff )
     weight = two_pi_L_inv_sqrt * np.exp(exponent)
 
+    # Update previous values
+    self.prev_land_mean = self.land_mean
+    self.prev_land_cov = self.land_cov
+
     return weight
 
-  def updateUnobserved(self,pose,sensor_range):
-    range_meas, _ = self.computeMeasModel(pose)
+  def updateUnobserved(self, sensor_range):
+    # Set current landmark mean and cov to previous mean and cov
+    self.land_mean = self.prev_land_mean
+    self.land_cov = self.prev_land_cov
+
+    # Update probability of the landmark existing based on whether it should have been measured
+    range_meas, _ = self.computeMeasModel(self.sampled_pose)
     if range_meas <= sensor_range:
       self.land_exist_log -= self.land_exist_log_dec
-    if self.land_exist_log<=0:
-      return False
-    return True
 
-  def updateNewLandmark(self, pose_est, pose_cov_est, meas, meas_cov):
-    pass
+    # If the log odds probability falls below 0, we do not keep the landmark
+    return self.land_exist_log > 0
+
+  def updateNewLandmark(self, sampled_pose, meas, meas_cov):
+    self.land_exist_log = self.land_exist_log_inc
+    self.sampled_pose = sampled_pose
+    self.meas = meas
+
+    # Initialize landmark mean and covariance, as well as previous mean and covariance
+    self.land_mean = self.computeMeasModelInverse(sampled_pose)
+    self.prev_land_mean = self.land_mean
+    self.computeMeasJacobians(sampled_pose)
+    self.land_cov = np.linalg.inv(self.meas_jac_land @ np.linalg.inv(meas_cov) @ self.meas_jac_land.T)
+    self.prev_land_cov = self.land_cov
 
 class State():
   def __init__(self, x, y, theta):
@@ -189,7 +216,7 @@ class Particle():
 
     self.pose = np.zeros(7)
     self.pose_hist = []
-    self.pose_cov = np.eyes(7)
+    self.pose_cov = np.eye(7)
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -206,48 +233,75 @@ class Particle():
     self.x_sigma = 1
     self.y_sigma = 1
 
-    self.pose_cov = np.eyes([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
+    self.pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
     
     pass
 
   # need to modify data association to match observation with specific features 
   # possible solution: create a dictionary of landmark class, each has a list of landmark in that class
-  # instead of maximizing in a single update, use update if above certain threadhold 
+  # instead of maximizing in a single update, use update if above certain threshold
   # to enable multiple updates. 
   def propagateMotion(self, control, meas, meas_cov, landmark_key, dt):
+    # Store old pose
     self.pose_hist.append(self.pose)
+
+    # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
+    # the probability of data assocation
     pose_est = self.computeMotionModel(self.pose, control, dt)
-    # TO DO INItiALIze landmarks 
+
+    # TODO Initialize landmarks 
     # we might not need this -- we have accurate data association 
+
+    # Get list of data association probabilities
     prob_associate_ls = []
     for _,landmark in self.landmarks.items():
       prob_associate = landmark.computeDataAssociation(pose_est, self.pose_cov, meas, meas_cov)
       prob_associate_ls.append(prob_associate)
     
+    # Get the index of the landmark with the maximum data association probability
     observed_land_idx = None
-    if len(prob_associate_ls)>0:
+    if len(prob_associate_ls) > 0:
       observed_land_idx = np.argmax(np.array(prob_associate_ls))
     
-    if len(prob_associate_ls)==0 or prob_associate_ls[observed_land_idx] < self.prob_threshold:
-      for landmark in self.landmarks:
-        landmark.updateUnobserved(pose_est)
-      self.weight = self.prob_threshold
+    # Store landmarks we want to remove
+    to_remove = []
+
+    # If we have no landmarks or if the observed landmark's data association probability is below a threshold, 
+    # create a new landmark. Otherwise, update the observed landmark. Both cases update unobserved landmarks as well.
+    if len(prob_associate_ls) == 0 or prob_associate_ls[observed_land_idx] < self.prob_threshold:
+      # Update unobserved landmarks
+      for (idx, landmark) in self.landmarks.items():
+        keep = landmark.updateUnobserved()
+        if not keep:
+          to_remove.append(idx)
+
+      # Initialize new landmark EKF
       new_landmark = LandmarkEKF()
-      new_landmark.updateNewLandmark(pose_est, pose_cov_est, meas, meas_cov)
+      sampled_pose = pose_est + self.computePoseNoise()
+      new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
       self.landmarks[self.next_idx]=new_landmark
       self.next_idx+=1
+
+      # Update particle pose and weight
+      self.pose = sampled_pose
+      self.weight = self.prob_threshold
     else:
-      to_remove = []
-      for (idx, landmark), prob_associate in zip(self.landmarks.items(),prob_associate_ls):
+      # Loop through landmarks and update the observed one and unobserved ones
+      for idx, landmark in self.landmarks.items():
         if idx == observed_land_idx:
+          self.pose = landmark.sampled_pose
           self.weight = landmark.updateObserved()
         else:
           keep = landmark.updateUnobserved()
           if not keep:
             to_remove.append(idx)
-      for idx in to_remove:
-        self.landmarks.pop(idx)
-      return self.weight
+
+    # Remove unobserved landmarks whose log odds probability of existing fell below 0
+    for idx in to_remove:
+      self.landmarks.pop(idx)
+    
+    # Return the particle's weight
+    return self.weight
   '''
   def correct(self,landmark_key = None, new_landmark=False):
     if new_landmark:
@@ -264,40 +318,17 @@ class Particle():
     prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_v_p = prev_pose
     
     v = (vx**2+vy**2)**.5
-
-    pose_noise = self.random.normal(0, self.pose_cov, 7)
-    # rand_vx, rand_vy, rand_prev_vx, rand_prev_vy, rand_theta, rand_omega = self.random.normal(0, self.pose_cov, 7)
-    # rand_vx, rand_vy = self.random.normal(0,self.v_sigma,2)
-    # rand_prev_vx, rand_prev_vy = self.random.normal(0,self.v_sigma,2)
-    # rand_theta = self.random.normal(0, self.theta_sigma,1)
-    # rand_omega = self.random.normal(0, self.omega_sigma,1)
-    
     x = prev_x + vx * dt
     y = prev_y + vy * dt
-
     theta = theta_imu
-
     vx = v * np.cos(theta)
     vy = v * np.sin(theta)
-
     omega = (theta - prev_theta) / dt # NOT SURE
-
     theta_p = prev_theta
 
-    pose = np.array([x,y,theta, vx, vy, omega, theta_p]) + pose_noise
+    pose = np.array([x,y,theta, vx, vy, omega, theta_p])
 
-    '''
-    dx = np.array([1,0,0,dt,0,0,0])
-    dy = np.array([0,1,0,0,dt,0,0])
-    dtheta = np.array([0,0,0,0,0,0,0])
-    dvx = np.array([0,0,-v*np.sin(prev_theta) ,0,0,0,0])
-    dvy = np.array([0,0,-v*np.cos(prev_theta) ,0,0,0,0])
-    domega = np.array([0,0,-dt,0,0,0,0]) # NOT SURE
-    dtheta_p =  np.array([0,0,1,0,0,0])
-
-    motion_jocabian = np.array([dx,dy,dtheta, dvx, dvy, domega, dtheta_p])
-    '''
-
-    # pose_cov = np.eyes([rand_vx*dt, rand_vy*dt])
-    # pose_cov = np.eyes([0, 0, self.theta_sigma, self.v_sigma, self.v_sigma, ])
     return pose
+
+  def computePoseNoise(self):
+      return self.random.normal(0, self.pose_cov, 7)
