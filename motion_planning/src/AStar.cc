@@ -83,27 +83,18 @@ void AStar::solveGrid()
     std::priority_queue<Node> q;
     grid_[startx_][starty_][startz_].g_ = 0;
     grid_[startx_][starty_][startz_].f_ = grid_[startx_][starty_][startz_].g_ + grid_[startx_][starty_][startz_].h_;
-    Node *node1 = new Node(0,0,0, NULL);
-    node1->f_ = 0;
-    /*Node *node2 = new Node (0,0,0, NULL);
-    node2->f_ = 100;
-    q.push(*node1);
-    q.push(*node2);
-    Node node3 = q.top();
-    std::cout<<node3.f_<<std::endl;
-    q.pop();
-    node3 = q.top();
-    std::cout<<node3.f_<<std::endl;*/
+
     q.push(grid_[starty_][starty_][startz_]);
     while(!q.empty())
     {
         std::cout<<"hello"<<' '<<q.top().y_<<q.top().z_<<std::endl;
-        Node now = q.top();
+        //Node now = q.top();
+	Node *now = &grid_[q.top().x_][q.top().y_][q.top().z_];
         q.pop();
-        grid_[now.x_][now.y_][now.z_].isClosed_ = true;
-        grid_[now.x_][now.y_][now.z_].str_ = "2";
-        std::cout << grid_[now.x_][now.y_][now.z_].str_ << std::endl;
-        if(now.x_ == endx_ && now.y_ == endy_ && now.z_ == endz_)
+        now->isClosed_ = true;
+        now->str_ = "2";
+        std::cout << now->str_ << std::endl;
+        if(now->x_ == endx_ && now->y_ == endy_ && now->z_ == endz_)
         {
             break;
         }
@@ -112,21 +103,22 @@ void AStar::solveGrid()
         int dz[26] = {0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,1, -1,-1,-1,-1,-1,-1,-1,-1,-1};
         for(int i = 0; i < 26; i++)
         {
-            if(0 <= now.x_ + dx[i] && now.x_ + dx[i] < width_ && 0 <= now.y_ + dy[i] && now.y_ + dy[i] < height_ && 0 <= now.z_ + dz[i] && now.z_ + dz[i] < depth_)
+            if(0 <= now->x_ + dx[i] && now->x_ + dx[i] < width_ && 0 <= now->y_ + dy[i] && now->y_ + dy[i] < height_ && 0 <= now->z_ + dz[i] && now->z_ + dz[i] < depth_)
             {
-                Node side = grid_[now.x_ + dx[i]][now.y_ + dy[i]][now.z_ + dz[i]];
-                if(grid_[side.x_][side.y_][side.z_].isObstacle_) continue;
-                if(grid_[side.x_][side.y_][side.z_].isClosed_) continue;
+                Node *side = &grid_[now->x_ + dx[i]][now->y_ + dy[i]][now->z_ + dz[i]];
+                if(side->isObstacle_) continue;
+                if(side->isClosed_) continue;
                 double distance = pow((pow((dx[i]), 2) + pow((dy[i]), 2) + pow((dz[i]), 2)), 0.5);
-                if(grid_[now.x_][now.y_][now.z_].g_ + distance < grid_[side.x_][side.y_][side.z_].g_ || !grid_[side.x_][side.y_][side.z_].isOpen_)
+                if(now->g_ + distance < side->g_ || !side->isOpen_)
                 {
-                    grid_[side.x_][side.y_][side.z_].g_ = grid_[now.x_][now.y_][now.z_].g_ + distance;
-                    grid_[side.x_][side.y_][side.z_].f_ = grid_[side.x_][side.y_][side.z_].g_ + grid_[side.x_][side.y_][side.z_].h_;
-                    grid_[side.x_][side.y_][side.z_].parent_ = &grid_[now.x_][now.y_][now.z_];
-                    if(!grid_[side.x_][side.y_][side.z_].isOpen_)
+                    side->g_ = now->g_ + distance;
+                    side->f_ = side->g_ + side->h_;
+                    side->parent_ = now;
+                    if(!side->isOpen_)
                     {
-                        grid_[side.x_][side.y_][side.z_].isOpen_= true;
-                        q.push(grid_[side.x_][side.y_][side.z_]);
+                        side->isOpen_= true;
+                        //q.push(&grid_[side->x_][side->y_][side->z_]);
+			q.push(*side);
                     }
                 }
             }
@@ -213,7 +205,6 @@ AStar::Node::Node()
 int main()
 {
 
-    std::cout<<"hello"<<std::endl;
     std::priority_queue<std::string> l;
     l.push("hello");
     l.push("bye");
