@@ -83,49 +83,50 @@ void AStar::solveGrid()
     std::priority_queue<Node> q;
     grid_[startx_][starty_][startz_].g_ = 0;
     grid_[startx_][starty_][startz_].f_ = grid_[startx_][starty_][startz_].g_ + grid_[startx_][starty_][startz_].h_;
-
-    q.push(grid_[starty_][starty_][startz_]);
+    q.push(grid_[startx_][starty_][startz_]);
     while(!q.empty())
     {
-        std::cout<<"hello"<<' '<<q.top().y_<<q.top().z_<<std::endl;
-        //Node now = q.top();
-	Node *now = &grid_[q.top().x_][q.top().y_][q.top().z_];
+        std::cout << "hello" << ' ' << q.top().y_ << q.top().z_ << std::endl;
+
+        Node *now = &grid_[q.top().x_][q.top().y_][q.top().z_];
         q.pop();
         now->isClosed_ = true;
         now->str_ = "2";
-        std::cout << now->str_ << std::endl;
-        if(now->x_ == endx_ && now->y_ == endy_ && now->z_ == endz_)
+        //std::cout << grid_[now->x_][now->y_][now->z_].str_ << std::endl;
+        if (now->x_ == endx_ && now->y_ == endy_ && now->z_ == endz_)
         {
             break;
         }
-        int dy[26] = {1,1,1,0,0,-1,-1,-1, 1,1,1,0,0,-1,-1,-1,0, 1,1,1,0,0,-1,-1,-1,0};
-        int dx[26] = {-1,0,1,-1,1,-1,0,1, -1,0,1,-1,1,-1,0,1,0, -1,0,1,-1,1,-1,0,1,0};
-        int dz[26] = {0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,1, -1,-1,-1,-1,-1,-1,-1,-1,-1};
-        for(int i = 0; i < 26; i++)
+        int dy[26] = {1, 1, 1, 0, 0, -1, -1, -1, 1, 1, 1, 0, 0, -1, -1, -1, 0, 1, 1, 1, 0, 0, -1, -1, -1, 0};
+        int dx[26] = {-1, 0, 1, -1, 1, -1, 0, 1, -1, 0, 1, -1, 1, -1, 0, 1, 0, -1, 0, 1, -1, 1, -1, 0, 1, 0};
+        int dz[26] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+        for (int i = 0; i < 26; i++)
         {
-            if(0 <= now->x_ + dx[i] && now->x_ + dx[i] < width_ && 0 <= now->y_ + dy[i] && now->y_ + dy[i] < height_ && 0 <= now->z_ + dz[i] && now->z_ + dz[i] < depth_)
+            if (0 <= now->x_ + dx[i] && now->x_ + dx[i] < width_ && 0 <= now->y_ + dy[i] && now->y_ + dy[i] < height_ &&
+                0 <= now->z_ + dz[i] && now->z_ + dz[i] < depth_)
             {
                 Node *side = &grid_[now->x_ + dx[i]][now->y_ + dy[i]][now->z_ + dz[i]];
-                if(side->isObstacle_) continue;
-                if(side->isClosed_) continue;
+                if (side->isObstacle_) continue;
+                if (side->isClosed_) continue;
                 double distance = pow((pow((dx[i]), 2) + pow((dy[i]), 2) + pow((dz[i]), 2)), 0.5);
-                if(now->g_ + distance < side->g_ || !side->isOpen_)
+                if (now->g_ + distance < side->g_ || !side->isOpen_)
                 {
                     side->g_ = now->g_ + distance;
                     side->f_ = side->g_ + side->h_;
-                    side->parent_ = now;
-                    if(!side->isOpen_)
+                    side->parent_ = &grid_[now->x_][now->y_][now->z_];
+                    if (!side->isOpen_)
                     {
-                        side->isOpen_= true;
-                        //q.push(&grid_[side->x_][side->y_][side->z_]);
-			q.push(*side);
+                        side->isOpen_ = true;
+                        q.push(*side);
                     }
                 }
             }
         }
     }
+    printGrid();
     makeParent(&grid_[endx_][endy_][endz_]);
     printGrid();
+
 }
 void AStar::makeParent(AStar::Node *node)
 {
