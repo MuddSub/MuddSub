@@ -192,13 +192,13 @@ class LandmarkEKF():
     self.land_cov = np.linalg.inv(self.meas_jac_land @ np.linalg.inv(meas_cov) @ self.meas_jac_land.T)
     self.prev_land_cov = self.land_cov
 
-class State():
-  def __init__(self, x, y, theta):
-    self.x = x
-    self.y = y
-    self.theta = theta
+# class State():
+#   def __init__(self, x, y, theta):
+#     self.x = x
+#     self.y = y
+#     self.theta = theta
 
-    self.map = dict()  
+#     self.map = dict()
 
 class Particle():
   '''
@@ -206,7 +206,7 @@ class Particle():
 
   p_0: prob_new_land --> Likelihood of a new feature. When p_0 > p_nt for all p_nt, we have observed a new landmark
   '''
-  def __init__(self, state,params, particle_id, seed=0):
+  def __init__(self, particle_id, params, seed=0):
     self.id = particle_id
     self.random = np.random.default_rng(seed)
     self.next_idx = 0
