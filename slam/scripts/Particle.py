@@ -3,22 +3,21 @@ from scipy.linalg import sqrtm
 # to do: turn landmark into matrices, and particles into matrices 
 # aka numpify (but not now)
 
-
 '''
 s: pose --> robot pose (7 states)
-sigma_s_t,n_t: pose_cov_expected: the pose cov for the **new** distribution in data association.  
-sigma_s_t,n_t: pose_mean_expected: the pose mean for the **new** distribution in data association. 
-s_nt, t: sampled pose: the pose sampled from the **new** distribution from data association 
+sigma_s_t,n_t: pose_cov_expected --> the pose cov for the **new** pose sampling distribution in data association.  
+sigma_s_t,n_t: pose_mean_expected --> the pose mean for the **new** pose sampling distribution in data association. 
+s_nt,t: sampled pose --> the pose sampled from the **new** distribution in data association
 
 mu: land_mean --> landmark position mean (x,y) 
 sigma: land_cov --> landmark position covariance
 
-mu_hat: land_mean_est --> landmark position mean estimate (prediction, before correction step)
-sigma_hat: land_cov_est --> landmark position covariance estimate (prediction, before correction step)
+mu_t-1: prev_land_mean --> landmark position mean from previous time step
+sigma_t-1: prev_land_cov --> landmark position covariance from previous time step
 
 z: meas = (meas_range, meas_bearing) --> measurement
 z_hat: meas_est = (meas_range_est, meas_bearing_est) --> predicted measurement
-z-z_hat:  meas_diff 
+z - z_hat:  meas_diff
 
 Gs: meas_jac_pose --> Jacobian of the measurement model with respect to the robot pose
 Gtheta: meas_jac_land --> Jacobian of the measurement model with respect to the landmark position
@@ -117,7 +116,7 @@ class LandmarkEKF():
     self.meas_jac_pose = meas_jac_pose
     self.meas_jac_land = -1 * meas_jac_pose[:2,:2]
     
-  def computeDataAssociation(self, pose_est, pose_cov, meas, meas_cov):
+  def samplePose(self, pose_est, pose_cov, meas, meas_cov):
     # range_meas, bearing_meas = meas 
     self.meas = meas
     self.meas_cov = meas_cov
@@ -255,7 +254,7 @@ class Particle():
     # Get list of data association probabilities
     prob_associate_ls = []
     for _,landmark in self.landmarks.items():
-      prob_associate = landmark.computeDataAssociation(pose_est, self.pose_cov, meas, meas_cov)
+      prob_associate = landmark.samplePose(pose_est, self.pose_cov, meas, meas_cov)
       prob_associate_ls.append(prob_associate)
     
     # Get the index of the landmark with the maximum data association probability
