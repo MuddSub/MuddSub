@@ -26,6 +26,11 @@ private:
     void solveGrid();
     void solveGridDFS();
     void DFS(int x, int y, int z);
+
+    std::string goalId_;
+    std::string motion_style_;
+    double velocity_;
+
     class Node
     {
     public:
@@ -54,5 +59,7 @@ public:
     AStar(int width, int height, int depth);
     void makeParent(Node *node);
     //double static distance (int x1, int y1, int z1, int x2, int y2, int z2);
+
+    void goToTarget(std::string landmark_name, double velocity, std::string motion_style);
 };
 }
