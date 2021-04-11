@@ -180,6 +180,8 @@ class Solver:
       observation = env.reset()
       for i in range(10):
         action = self.getAction(observation, self.getEpsilon(episode))
+
+
         new_observation, reward, done, info = env.step(action)
         # Save experience
         self.experience_buffer.remember(observation, action, reward, new_observation, done)

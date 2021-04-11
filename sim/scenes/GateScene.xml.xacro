@@ -91,7 +91,7 @@
     <name>Gate</name>
     <file>$(find sim)/scenes/gate.urdf</file>
     <position>
-      <x> 1 </x>
+      <x> 4 </x>
       <y> 1 </y>
       <z> 1 </z>
     </position>

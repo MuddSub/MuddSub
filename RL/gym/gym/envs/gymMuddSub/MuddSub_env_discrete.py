@@ -5,7 +5,7 @@ from gym.utils import seeding
 import os
 import sys
 sys.path.append('/home/elip/catkin_ws/src/MuddSub/RL/object_detection/PyTorch-YOLOv3/')
-print(os.listdir(sys.path[-1]))
+#print(os.listdir(sys.path[-1]))
 import rospy
 from models import *
 import numpy as np
@@ -55,7 +55,7 @@ class MuddSubEnvDiscrete(gym.Env):
         rospy.Subscriber('/cameras/front_right/raw', Image, get_image_right)
 
         self.publisher = setStatePublisher()
-        self.robot_init = [0,3,0,0,0,0]
+        self.robot_init = [0,0,1.5,0,0,0]
         self.current_step = 0
 
         # x,y,z, yaw
@@ -80,23 +80,24 @@ class MuddSubEnvDiscrete(gym.Env):
 
     def _take_action(self, action):
 
-        scale = 0.01    # movement amount
+        scale = 0.5    # movement amount
         degree = 20     # turn amount in degrees
         x,y,z,yaw = self.current_position
+        action2word = ['forward','backward','turn_left','turn_right','up','down']
 
-        if action == "forward":
+        if action == 0: #"forward":
             x += scale * np.cos(yaw)
             y += scale * np.sin(yaw)
-        elif action == "backward":
+        elif action == 1: #"backward":
             x -= scale * np.cos(yaw)
             y -= scale * np.sin(yaw)
-        elif action == "turn_left":
-            yaw += degree/180 * np.pi
-        elif action == "turn_right":
+        elif action == 2: #"turn_left":
             yaw -= degree/180 * np.pi
-        elif action == "up":
+        elif action == 3: #"turn_right":
+            yaw += degree/180 * np.pi
+        elif action == 4: #"up":
             z -= scale
-        elif action == "down":
+        elif action == 5: #"down":
             z += scale
 
         self.current_position = x,y,z,yaw
@@ -106,7 +107,8 @@ class MuddSubEnvDiscrete(gym.Env):
         odom_quat = self.euler_to_quaternion(roll, pitch, yaw)
         odom = Odometry()
         odom.pose.pose = Pose(Point(x, y, z), odom_quat)
-        print(odom)
+        print("X: ", x, "Y: ", y, "Z: ", z, "Action: ", action2word[action])
+
         self.publisher.publish(odom)
 
     def _next_observation(self):
@@ -123,7 +125,7 @@ class MuddSubEnvDiscrete(gym.Env):
         img_left = img_left.float()
         img_right = img_right.permute(0, 3, 2, 1)
         img_right = img_right.float()
-        print("prediction",self.model(img)[0][0])
+        #print("prediction",self.model(img)[0][0])
         pred_left = self.model(img_left)
         pred_right = self.model(img_right)
         pred_left = non_max_suppression(pred_left, conf_thres=0.5, nms_thres=0.4)[0].numpy()[0][:4]
@@ -140,6 +142,7 @@ class MuddSubEnvDiscrete(gym.Env):
 
         visionState = np.concatenate((pred_left,pred_right))
         state = np.concatenate((visionState, self.current_position))
+        print("state: ", state)
         return state
 
     def _distanceToGate(self):
@@ -166,9 +169,13 @@ class MuddSubEnvDiscrete(gym.Env):
         done = self._checkAtGate()
 
         state = self._next_observation()
-        if state[:4].all() == -1:
+
+        if state[8] <= -1 or state[8] >= 7: # run into x walls
             done = True
-            return None, 0, done, {}
+            print("reward: ", -1000)
+            return None, -1000, done, {}
+
+        print("reward: ", reward)
         return state, reward, done, {}
 
     def reset(self):
