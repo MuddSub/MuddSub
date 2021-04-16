@@ -215,14 +215,12 @@ class Particle():
   def __init__(self, particle_id, params, seed=0):
     self.id = particle_id
     self.random = np.random.default_rng(seed)
-    self.next_idx = 0
-    
+    self.next_idx = 0    
     self.weight = 0
 
     # self.pose = np.zeros(7)
     self.pose = params['initial_pose']
     self.pose_cov = np.eye(7)
-    self.pose_est = np.zeros(7)
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -232,12 +230,11 @@ class Particle():
     self.theta_sigma = params['theta_sigma']
     # more! 
 
-    self.prob_threshold = .5
-    self.sensor_range = 10
+    self.prob_threshold = params['prob_threshold']
+    self.sensor_range = params['sensor_range']
 
-    #TODO Figure out how to get variance for x and y
-    self.x_sigma = 1
-    self.y_sigma = 1
+    self.x_sigma = params['x_sigma']
+    self.y_sigma = params['y_sigma']
 
     self.pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
     
@@ -250,7 +247,9 @@ class Particle():
   def propagateMotion(self, control, dt):
     # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
     # the probability of data assocation
-    self.pose_est = self.computeMotionModel(self.pose, control, dt)
+    print("Particle: propagate motion:\n control", control, "dt", dt)
+    self.pose = self.computeMotionModel(self.pose, control, dt)
+    print("Particle: propagate motion:\n pose", self.pose)
 
   def updateEKFs(self, meas, meas_cov):
     # TODO Initialize landmarks label/landmark key
@@ -259,7 +258,7 @@ class Particle():
     # Get list of data association probabilities
     prob_associate_ls = []
     for _,landmark in self.landmarks.items():
-      prob_associate = landmark.samplePose(self.pose_est, self.pose_cov, meas, meas_cov)
+      prob_associate = landmark.samplePose(self.pose, self.pose_cov, meas, meas_cov)
       prob_associate_ls.append(prob_associate)
     
     # Get the index of the landmark with the maximum data association probability
@@ -281,7 +280,7 @@ class Particle():
 
       # Initialize new landmark EKF
       new_landmark = LandmarkEKF()
-      sampled_pose = self.pose_est + self.computePoseNoise()
+      sampled_pose = self.pose + self.computePoseNoise()
       new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
       self.landmarks[self.next_idx]=new_landmark
       self.next_idx+=1
@@ -327,10 +326,10 @@ class Particle():
     theta = theta_imu
     vx = v * np.cos(theta)
     vy = v * np.sin(theta)
-    omega = (theta - prev_theta) / dt # NOT SURE
+    omega = omega_imu #(theta - prev_theta) / dt # NOT SURE
     theta_p = prev_theta
 
-    pose = np.array([x,y,theta, vx, vy, omega, theta_p])
+    pose = np.array([x,y, theta, vx, vy, omega, theta_p])
 
     return pose
 
