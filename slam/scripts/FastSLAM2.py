@@ -48,10 +48,10 @@ class FastSLAM2():
   def createParticles(self, n):
     for i in range(n):
       self.particles.append(Particle(i, self.params))
-
+    print(self.params['initial_pose'])
   def propagateMotion(self, control):
     # propagate motion
-    print("FastSLAM control", control)
+    #print("FastSLAM control", control)
     time, vx, vy, theta_imu, omega_imu = control
     dt = max(time - self.prev_t, 0.000001)
     if (time-self.prev_t == 0):
@@ -59,10 +59,10 @@ class FastSLAM2():
     for idx, particle in enumerate(self.particles):
       particle.propagateMotion((vx, vy, theta_imu, omega_imu), dt)
     self.prev_t = time
-    return self.store(self.particles, time)
+    return self.get_all_poses()
 
   def updateMeasurement(self, meas, meas_cov):
-    print("meas", meas)
+    #print("meas", meas)
     time, range_meas, bearing_meas = meas
     
     #  Collect weight
@@ -72,15 +72,16 @@ class FastSLAM2():
     self.weights /= np.sum(self.weights)
 
     # resampling
-    new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), replace=True, p=self.weights)
+    new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles,replace=True, p=self.weights)
     new_particles = []
     for idx in new_particle_idx_ls:
       new_particles.append(copy.deepcopy(self.particles[idx]))
     self.particles  = new_particles
-    return self.store(self.particles, time)
+    return self.get_all_poses() #self.compute_avg(self.particles, time)
     
-  def store(self, particles, t):
+  def compute_avg(self, particles, t):
     poses =  []
+    
     for idx, particle in enumerate(particles):
       poses.append(particle.pose)
       for landmark in particle.landmarks:
@@ -89,5 +90,11 @@ class FastSLAM2():
     hist = dict()
     hist['time'] = t
     hist['pose'] = avg_pose
-    print(hist)
-    return hist
+    #print(hist)
+    return avg_pose
+  def get_all_poses(self):
+    poses =  []   
+    for idx, particle in enumerate(self.particles):
+      poses.append(particle.pose[:2])
+    return poses
+    

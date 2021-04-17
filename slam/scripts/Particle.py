@@ -88,7 +88,7 @@ class LandmarkEKF():
     lx, ly = self.prev_land_mean
 
     range_est = ((lx-x)**2+(ly-y)**2)**.5
-    bearing_est = np.arctan2((ly-y)/(lx-x))-theta
+    bearing_est = np.arctan2((ly-y),(lx-x))-theta
 
     return np.array([range_est, bearing_est])
 
@@ -100,6 +100,7 @@ class LandmarkEKF():
     return np.array([lx, ly])
 
   def computeMeasJacobians(self, pose):
+    
     lx, ly = self.prev_land_mean
     x, y, theta, vx, vy, omega, theta_p = pose
     
@@ -107,7 +108,7 @@ class LandmarkEKF():
     range_est = range_est_sqr**.5
 
     meas_jac_pose = np.zeros((2,7))
-
+    
     meas_jac_pose[0,0] = -(lx-x) / range_est
     meas_jac_pose[1,0] = -(ly-y) / range_est
     meas_jac_pose[0,1] = (ly-y) / range_est_sqr
@@ -121,6 +122,7 @@ class LandmarkEKF():
     self.meas = meas
     self.meas_cov = meas_cov
     meas_est = self.computeMeasModel(pose_est) # range_est, bearing_est
+    
     self.meas_diff = meas - meas_est #np.array([range_meas - range_est, bearing_meas - bearing_est])
 
     self.pose_cov = pose_cov
@@ -133,7 +135,7 @@ class LandmarkEKF():
     
     pose_cov_expected = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + self.pose_cov_inv)
     pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
-
+    print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp',pose_cov_expected,'\nQ_inv',self.Q_inv,'pos_cov_inv',self.pose_cov_inv)
     self.sampled_pose = pose_mean_expected + self.random.normal(0,pose_cov_expected)
     meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
@@ -181,6 +183,7 @@ class LandmarkEKF():
     return self.land_exist_log > 0
 
   def updateNewLandmark(self, sampled_pose, meas, meas_cov):
+    
     self.land_exist_log = self.land_exist_log_inc
     self.sampled_pose = sampled_pose
     self.meas = meas
@@ -220,7 +223,9 @@ class Particle():
 
     # self.pose = np.zeros(7)
     self.pose = params['initial_pose']
+    
     self.pose_cov = np.eye(7)
+    # self.pose_cov = params['pose_cov']
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -247,9 +252,9 @@ class Particle():
   def propagateMotion(self, control, dt):
     # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
     # the probability of data assocation
-    print("Particle: propagate motion:\n control", control, "dt", dt)
+    #print("Particle: propagate motion:\n control", control, "dt", dt)
     self.pose = self.computeMotionModel(self.pose, control, dt)
-    print("Particle: propagate motion:\n pose", self.pose)
+    #print("Particle: propagate motion:\n pose", self.pose)
 
   def updateEKFs(self, meas, meas_cov):
     # TODO Initialize landmarks label/landmark key
@@ -280,7 +285,9 @@ class Particle():
 
       # Initialize new landmark EKF
       new_landmark = LandmarkEKF()
+      
       sampled_pose = self.pose + self.computePoseNoise()
+     
       new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
       self.landmarks[self.next_idx]=new_landmark
       self.next_idx+=1
@@ -327,6 +334,7 @@ class Particle():
     vx = v * np.cos(theta)
     vy = v * np.sin(theta)
     omega = omega_imu #(theta - prev_theta) / dt # NOT SURE
+    # so far we are not accounting for omega_imu in jocabian
     theta_p = prev_theta
 
     pose = np.array([x,y, theta, vx, vy, omega, theta_p])
@@ -334,4 +342,4 @@ class Particle():
     return pose
 
   def computePoseNoise(self):
-      return self.random.normal(0, self.pose_cov, 7)
+      return self.random.multivariate_normal(np.zeros(7), self.pose_cov)
