@@ -1,3 +1,8 @@
+import warnings
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 #!/usr/bin/env python3
 import gym
 from gym import error, spaces, utils
@@ -15,6 +20,7 @@ import cv2
 from sensor_msgs.msg import Image
 from scipy.spatial.transform import Rotation
 from cv_bridge import CvBridge
+
 
 class ImageListener:
     left_image = None
@@ -44,6 +50,7 @@ class MuddSubEnvDiscrete(gym.Env):
         self.model = Darknet(model_checkpoint)
         self.imageGen = ImageListener()
         bridge = CvBridge()
+        self.reward_wall = -6000
 
         def get_image_left(msg):
             self.imageGen.left_image = np.array(cv2.resize(bridge.imgmsg_to_cv2(msg), (416,416)) )
@@ -170,12 +177,15 @@ class MuddSubEnvDiscrete(gym.Env):
 
         state = self._next_observation()
 
+        self.reward_wall += 60
+
         if state[8] <= -1 or state[8] >= 7: # run into x walls
             done = True
-            print("reward: ", -1000)
-            return None, -1000, done, {}
+            print("reward: ", self.reward_wall, " step: ", self.current_step, "hit the wall")
+            return state, self.reward_wall, done, {}
 
-        print("reward: ", reward)
+        print("reward: ", reward, " step: ", self.current_step)
+
         return state, reward, done, {}
 
     def reset(self):
@@ -185,6 +195,8 @@ class MuddSubEnvDiscrete(gym.Env):
         odom.pose.pose = Pose(Point(x, y, z), self.euler_to_quaternion(roll, pitch, yaw))
         self.publisher.publish(odom)
         self.loopRate.sleep()
+
+        self.current_step = 0
 
         # Return initial state
         stateself =self._next_observation()
