@@ -8,7 +8,7 @@ Overview of MPC variables:
  umax: max forward force of thrusters in kg(f), maximum control effort
  xmin: minimum output for all states in order of roll pitch yaw x y z, and velocities
  xmax: maximum otuput for all states in order of roll pitch yaw x y z, and velocities
- nsim: number of times model optimizes
+ nsim: number of times model optimopperatingizes
  x0: plantState from slam (pose)
  xr: setState from trajectory
  N: prediction horizon - number of steps MPC looks into the future
@@ -30,68 +30,25 @@ ROS Subscribers and Nodes:
  self.poseSub = rospy.Subscriber("slam/robot/pose", Odometry, self.poseCB) #ask if msg type slam is /pose or /state
  #Outputs
  self.wrenchPub = rospy.Publisher("/controls/robot/wrench",geometry_msgs.msg.WrenchStamped, queue_size= 1) #total thruster output force and torque
+ 
+NEED:
+12 by 12 OR 8 by 8 with roll and pitch (roll' and pitch') missing
+then adds back in PidController rollPid_, pitchPid_; for rollPid and pitchPID
+see decoupledlqr.hh line 87 for details
 
- Compute Matrix         0
-         0
-  -6094.16
-         0
-         0
-         0
-         0
-         0
-3.0471e+06
-         0
-         0
-         0       0
-       0
- 12.1881
-       0
-       0
-       0
-       0
-       0
--6094.16
-       0
-       0
-       01.61757e+09
-[ INFO] [1617572548.096853897]: Time: -1.001985
-[ INFO] [1617572549.085581283]: Iterating simulator
-STATE: 
-       0
-       0
- 12.1881
-       0
-       0
-       0
-       0
-       0
--6094.16
-       0
-       0
-       0
-DERIV: 
-         0
-         0
-  -6094.16
-         0
-         0
-         0
-         0
-         0
-3.0471e+06
-         0
-         0
-         0
-
-roscore 
-rosrun xacro xacro ../../core/descriptions/alfie.urdf.xacro -o ../../core/descriptions/alfie.urdf 
+Running Vehicle Dynamics from sim file:
+roscore
+sb
+catkin build controls
+rosrun xacro xacro core/descriptions/alfie.urdf.xacro -o core/descriptions/alfie.urdf
+roslaunch controls Dynamics.launch
 rosrun controls simulation_dynamics
 '''
 import numpy as np
 import scipy as sp
 from scipy import sparse
 import osqp #matrix optimizer
-import scripts/vehicleDynamics
+#import scripts/vehicleDynamics
 """
 //https://github.com/MuddSub/MuddSub/blob/develop/controls/controls/scripts/VehicleDynamics.py
 //read in yaml file: controls/cfg/dynamics.yaml from ros?
@@ -103,17 +60,30 @@ Taken from: https://github.com/MuddSub/MuddSub/blob/develop/base/controls/cfg/dy
 rate = 50
 dt = 1/rate
 mass = 20 #kg
-MPC_matrix = VehicleDynamics();
+#MPC_matrix = VehicleDynamics();
 #A temporary matrix of the correct dimensions of models dynamics
-
-
-Ad = sparse.csc_matrix([ #Figure out wtf this matrix is next week
+'''Ad = sparse.csc_matrix([ #Figure out wtf this matrix is next week
   [0, 0, 12.2132, 0, 0, 0],
   [ 0, 0, -6106.65, 0, 0, 0],
-  [0, 0, -0.0245242, 0, 0, 0]
+  [0, 0, -0.0245242, 0, 0, 0],
   [0, 0, 12.2132, 0, 0, 01.61757e+09]
+])'''
+Ad = sparse.csc_matrix([
+       [ 1.,          0.,          0.,          0.,          0.,          0.,          1.,          0.,          0.,          0.,          0.,           0.],
+       [  0.,          1.,          0.,          0.,          0.,          0.,          0.,          1.,          0.,          0.,          0.,          0.],
+       [  0.,          0.,          1.,          0.,          0.,          0.,          0.,          0.,          1.,          0.,          0.,          0.],
+       [  0.,          0.,          0.,          1.,          0.,          0.,          0.,          0.,          0.,          1.,          0.,          0.],
+       [  0.,          0.,          0.,          0.,          1.,          0.,          0.,          0.,          0.,          0.,          1.,         -0.],
+       [  0.,          0.,          0.,          0.,          0.,          1.,          0.,          0.,          0.,          0.,          0.,          1.],
+       [  0.,          0.,          0.,          0.,          0.,          0.,  1.0510204,          0.,          0.,          0.,  0.0102041,          0.],
+       [  0.,          0.,          0.,          0.,          0.,          0.,          0.,  1.0510204,          0., -0.0102041,          0.,            0.],
+       [  0.,          0.,          0.,          0.,          0.,          0.,          0.,          0.,       1.05,          0.,          0.,          0.],
+       [  0.,          0.,          0.,          0.,          0.,          0.,          0., -0.0102041,          0.,   1.102041,          0.,          0.],
+       [  0.,          0.,          0.,          0.,          0.,          0.,  0.0102041,          0.,          0.,          0.,   1.102041,          0.],
+       [  0.,          0.,          0.,          0.,          0.,          0.,          0.,          0.,          0.,          0.,          0.,        1.1]
 ])
-
+"""
+#Dynamics Matrix
 Ad = sparse.csc_matrix([
   [1.,      0.,     0., 0., 0., 0., dt,     0.,     0.,  0.,      0.,     0.    ],
   [0.,      1.,     0., 0., 0., 0., 0.,      dt,    0.,  0.,      0.,     0.    ],
@@ -128,6 +98,7 @@ Ad = sparse.csc_matrix([
   [0.,     -0.9734, 0., 0., 0., 0., 0.,     -0.0488, 0.,  0.,     1.,     0.    ],
   [0.,      0.,     0., 0., 0., 0., 0.,      0.,     0.,  0.,     0.,     1.    ]
 ])
+"""
 #vectorized thruster forces, each column is a thruster
 #Wrench x y z r p y
 Bd = sparse.csc_matrix([
