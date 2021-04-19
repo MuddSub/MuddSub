@@ -2,8 +2,9 @@ import pickle
 from Dataloader import *
 import FastSLAM2
 import numpy as np
-import warnings
+
 import matplotlib.pyplot as plt
+import warnings
 warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 ROBOT_ID = 0
