@@ -1,0 +1,11 @@
+#goal definition
+string goal # maybe use constant here
+int64 measurement
+string: motion_style
+geometry_msgs/Twist.msg: velocity 
+---
+#result definition
+bool success
+---
+#feedback
+float progress # we dont really need this
