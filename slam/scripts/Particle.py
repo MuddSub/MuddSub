@@ -42,7 +42,13 @@ w: weight
 
 p_nt: prob_match --> probability of landmark associates with given measurement
 '''
-
+def wrapToPi(th):
+  th = np.fmod(th, 2*np.pi)
+  if th >= np.pi:
+      th -= 2*np.pi
+  if th <= -np.pi:
+      th += 2*np.pi
+  return th
 class LandmarkEKF():
   def __init__(self, land_mean=np.zeros(2), land_cov = np.eye(2),seed=0):
     self.prev_land_mean = land_mean
@@ -88,7 +94,7 @@ class LandmarkEKF():
     lx, ly = self.prev_land_mean
 
     range_est = ((lx-x)**2+(ly-y)**2)**.5
-    bearing_est = np.arctan2((ly-y),(lx-x))-theta
+    bearing_est = wrapToPi(np.arctan2((ly-y),(lx-x))-theta)
 
     return np.array([range_est, bearing_est])
 
@@ -135,8 +141,13 @@ class LandmarkEKF():
     
     pose_cov_expected = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + self.pose_cov_inv)
     pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
-    print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp',pose_cov_expected,'\nQ_inv',self.Q_inv,'pos_cov_inv',self.pose_cov_inv)
-    self.sampled_pose = pose_mean_expected + self.random.normal(0,pose_cov_expected)
+    
+    print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp\n',pose_cov_expected,'\nQ_inv',self.Q_inv,'\npos_cov_inv\n',self.pose_cov_inv)
+    
+    pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
+    
+    self.sampled_pose = pose_mean_expected + self.random.multivariate_normal(np.zeros(7), pose_cov_expected)
+
     meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
@@ -144,6 +155,7 @@ class LandmarkEKF():
     two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))
     
     self.prob_data_association = two_pi_Q_inv_sqrt * np.exp(exponent)
+    print("prob_data_association",self.prob_data_association)
     return self.prob_data_association
 
   def updateObserved(self):
@@ -166,7 +178,7 @@ class LandmarkEKF():
     # Update previous values
     self.prev_land_mean = self.land_mean
     self.prev_land_cov = self.land_cov
-
+    print("weight",weight)
     return weight
 
   def updateUnobserved(self, sensor_range):
@@ -270,7 +282,7 @@ class Particle():
     self.observed_land_idx = None
     if len(prob_associate_ls) > 0:
       self.observed_land_idx = np.argmax(np.array(prob_associate_ls))
-    
+    print("prob_associate_ls",prob_associate_ls)
     # Store landmarks we want to remove
     to_remove = []
 
@@ -312,6 +324,7 @@ class Particle():
     
     # Return the particle's weight
     return self.weight
+  
   '''
   def correct(self,landmark_key = None, new_landmark=False):
     if new_landmark:
@@ -330,7 +343,7 @@ class Particle():
     v = (vx**2+vy**2)**.5
     x = prev_x + vx * dt
     y = prev_y + vy * dt
-    theta = theta_imu
+    theta = wrapToPi(theta_imu)
     vx = v * np.cos(theta)
     vy = v * np.sin(theta)
     omega = omega_imu #(theta - prev_theta) / dt # NOT SURE

@@ -1,12 +1,14 @@
+import warnings
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+warnings.filterwarnings("ignore", category=UserWarning) 
 import pickle
 from Dataloader import *
 import FastSLAM2
 import numpy as np
 
 import matplotlib.pyplot as plt
-import warnings
-warnings.filterwarnings("ignore")
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
+
 ROBOT_ID = 0
 NUM_STEPS = 10000
 MEAS_COV = np.diag([0.075, 0.025])
@@ -23,9 +25,9 @@ params['x_sigma'] = 1
 params['y_sigma'] = 1
 params['pose_cov'] = 2
 n = 10 #num particle
-def run(pkl = '../datasets/Jar/dataset1.pkl'):
 
-  
+
+def run(pkl = '../datasets/Jar/dataset1.pkl'):
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
   params['initial_pose'][0] = robotData.getXTruth(0)
