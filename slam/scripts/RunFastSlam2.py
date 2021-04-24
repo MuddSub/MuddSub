@@ -1,14 +1,14 @@
+import warnings
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+warnings.filterwarnings("ignore", category=UserWarning) 
 import pickle
 from Dataloader import *
 import FastSLAM2
 import numpy as np
-
 import matplotlib.pyplot as plt
-import warnings
-warnings.filterwarnings("ignore")
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
 ROBOT_ID = 0
-NUM_STEPS = 10000
+NUM_STEPS = 1000
 MEAS_COV = np.diag([0.075, 0.025])
 params = {}
 params['initial_pose'] = np.array([0, 0, 0, 0, 0, 0, 0])
@@ -22,11 +22,12 @@ params['sensor_range'] = 10
 params['x_sigma'] = 1
 params['y_sigma'] = 1
 params['pose_cov'] = 2
-n = 10 #num particle
-def run(pkl = '../datasets/Jar/dataset1.pkl'):
+n = 1 #num particle
 
-  
-  dataloader = pickle.load(open(pkl,'rb'))
+
+def run(pkl = '../datasets/Jar/dataset1.pkl'):
+  # dataloader = pickle.load(open(pkl,'rb'))
+  dataloader = pickle.load(open('C:\\Users\\CIHerrera24\\Documents\\MuddSub\\MuddSub\\slam\\datasets\\Jar\\dataset1.pkl','rb'))
   robotData = dataloader.robots[ROBOT_ID]
   params['initial_pose'][0] = robotData.getXTruth(0)
   params['initial_pose'][1] = robotData.getYTruth(0)
@@ -39,7 +40,7 @@ def run(pkl = '../datasets/Jar/dataset1.pkl'):
     update = robotData.getNext()
     
     t = update[1][0]
-    #print('step',i)
+    print('step', i)
     if i==0:
       algorithm.prev_t = t
       algorithm.params["initial_pose"][2] = wrapToPi(robotData.getCompass(t))

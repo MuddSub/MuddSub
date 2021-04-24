@@ -23,10 +23,10 @@ Gs: meas_jac_pose --> Jacobian of the measurement model with respect to the robo
 Gtheta: meas_jac_land --> Jacobian of the measurement model with respect to the landmark position
 
 g: measurement_model
-R: meas_cov: measurement covariance
+R: meas_cov: measurement model noise covariance
 
 h: motion_model (on pose)
-P: pose_cov: pose (motion model) covariance
+P: pose_cov: motion model noise covariance
 
 tau: land_exist_log --> log odds of the probability that the landmark exists
 rho+: land_exist_log_inc --> log odds value to add to land_exist_log when positive evidence of the landmark is seen
@@ -42,6 +42,14 @@ w: weight
 
 p_nt: prob_match --> probability of landmark associates with given measurement
 '''
+
+def wrapToPi(th):
+  th = np.fmod(th, 2*np.pi)
+  if th >= np.pi:
+      th -= 2*np.pi
+  if th <= -np.pi:
+      th += 2*np.pi
+  return th
 
 class LandmarkEKF():
   def __init__(self, land_mean=np.zeros(2), land_cov = np.eye(2),seed=0):
@@ -79,6 +87,7 @@ class LandmarkEKF():
     self.land_exist_log_dec = self.logOdds(0.2) # 0.2 works out to around -1.38, rho negative in the FastSLAM 2.0 algorithm
 
     self.label = []
+
   def logOdds(self, probability):
     return np.log(probability / (1 - probability))
 
@@ -88,7 +97,7 @@ class LandmarkEKF():
     lx, ly = self.prev_land_mean
 
     range_est = ((lx-x)**2+(ly-y)**2)**.5
-    bearing_est = np.arctan2((ly-y),(lx-x))-theta
+    bearing_est = wrapToPi(np.arctan2((ly-y),(lx-x))-theta)
 
     return np.array([range_est, bearing_est])
 
@@ -135,15 +144,18 @@ class LandmarkEKF():
     
     pose_cov_expected = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + self.pose_cov_inv)
     pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
-    print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp',pose_cov_expected,'\nQ_inv',self.Q_inv,'pos_cov_inv',self.pose_cov_inv)
-    self.sampled_pose = pose_mean_expected + self.random.normal(0,pose_cov_expected)
+    # print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp',pose_cov_expected,'\nQ_inv',self.Q_inv,'pos_cov_inv',self.pose_cov_inv)
+    self.sampled_pose = pose_mean_expected + self.random.multivariate_normal(np.zeros(7), pose_cov_expected)
     meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
     
-    two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))
+    # two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))
+    two_pi_Q_inv_sqrt = 1 / (np.linalg.norm(2*np.pi*self.Q) ** 0.5)
     
     self.prob_data_association = two_pi_Q_inv_sqrt * np.exp(exponent)
+    # I think this should be a multiplication. but np.exp does return a matrix 
+    # print('hiiii',self.prob_data_association, two_pi_Q_inv_sqrt, exponent, np.exp(exponent))
     return self.prob_data_association
 
   def updateObserved(self):
@@ -159,7 +171,8 @@ class LandmarkEKF():
          + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T \
          + self.meas_cov
     L_inv = np.linalg.inv(L)
-    two_pi_L_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*L)))
+    # two_pi_L_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*L)))
+    two_pi_L_inv_sqrt = 1 / (np.linalg.norm(2*np.pi*L) ** 0.5)
     exponent = -.5* self.meas_diff.T @ L_inv @ (self.meas_diff )
     weight = two_pi_L_inv_sqrt * np.exp(exponent)
 
@@ -218,7 +231,7 @@ class Particle():
   def __init__(self, particle_id, params, seed=0):
     self.id = particle_id
     self.random = np.random.default_rng(seed)
-    self.next_idx = 0    
+    self.next_idx = 0
     self.weight = 0
 
     # self.pose = np.zeros(7)
@@ -279,7 +292,7 @@ class Particle():
     if len(prob_associate_ls) == 0 or prob_associate_ls[self.observed_land_idx] < self.prob_threshold:
       # Update unobserved landmarks
       for (idx, landmark) in self.landmarks.items():
-        keep = landmark.updateUnobserved()
+        keep = landmark.updateUnobserved(self.sensor_range)
         if not keep:
           to_remove.append(idx)
 
@@ -302,7 +315,7 @@ class Particle():
           self.pose = landmark.sampled_pose
           self.weight = landmark.updateObserved()
         else:
-          keep = landmark.updateUnobserved()
+          keep = landmark.updateUnobserved(self.sensor_range)
           if not keep:
             to_remove.append(idx)
 
@@ -312,6 +325,7 @@ class Particle():
     
     # Return the particle's weight
     return self.weight
+
   '''
   def correct(self,landmark_key = None, new_landmark=False):
     if new_landmark:
@@ -330,7 +344,7 @@ class Particle():
     v = (vx**2+vy**2)**.5
     x = prev_x + vx * dt
     y = prev_y + vy * dt
-    theta = theta_imu
+    theta = wrapToPi(theta_imu)
     vx = v * np.cos(theta)
     vy = v * np.sin(theta)
     omega = omega_imu #(theta - prev_theta) / dt # NOT SURE
