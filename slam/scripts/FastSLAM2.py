@@ -49,6 +49,7 @@ class FastSLAM2():
     for i in range(n):
       self.particles.append(Particle(i, self.params))
     print(self.params['initial_pose'])
+
   def propagateMotion(self, control):
     # propagate motion
     #print("FastSLAM control", control)
