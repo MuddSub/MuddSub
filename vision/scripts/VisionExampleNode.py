@@ -6,10 +6,24 @@ from VisionPublisher import VisionPublisher
 from vision.msg import Detection, DetectionArray, BoundingBox2DArray
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Vector3, Pose2D
+import dynamic_reconfigure.client
+
+# params is a dictionary that you can use to set up parameter values
+# params = {"double_param": 0.0}
+
+params = {} #usually the default starting params is just {} for our purposes
+
+def update(config):
+    global params
+    rospy.loginfo("""Config set to {example_param}""".format(**config))
+    params = config
 
 def visionPubNode():
     rospy.init_node('vision_example_node', anonymous=True)
     visionPublisher = VisionPublisher("test_camera")
+    client = dynamic_reconfigure.client.Client("vision_server", timeout=30, config_callback=update)
+    client.update_configuration({})
+
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
@@ -17,6 +31,11 @@ def visionPubNode():
         header = Header()
         header.stamp = rospy.Time.now()
         header.frame_id = 'vision'
+
+        #you can access values set in param like this
+        print(len(params))
+        example_param = params["example_param"]
+        print(example_param)
 
         #Create BoundingBox2DArray message
         box1_center = Pose2D(1.0, 2.0, 0) # in the order of x, y, and theta (in radian)
