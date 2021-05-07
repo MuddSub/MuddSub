@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   vision_msgs
-
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -107,10 +107,9 @@ add_dependencies(VisionExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/Vision.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
