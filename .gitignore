@@ -6,3 +6,4 @@ hydrophones/data/*
 *__pycache__*
 *.vscode
 docs/*
+slam/datasets/*

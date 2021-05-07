@@ -7,10 +7,21 @@ from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Point
 from geometry_msgs.msg import Quaternion
+import dynamic_reconfigure.client
+
+params = {}
+
+def update(config):
+    global params
+    rospy.loginfo("""Config set to {waypoint_0_x}, {waypoint_0_y}, {waypoint_0_z}""".format(**config))
+    params = config
 
 def motionPlanningExampleNode():
     rospy.init_node('motion_planning_example_node', anonymous=True)
     motionPlanningPublisher = MotionPlanningPublisher()
+    client = dynamic_reconfigure.client.Client("motion_planning_server", timeout=30, config_callback=update)
+    client.update_configuration({})
+
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
@@ -26,7 +37,7 @@ def motionPlanningExampleNode():
         waypoint0 = PoseStamped()
         waypoint0.header.stamp = rospy.Time.now()
         waypoint0.header.frame_id = 'waypoint0'
-        waypoint0.pose.position = Point(0, 0, 0)
+        waypoint0.pose.position = Point(params["warpoint_0_x"], params["warpoint_0_y"], params["warpoint_0_z"])
         waypoint0.pose.orientation = Quaternion(1, 0, -0.1, 0)
 
         trajectory.poses.append(waypoint0)

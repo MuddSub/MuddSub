@@ -8,13 +8,9 @@ from sensor_msgs.msg import Range
 from geometry_msgs.msg import Vector3
 import dynamic_reconfigure.client
 
-# params = {"double_param": 0.0}
-params = {}
-
 def update(config):
-    global params
+    # Add whatever needs to be updated when configuration parameters change here
     rospy.loginfo("""Config set to {pinger_bearing}, {pinger_range_confidence}, {pinger_bearing_confidence}""".format(**config))
-    params = config
 
 def hydrophonesExampleNode():
     rospy.init_node('hydrophones_example_node', anonymous=True)
@@ -25,6 +21,8 @@ def hydrophonesExampleNode():
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
+        params = client.get_configuration()
+
         # Create Header message
         header = Header()
         header.stamp = rospy.Time.now()

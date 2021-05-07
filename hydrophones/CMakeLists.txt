@@ -87,6 +87,7 @@ catkin_install_python(PROGRAMS scripts/HydrophonesExampleNode.py
 add_executable(HydrophonesExampleNode src/HydrophonesExampleNode.cc src/HydrophonesPublisher.cc)
 add_dependencies(HydrophonesExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(HydrophonesExampleNode ${catkin_LIBRARIES})
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -102,9 +103,9 @@ target_link_libraries(HydrophonesExampleNode ${catkin_LIBRARIES})
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
- generate_dynamic_reconfigure_options(
+generate_dynamic_reconfigure_options(
    cfg/Hydrophones.cfg
- )
+)
 
 ###################################
 ## catkin specific configuration ##
