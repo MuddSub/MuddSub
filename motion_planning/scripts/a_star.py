@@ -1,3 +1,4 @@
+from typing import Text
 from matplotlib import pyplot as plt 
 from queue import PriorityQueue
 import random
@@ -162,6 +163,42 @@ def animateGrid(grid):
     plt.grid(True)
     plt.pause(0.01)
 
+def makeColorMap(text, height, width):
+    text = text.replace('\n','')
+    text = text.replace(' ','')
+    print("length",  len(text))
+    print(text)
+    data  = []
+    index = 0
+    for i in range(height):
+        smallArray = []
+        for j in range(width):
+            num = ord(text[index]) - ord('0')
+            index += 1
+            smallArray += [num]
+        data += [smallArray]
+        
+    
+    cmap = colors.ListedColormap(['lightblue', 'red', 'yellowgreen', 'green', 'gold', 'darkorange'])
+    bounds = [0,1,2,3,4,5,6]
+    norm = colors.BoundaryNorm(bounds, cmap.N)
+    print(data)
+
+    fig, ax = plt.subplots()
+    ax.imshow(data, cmap=cmap, norm=norm)
+
+    # draw gridlines
+    ax.grid(which='major', axis='both', linestyle='-', color='k', linewidth=1)
+    ax.set_xticks(np.arange(-0.5, width, 1))
+    ax.set_yticks(np.arange(-0.5, height, 1))
+    # ax.set_xticklabels([])
+    # ax.set_yticklabels([])
+
+    plt.show()
+    
+
+
+
 def printGrid(grid):
     """Create a graphical representation of the grid in matplotlib"""
     data = []
@@ -237,8 +274,8 @@ def main():
     #"1": obstacle (red)
     #"2": visited (yellow green)
     #"3": actual path (green)
-    width = 100
-    length = 100
+    width = 10
+    length = 10
     text = """
 0001111111111111111111111111111
 0000000001000000000000001001001
@@ -286,6 +323,20 @@ def main():
     print(actualDistance, astarDistance)
 
     printGrid(grid)  
+
+    text2 = """
+    3 0 0 1 0 0 0 0 0 0
+1 3 0 0 0 0 0 0 0 1
+0 0 3 0 0 0 0 0 0 1
+0 1 0 3 1 0 0 1 1 0
+0 0 0 0 3 0 0 1 0 0
+0 1 0 1 0 3 0 1 0 1
+1 0 1 0 1 0 3 0 0 0
+0 0 5 5 5 5 1 3 0 0
+1 0 0 1 4 4 5 5 5 0
+0 0 0 1 1 4 1 0 0 5"""
+    makeColorMap(text2,10,10)
+
     
 
 if __name__ == "__main__":
