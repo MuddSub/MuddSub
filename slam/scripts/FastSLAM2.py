@@ -9,7 +9,7 @@ class FastSLAM2():
     # yRange: 2 tuple containing the minimum and maximum y values for the robot
     and all of the parameters used by the Particle class
   '''
-  def __init__(self, n, params=None, seed=0):
+  def __init__(self, n,  params=None, random=None):
     if params is not None:
       self.params = params
     else:
@@ -25,7 +25,8 @@ class FastSLAM2():
       self.params['x_sigma'] = 1
       self.params['y_sigma'] = 1
       
-    self.random = np.random.default_rng(seed)
+    # self.random = np.random.default_rng(seed)
+    self.random = random
     self.data_input = None
     self.num_particles = n
     self.particles = []
@@ -47,7 +48,7 @@ class FastSLAM2():
     
   def createParticles(self, n):
     for i in range(n):
-      self.particles.append(Particle(i, self.params))
+      self.particles.append(Particle(i, self.params, random=self.random))
     print(self.params['initial_pose'])
 
   def propagateMotion(self, control):
@@ -77,6 +78,7 @@ class FastSLAM2():
     new_particles = []
     for idx in new_particle_idx_ls:
       new_particles.append(copy.deepcopy(self.particles[idx]))
+      new_particles[-1].random = self.random
     self.particles  = new_particles
     return self.get_all_poses() #self.compute_avg(self.particles, time)
     
@@ -88,9 +90,6 @@ class FastSLAM2():
       for landmark in particle.landmarks:
         pass
     avg_pose = np.average(np.array(poses),axis=0)
-    hist = dict()
-    hist['time'] = t
-    hist['pose'] = avg_pose
     #print(hist)
     return avg_pose
   def get_all_poses(self):

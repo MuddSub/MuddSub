@@ -20,9 +20,10 @@ class Particle():
   Note: use deep copy!
   p_0: prob_new_land --> Likelihood of a new feature. When p_0 > p_nt for all p_nt, we have observed a new landmark
   '''
-  def __init__(self, particle_id, params, seed=0):
+  def __init__(self, particle_id, params, random=None):
     self.id = particle_id
-    self.random = np.random.default_rng(seed)
+    # self.random = np.random.default_rng(seed)
+    self.random = random
     self.next_idx = 0
     self.weight = 0
 
@@ -70,7 +71,7 @@ class Particle():
     for _,landmark in self.landmarks.items():
       prob_associate = landmark.samplePose(self.pose, self.pose_cov, meas, meas_cov)
       prob_associate_ls.append(prob_associate)
-    
+    # prob_associate_ls = np.array(prob_associate_ls)/sum(prob_associate_ls)
     # Get the index of the landmark with the maximum data association probability
     self.observed_land_idx = None
     if len(prob_associate_ls) > 0:
@@ -90,9 +91,9 @@ class Particle():
           to_remove.append(idx)
 
       # Initialize new landmark EKF
-      new_landmark = LandmarkEKF()
+      new_landmark = LandmarkEKF(random=self.random)
       noise = self.computePoseNoise()
-      print('noise',noise)
+      print('noise', noise)
       sampled_pose = self.pose + noise
      
       new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
@@ -124,7 +125,7 @@ class Particle():
   def correct(self,landmark_key = None, new_landmark=False):
     if new_landmark:
       landmark_key = len(self.landmarks)
-      landmark = LandmarkEKF()
+      landmark = LandmarkEKF(seed = int(self.random.random()*10000))
     else:
       pass
       # particle correction 
