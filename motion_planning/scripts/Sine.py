@@ -101,3 +101,34 @@ def parabola1(path, period, amp):
     horiz = path[1][0]
     p_E = sizing*(pow((x-horiz),2)) + amp
 
+def split(path):
+    n_path = []
+    directions = []
+    count = 0
+
+    for i in range(0, len(path)-1):
+        if path[i][0] - path[i+1][0] == 0:
+            directions += [1]
+        elif path[i][1] - path[i+1][1] == 0:
+            directions += [2]
+        elif abs(path[i][0] - path[i+1][0]) == 1:
+            directions += [3]
+
+    for i in range(1, len(directions)):
+        if count == 0:
+            n_path += [[path[i-1], path[i]]]
+        count = 0
+
+        if directions[i-1] == directions[i]:
+            n_path[-1] += [path[i+1]]
+            count += 1        
+
+    if count == 0:
+        n_path += [[path[-2], path[-1]]]
+
+    return n_path
+
+def time_stamp(path, velocity):
+    for i in range(len(path)):
+        path[i] += [i/velocity]            
+
