@@ -14,7 +14,7 @@
         <arg name="verbose" value="true"/>
     </include>
 
-    <include file="$(find uuv_assistants)/launch/publish_world_ned_frame.launch"/>
+    <include file="sim/scenes/launch/publish_world_ned_frame.launch"/>
 
     <node name="publish_world_models"
         pkg="uuv_assistants"
@@ -23,9 +23,7 @@
         <rosparam subst_value="true">
             meshes:
                 transdec:
-                    mesh: package://sim/scenes/models/transdec/meshes/Alfievis.STL
-                    model: transdec
+                    mesh: package://models/transdec/meshes/full_transdec.STL
         </rosparam>
-    </node>
-
-</launch>
+      </node>
+  </launch>
