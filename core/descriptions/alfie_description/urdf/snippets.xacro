@@ -96,41 +96,6 @@
           <type>ZeroOrder</type>
         </dynamics>
 
-        <!-- 2) First order model -->
-        <dynamics>
-          <type>FirstOrder</type>
-          <timeConstant>0.0</timeConstant>
-        </dynamics>
-
-        <!-- 3) Yoerger's nonlinear dynamic model
-        For information on the model description:
-        [1] D. R. Yoerger, J. G. Cooke, and J.-J. E. Slotine, "The influence of
-            thruster dynamics on underwater vehicle behavior and their incorporation
-            into control system design," IEEE Journal of Oceanic Engineering, vol. 15,
-            no. 3, pp. 167-178, Jul. 1990.
-        -->
-        <dynamics>
-          <type>Yoerger</type>
-          <alpha>0.0</alpha>
-          <beta>0.0</beta>
-        </dynamics>
-
-        <!-- 4) Bessa's nonlinear dynamic model
-        For information on the model description:
-        [2] Bessa, Wallace Moreira, Max Suell Dutra, and Edwin Kreuzer. "Thruster
-            dynamics compensation for the positioning of underwater robotic vehicles
-            through a fuzzy sliding mode based approach." ABCM Symposium Series in
-            Mechatronics. Vol. 2. 2006.
-        -->
-        <dynamics>
-          <type>Bessa</type>
-          <Jmsp>0.0</Jmsp>
-          <Kv1>0.0</Kv1>
-          <Kv2>0.0</Kv2>
-          <Kt>0.0</Kt>
-          <Rm>0.0</Rm>
-        </dynamics>
-
         <!--
         Choose one of the model for the steady-state curve describing the
         relationship between the state variable and the output thrust force
@@ -143,7 +108,7 @@
         -->
         <conversion>
           <type>Basic</type>
-          <rotorConstant>0.0</rotorConstant>
+          <rotorConstant>0.01</rotorConstant>
         </conversion>
 
         <!-- 2) Dead-zone nonlinearity described in Bessa, 2006
@@ -153,7 +118,7 @@
         thrust = rotorConstantL * (x * abs(x) - deltaL), if x * abs(x) <= deltaL
         thrust = 0, if deltaL < x * abs(x) < deltaR
         thrust = rotorConstantR * (x * abs(x) - deltaR), if x * abs(x) >= deltaL
-        -->
+
         <conversion>
           <type>Bessa</type>
           <rotorConstantL>0.0</rotorConstantL>
@@ -162,17 +127,18 @@
           <deltaR>0.0</deltaR>
         </conversion>
 
-        <!-- 3) Linear interpolation
+        3) Linear interpolation
         If you have access to the thruster's data sheet, for example,
         you can enter samples of the curve's input and output values
         and the thruster output will be found through linear interpolation
         of the given samples.
-        -->
+
         <conversion>
           <type>LinearInterp</type>
           <inputValues>0 1 2 3</inputValues>
           <outputValues>0 1 2 3</outputValues>
         </conversion>
+      -->
 
       </plugin>
     </gazebo>

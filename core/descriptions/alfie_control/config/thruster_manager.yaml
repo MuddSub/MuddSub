@@ -1,0 +1,25 @@
+thruster_manager:
+  tf_prefix: alfie
+  base_link: base_link
+  thruster_topic_prefix: thrusters/
+  thruster_topic_suffix: /input
+  thruster_frame_base: thruster_
+  max_thrust: 50
+  timeout: -1
+  update_rate: 50
+  ##################################################
+  # Options to set the thruster models below
+  ##################################################
+
+  # 1) If all thrusters have the same model (as described in the vehicle's robot description)
+  #
+  # 1.1) If the conversion function set for the thruster plugins is the following:
+  # <conversion>
+  #   <type>Basic</type>
+  #   <rotorConstant>0.0</rotorConstant>
+  # </conversion>
+  # You can set the conversion function to be:
+  conversion_fcn: proportional
+  conversion_fcn_params:
+    gain: 0.01
+  
