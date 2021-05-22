@@ -44,6 +44,12 @@ public:
 
     double update(double setPoint, double plantState, double deltaT);
 
+    void resetController()
+    {
+      derivativeError_ = 0;
+      integralError_ = 0;
+    };
+
 
 };
 

@@ -1,6 +1,4 @@
-#include "controls/PID.hh"
 #include "controls/SixDegreePID.hh"
-#include <vector>
 
 namespace MuddSub::Controls
 {
@@ -20,8 +18,6 @@ SixDegreePID::SixDegreePID(std::vector<double> kP, std::vector<double> kI, std::
     roll_ = PID(kP[3], kI[3], kD[3], true);
     pitch_ = PID(kP[4], kI[4], kD[4], true);
     yaw_ = PID(kP[5], kI[5], kD[5], true);
-
-
 }
 
 PID& SixDegreePID::getRoll()
@@ -55,7 +51,10 @@ PID& SixDegreePID::getHeave()
 }
 
 
-void SixDegreePID::update(const stateVector_t& plantState, const stateVector_t& setPoint,  double dT, controlVector_t& control)
+void SixDegreePID::update(const stateVector_t& plantState,
+                          const stateVector_t& setPoint,
+                          double dT,
+                          controlVector_t& control)
 {
 
     control[0] = surge_.update(plantState[0],setPoint[0],dT);
@@ -65,9 +64,18 @@ void SixDegreePID::update(const stateVector_t& plantState, const stateVector_t& 
     control[3] = roll_.update(plantState[3],setPoint[3],dT);
     control[4] = pitch_.update(plantState[4],setPoint[4],dT);
     control[5] = yaw_.update(plantState[5],setPoint[5],dT);
-
-
 }
+
+void SixDegreePID::computeControl(const stateVector_t& state,
+                                  const double& t,
+                                  controlVector_t& controlAction)
+{
+  double deltaT = t - previousTime_;
+  previousTime_ = t;
+
+  update(state, setpoint_, deltaT, controlAction);
+}
+
 
 void SixDegreePID::tuneController(double kP, double kI, double kD,  PID& controller)
 {

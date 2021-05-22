@@ -2,6 +2,8 @@
 
 #include "ros/ros.h"
 
+namespace MuddSub::Controls
+{
 /** @brief Simple PID controller
 
   This PID controller has a first-order filter on the derivative term,
@@ -61,5 +63,8 @@ public:
     error_ = err;
     // P + I + D == PID?
     controlEffort_ = kP_ * error_ + kI_ * integralError_ + kD_ * derivativeError_;
+    return controlEffort_;
   }
 };
+
+} // namespace MuddSub::Controls

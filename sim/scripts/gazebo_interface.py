@@ -5,6 +5,9 @@ import geometry_msgs.msg
 from gazebo_msgs.msg import ModelState, ModelStates
 from gazebo_msgs.srv import ApplyBodyWrench
 from nav_msgs.msg import Odometry
+from std_msgs.msg import Empty
+import std_srvs.srv as std_srv
+from controls.msg import State
 import sys
 import tf2_ros
 import copy
@@ -29,10 +32,20 @@ class GazeboInterface:
         ## Tell gazebo where to move the robot.
         self.statePub = rospy.Publisher("/gazebo/set_model_state", ModelState, queue_size=5)
 
+        self.resetSub = rospy.Subscriber("/reset_simulation", Empty, self.resetSimulation)
+
         ## If the parameter /slam_use_ground_truth == 1, then also publish the ground truth
         ##  pose as the output of localization.
         # TODO: Move to slam/
         self.slamPub = rospy.Publisher("/slam/robot/pose", Odometry, queue_size=1)
+
+        self.resetPub = rospy.Publisher("/reset_controller", Empty, queue_size=1)
+
+        self.resetClient = rospy.ServiceProxy("gazebo/reset_world", std_srv.Empty)
+        self.pauseClient = rospy.ServiceProxy("gazebo/pause_physics", std_srv.Empty)
+        self.unpauseClient = rospy.ServiceProxy("gazebo/unpause_physics", std_srv.Empty)
+
+        self.wrenchPub = rospy.Publisher("/alfie/thruster_manager/input", geometry_msgs.msg.Wrench, queue_size=1)
 
         # Connect to the gazebo body wrench service server
         try:
@@ -147,7 +160,7 @@ class GazeboInterface:
 
     ## @brief Handle the incoming
     def wrenchCB(self, wrench):
-        return self.applyWrenchNED(wrench)
+        self.wrenchPub.publish(wrench.wrench)
 
     # Get ENU frame from gazebo and re-publish as NED frame for MuddSub
     # Also, publish the TF2 transform in NED
@@ -184,7 +197,9 @@ class GazeboInterface:
 
         self.odomPub.publish(msg)
 
-        if rospy.get_param("/slam_use_ground_truth") == True:
+        slamParam = "/slam_use_ground_truth"
+
+        if rospy.has_param(slamParam) and rospy.get_param(slamParam):
             self.slamPub.publish(msg)
 
         t = geometry_msgs.msg.TransformStamped()
@@ -210,19 +225,38 @@ class GazeboInterface:
 
         return 1
 
+
+    def resetSimulation(self, msg):
+        self.pauseClient()
+
+        resetMsg = Empty()
+        self.resetPub.publish(resetMsg)
+
+        self.resetClient()
+
+        pose = geometry_msgs.msg.Pose()
+        pose.position.z = 0
+        pose.orientation.w = 1
+
+        while not interface.setPoseNED(pose):
+            rate.sleep()
+
+
+        self.unpauseClient()
+
 if __name__ == '__main__':
     rospy.init_node('gazebo_interface', anonymous=True)
     interface = GazeboInterface()
 
     rate = rospy.Rate(10)
 
-    pose = geometry_msgs.msg.Pose()
-    pose.position.z = 5
-    pose.orientation.w = 1
-
-    # Initialize the pose of the robot to NED 0,0,0,0,0,0
-    while not interface.setPoseNED(pose):
-        rate.sleep()
+    # pose = geometry_msgs.msg.Pose()
+    # pose.position.z = 0
+    # pose.orientation.w = 1
+    #
+    # # Initialize the pose of the robot to NED 0,0,0,0,0,0
+    # while not interface.setPoseNED(pose):
+    #     rate.sleep()
 
     # Iterate asynchronously (responding to messages only)
     rospy.spin()

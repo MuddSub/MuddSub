@@ -3,7 +3,7 @@
 
 namespace MuddSub::Controls
 {
-
+  
 //Compute the error
 stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
                                          const stateVector_t& setpoint) const

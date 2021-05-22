@@ -52,6 +52,7 @@ add_executable(control_dispatch
     src/DecoupledLQR.cc
     src/PID.cc
     src/VehicleDynamics.cc
+    src/SixDegreePID.cc
     src/DecoupledLQR.cc
     src/ControlDispatch.cc)
 add_dependencies(control_dispatch

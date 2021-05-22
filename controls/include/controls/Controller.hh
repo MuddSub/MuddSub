@@ -1,7 +1,5 @@
 #pragma once
 
-#include "controls/PidController.hh"
-#include "controls/DecoupledLQR.hh"
 #include "controls/Types.hh"
 #include "controls/VehicleDynamics.hh"
 
@@ -42,6 +40,15 @@ public:
     return vehicleDynamics_;
   }
 
+  // Note: Don't use this unless the class you're deriving from has implemented
+  // a real version. This is a compile hack.
+  Controller* clone() const
+  {
+    return const_cast<Controller*>(this);
+  };
+
+  void reset(){};
+
 protected:
 
   /// Current 12DOF setpoint.
@@ -53,5 +60,7 @@ protected:
   /// Stores the dynamics of the robot.
   std::shared_ptr<VehicleDynamics> vehicleDynamics_;
 
+  /// For computing dT: Store the previous time
+  double previousTime_;
 };
 }

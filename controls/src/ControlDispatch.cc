@@ -6,12 +6,16 @@ namespace MuddSub::Controls
 
 ControlDispatch::ControlDispatch()
 {
-  controller_ = std::make_shared<DecoupledLQR>();
+  controller_ = std::make_shared<SixDegreePID>();
   dynamics_.setController(controller_);
   controller_->setDynamics(std::shared_ptr<VehicleDynamics>(&dynamics_));
 
   setpointSub_ = nh_.subscribe("/robot_setpoint", 1, &ControlDispatch::setpointCallback, this);
   plantStateSub_ = nh_.subscribe("/slam/robot/pose", 1, &ControlDispatch::plantCallback, this);
+  resetSub_ = nh_.subscribe("/reset_controller", 1, &ControlDispatch::resetCallback, this);
+
+  zeroSub_ = nh_.subscribe("/controls/robot/set_zero_to_odom", 1, &ControlDispatch::zeroToCallback, this);
+  zeroHereSub_ = nh_.subscribe("/controls/robot/set_zero_here", 1, &ControlDispatch::zeroCurrentCallback, this);
 
   controlPub_ = nh_.advertise<geometry_msgs::WrenchStamped>("/controls/robot/wrench", 10);
 }
@@ -38,7 +42,7 @@ stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
 
 void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
-  plantState_ = odomToState(msg);
+  plantState_ = odomToState(msg) - plantZero_;
   std::cout << "Plant State: " << plantState_.format(eigenInLine) << std::endl;
 }
 
@@ -51,9 +55,15 @@ void ControlDispatch::setpointCallback(const controls::State& state)
   auto dataMutable = const_cast<double*>(data);
 
   auto stateVector = Eigen::Map<Eigen::Matrix<double, 12, 1>>(dataMutable);
+
   controller_->setSetpoint(stateVector);
   // ROS_INFO("Updated setpoint");
   std::cout << "Setpoint: " << controller_->getSetpoint().format(eigenInLine) << std::endl;
+}
+
+void ControlDispatch::resetCallback(const std_msgs::Empty& msg)
+{
+  controller_->reset();
 }
 
 void ControlDispatch::publishControl(const controlVector_t& control)
@@ -80,6 +90,16 @@ void ControlDispatch::iterate()
   controller_->computeControl(plantState_, t, control);
 
   publishControl(control);
+}
+
+void ControlDispatch::setZero(const nav_msgs::Odometry& msg)
+{
+  plantZero_ = odomToState(msg);
+}
+
+void ControlDispatch::setZeroToCurrent()
+{
+  plantZero_ = plantState_;
 }
 
 }

@@ -5,7 +5,6 @@
 #include <ros/ros.h>
 #include <map>
 #include <algorithm>
-#include "controls/DecoupledLQR.hh"
 #include "geometry_msgs/Pose.h"
 #include <memory>
 

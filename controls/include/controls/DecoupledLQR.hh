@@ -1,10 +1,9 @@
 #pragma once
 
+#include "controls/Controller.hh"
 #include "controls/LQRController.hh"
-#include "controls/VehicleDynamics.hh"
 #include "controls/PidController.hh"
 #include "controls/Types.hh"
-#include "controls/Controller.hh"
 
 #include <ct/core/core.h>
 #include <ct/optcon/optcon.h>
@@ -82,9 +81,6 @@ private:
   /// @param B: the 12x6 lienarized B matrix
   /// @returns partitionBMatrix: the 8x6 (8 DOF state, 6 control inputs)
   Eigen::Matrix<double, stateDimLQR, controlDimLQR> partitionBMatrix(const Eigen::Matrix<double, stateDim, controlDim>& B);
-
-  /// For integrating and derivatives: Store the previous time
-  double previousTime_;
 
   Eigen::IOFormat eigenInLine{Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", ";"};
 
