@@ -8,23 +8,24 @@ import FastSLAM2
 import numpy as np
 import matplotlib.pyplot as plt
 ROBOT_ID = 0
-NUM_STEPS = 10000
-MEAS_COV = np.diag([0.075, 0.025])
+START_STEP = 0
+NUM_STEPS = 14000
+MEAS_COV = np.diag([.1, .1])
 params = {}
 params['initial_pose'] = np.array([3.55, -3.38, 0, 0, 0, 0, 0])
 params['num_landmarks'] = 0
 params['v_sigma'] = .001#0.04
 params['omega_sigma'] = 0.001
 params['theta_sigma'] = 0.001
-params['prob_threshold'] = .5
-params['sensor_range'] = 5
+params['prob_threshold'] = .03
+params['sensor_range'] = 1
 #TODO Figure out how to get variance for x and y
 params['x_sigma'] = .001
 params['y_sigma'] = .001
 # params['pose_cov'] = 0.001
-n = 5 #num particle
+n = 10 #num particle
 random_generator = np.random.default_rng(0)
-
+plotting = 'best' #vs 'avg'
 
 def run(pkl = '../datasets/Jar/dataset1.pkl'):
   dataloader = pickle.load(open(pkl,'rb'))
@@ -69,34 +70,40 @@ def run(pkl = '../datasets/Jar/dataset1.pkl'):
         all_poses = algorithm.updateMeasurement((time, range_meas, bearing_meas), MEAS_COV)
         print("step",i,"updated measurement")
     
-    #print()
-    avg_poses = np.average(all_poses,axis=0)
-    print("all_poses",all_poses,"avg_poses",avg_poses)
+    # Plot landmark positions
+    '''
     landmarks_pos = []
     for particle in algorithm.particles:
       for _, landmark in particle.landmarks.items():
         landmarks_pos.append(np.array(list(landmark.land_mean)))
     landmarks_pos = np.array(landmarks_pos)
-    print("Landmark positions", landmarks_pos)
     if len(landmarks_pos)>0:
       plt.plot(landmarks_pos[:,0],landmarks_pos[:,1],'yo')
-        
+    '''
+    # Get average poses
+    avg_poses = np.average(all_poses,axis=0)
     all_pose_hist.append(all_poses)
-    if i>.75*NUM_STEPS:
-      #for poses in all_poses[:1]:
-      plt.plot(avg_poses[0], avg_poses[1],'ro')
-        #plt.annotate(str(t)+'  '+str(i), (poses[0], poses[1]),fontsize ='xx-small')
+    
+    # Plot best particle landmarks
+    particle = max(algorithm.particles, key=lambda p: p.weight)
+    if i == NUM_STEPS - 1:
+      #particle = algorithm.particles.index(max(particle.weight for particle in algorithm.particles))
+      landmarks_pos = []
+      for _, landmark in particle.landmarks.items():
+        landmarks_pos.append(np.array(list(landmark.land_mean)))
+      landmarks_pos = np.array(landmarks_pos)
+      if len(landmarks_pos) > 0:
+        plt.plot(landmarks_pos[:,0], landmarks_pos[:,1], 'mo')
+
+    # Plot particle positions based on value of plotting
+    to_plot = avg_poses if plotting == 'avg' else particle.pose
+    if i > 0.75 * NUM_STEPS:
+      plt.plot(to_plot[0], to_plot[1],'ro')
       plt.plot(robotData.getXTruth(t),robotData.getYTruth(t),'bx')
-      #plt.annotate(str(t)+'  '+str(i), (robotData.getXTruth(t),robotData.getYTruth(t)),fontsize ='xx-small')
     elif i % 10 == 0:
-      #for poses in all_poses[:1]:
-      plt.plot(avg_poses[0], avg_poses[1],'ro')
-        #plt.annotate(t, (poses[0], poses[1]),fontsize ='xx-small')
+      plt.plot(to_plot[0], to_plot[1],'ro')
       plt.plot(robotData.getXTruth(t),robotData.getYTruth(t),'bx')
-      #plt.plot(algorithm.particles[0].pose_mean_expected[0],\
-      #  algorithm.particles[0].pose_mean_expected[1],'yx')
-      #plt.annotate(t, (robotData.getXTruth(t),robotData.getYTruth(t)),fontsize ='xx-small')
-  print("Num landmarks:", len(algorithm.particles[0].landmarks))
+  
   plt.plot(robotData.getXTruth(0),robotData.getYTruth(0),'gx') 
   plt.plot(all_pose_hist[0][0][0],all_pose_hist[0][0][1],'go')
   landmarksGroundtruth = []
@@ -104,7 +111,7 @@ def run(pkl = '../datasets/Jar/dataset1.pkl'):
     landmarksGroundtruth.append(np.array([landmark['X'], landmark['Y']]))
   landmarksGroundtruth = np.array(landmarksGroundtruth)
   plt.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'co')
-  print(landmarksGroundtruth)
+  print("num landmark: ground truth",len(landmarksGroundtruth)," what we got", len(algorithm.particles[0].landmarks))
   plt.title("num step = " + str(NUM_STEPS))
   plt.show()
 

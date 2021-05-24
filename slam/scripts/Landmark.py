@@ -49,6 +49,7 @@ def wrapToPi(th):
   if th <= -np.pi:
       th += 2*np.pi
   return th
+
 class LandmarkEKF():
   def __init__(self, land_mean=np.zeros(2), land_cov = np.eye(2),random=None):
     self.prev_land_mean = land_mean
@@ -144,13 +145,13 @@ class LandmarkEKF():
     pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
     # print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp',pose_cov_expected,'\nQ_inv',self.Q_inv,'pos_cov_inv',self.pose_cov_inv)
     self.sampled_pose = pose_mean_expected + self.random.multivariate_normal(np.zeros(7), pose_cov_expected)
-    print("Sampled pose from landmark.py:", self.sampled_pose)
+    #print("Sampled pose from landmark.py:", self.sampled_pose)
     meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
     
     # two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))
-    two_pi_Q_inv_sqrt = (np.abs(2*np.pi)*np.linalg.det(self.Q)) ** -0.5
+    two_pi_Q_inv_sqrt = (2*np.pi*np.linalg.det(self.Q)) ** -0.5
     
     self.prob_data_association = two_pi_Q_inv_sqrt * np.exp(exponent)
     # I think this should be a multiplication. but np.exp does return a matrix 
@@ -171,14 +172,14 @@ class LandmarkEKF():
          + self.meas_cov
     L_inv = np.linalg.inv(L)
     # two_pi_L_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*L)))
-    two_pi_L_inv_sqrt = (np.abs(2*np.pi)*np.linalg.det(L)) ** -0.5
+    two_pi_L_inv_sqrt = (2*np.pi*np.linalg.det(L)) ** -0.5
     exponent = -.5* self.meas_diff.T @ L_inv @ (self.meas_diff )
     weight = two_pi_L_inv_sqrt * np.exp(exponent)
 
     # Update previous values
     self.prev_land_mean = self.land_mean
     self.prev_land_cov = self.land_cov
-    print("weight",weight)
+    #print("weight",weight)
     return weight
 
   def updateUnobserved(self, sensor_range):

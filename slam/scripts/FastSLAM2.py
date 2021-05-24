@@ -44,6 +44,7 @@ class FastSLAM2():
     '''
     
     self.prev_t = 0
+    self.prev_meas_update = False
     self.createParticles(self.num_particles)
     
   def createParticles(self, n):
@@ -61,7 +62,20 @@ class FastSLAM2():
     for idx, particle in enumerate(self.particles):
       particle.propagateMotion((vx, vy, theta_imu, omega_imu), dt)
     self.prev_t = time
+
+    # If the previous update was not a measurement update, i.e. if there were two consecutive propagate motion update, 
+    # add noise to all the particle's poses.
+    '''
+    if not self.prev_meas_update:
+      self.addPoseNoise()
+    self.prev_meas_update = False
+    '''
     return self.get_all_poses()
+
+  def addPoseNoise(self):
+    """Add noise to the pose of all particles"""
+    for idx, particle in enumerate(self.particles):
+      particle.addPoseNoise()
 
   def updateMeasurement(self, meas, meas_cov):
     #print("meas", meas)
@@ -80,6 +94,7 @@ class FastSLAM2():
       new_particles.append(copy.deepcopy(self.particles[idx]))
       new_particles[-1].random = self.random
     self.particles  = new_particles
+    self.prev_meas_update = True
     return self.get_all_poses() #self.compute_avg(self.particles, time)
     
   def compute_avg(self, particles, t):

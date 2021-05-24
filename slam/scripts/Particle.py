@@ -61,7 +61,12 @@ class Particle():
     #print("Particle: propagate motion:\n control", control, "dt", dt)
     self.pose = self.computeMotionModel(self.pose, control, dt)
     #print("Particle: propagate motion:\n pose", self.pose)
-
+  '''
+  def addPoseNoise(self):
+    """Add noise to existing pose"""
+    noise = self.computePoseNoise()
+    self.pose = self.pose + noise
+  '''
   def updateEKFs(self, meas, meas_cov):
     # TODO Initialize landmarks label/landmark key
     # we might not need this -- we have accurate data association 
@@ -76,7 +81,8 @@ class Particle():
     self.observed_land_idx = None
     if len(prob_associate_ls) > 0:
       self.observed_land_idx = np.argmax(np.array(prob_associate_ls))
-    print("prob_associate_ls",prob_associate_ls)
+    if len(prob_associate_ls)>0:
+      print("prob_associate_ls, len", len(prob_associate_ls),'max',max(prob_associate_ls))
     # Store landmarks we want to remove
     to_remove = []
 
@@ -84,7 +90,7 @@ class Particle():
     # create a new landmark. Otherwise, update the observed landmark. Both cases update unobserved landmarks as well.
     if len(prob_associate_ls) == 0 or prob_associate_ls[self.observed_land_idx] < self.prob_threshold:
       # Update new landmarks
-      print('Update new landmarks')
+      print('Add new landmarks')
       for (idx, landmark) in self.landmarks.items():
         keep = landmark.updateUnobserved(self.sensor_range)
         if not keep:
@@ -93,7 +99,7 @@ class Particle():
       # Initialize new landmark EKF
       new_landmark = LandmarkEKF(random=self.random)
       noise = self.computePoseNoise()
-      print('noise', noise)
+      #print('noise', noise)
       sampled_pose = self.pose + noise
      
       new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
@@ -121,17 +127,7 @@ class Particle():
     
     # Return the particle's weight
     return self.weight
-  '''
-  def correct(self,landmark_key = None, new_landmark=False):
-    if new_landmark:
-      landmark_key = len(self.landmarks)
-      landmark = LandmarkEKF(seed = int(self.random.random()*10000))
-    else:
-      pass
-      # particle correction 
-    # find nearby landmark 
-    # and downweight 
-  '''
+
   def computeMotionModel(self, prev_pose, control, dt):
     vx, vy, theta_imu, omega_imu = control
     prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_v_p = prev_pose
@@ -152,3 +148,4 @@ class Particle():
 
   def computePoseNoise(self):
       return self.random.multivariate_normal(np.zeros(7), self.pose_cov)
+      
