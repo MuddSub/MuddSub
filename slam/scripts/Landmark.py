@@ -30,7 +30,7 @@ P: pose_cov: motion model noise covariance
 
 tau: land_exist_log --> log odds of the probability that the landmark exists
 rho+: land_exist_log_inc --> log odds value to add to land_exist_log when positive evidence of the landmark is seen
-rho-: land_exist_log_neg --> log odds value to subtract to land_exist_log when negative evidence of the landmark is seen
+rho-: land_exist_log_dec --> log odds value to subtract to land_exist_log when negative evidence of the landmark is seen
 
 Q: Q --> fused measurement covariance. meas_cov + meas_jac_land @ land_cov @ meas_jac_land
     (2,2)
@@ -83,7 +83,7 @@ class LandmarkEKF():
     self.land_exist_log = 0
     self.land_exist_log_threshold = self.logOdds(0.5)
     self.land_exist_log_inc = self.logOdds(0.8) # 0.8 works out to around 1.38, rho positive in the FastSLAM 2.0 algorithm
-    self.land_exist_log_dec = self.logOdds(0.2) # 0.2 works out to around -1.38, rho negative in the FastSLAM 2.0 algorithm
+    self.land_exist_log_dec = self.logOdds(0.8) # 0.8 works out to around 1.38, rho negative in the FastSLAM 2.0 algorithm
 
     self.label = []
 

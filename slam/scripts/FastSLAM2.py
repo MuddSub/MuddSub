@@ -19,7 +19,7 @@ class FastSLAM2():
       self.params['v_sigma'] = 0.04
       self.params['omega_sigma'] = 0.05
       self.params['theta_sigma'] = 0.0125
-      self.params['prob_threshold'] = .5
+      self.params['new_land_threshold'] = .5
       self.params['sensor_range'] = 10
       #TODO Figure out how to get variance for x and y
       self.params['x_sigma'] = 1

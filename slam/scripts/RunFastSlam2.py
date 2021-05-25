@@ -14,20 +14,20 @@ MEAS_COV = np.diag([.1, .1])
 params = {}
 params['initial_pose'] = np.array([3.55, -3.38, 0, 0, 0, 0, 0])
 params['num_landmarks'] = 0
-params['v_sigma'] = .001#0.04
-params['omega_sigma'] = 0.001
-params['theta_sigma'] = 0.001
-params['prob_threshold'] = .03
+params['new_land_threshold'] = 0.01
 params['sensor_range'] = 1
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = .001
-params['y_sigma'] = .001
+params['x_sigma'] = 0.01
+params['y_sigma'] = 0.01
+params['theta_sigma'] = 0.01
+params['v_sigma'] = 0.01#0.04
+params['omega_sigma'] = 0.01
 # params['pose_cov'] = 0.001
 n = 10 #num particle
 random_generator = np.random.default_rng(0)
 plotting = 'best' #vs 'avg'
 
-def run(pkl = '../datasets/Jar/dataset1.pkl'):
+def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
   params['initial_pose'][0] = robotData.getXTruth(0)
@@ -125,4 +125,4 @@ def wrapToPi(th):
       th += 2*np.pi
   return th
 
-run()
+runFastSlam2()

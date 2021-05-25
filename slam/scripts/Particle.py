@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.linalg import sqrtm
 from Landmark import *
+
 def wrapToPi(th):
   th = np.fmod(th, 2*np.pi)
   if th >= np.pi:
@@ -8,6 +9,7 @@ def wrapToPi(th):
   if th <= -np.pi:
       th += 2*np.pi
   return th
+
 class Particle():
   '''
   params: a dictionary. contains keys:
@@ -18,7 +20,7 @@ class Particle():
     theta_sigma: angle variance
   
   Note: use deep copy!
-  p_0: prob_new_land --> Likelihood of a new feature. When p_0 > p_nt for all p_nt, we have observed a new landmark
+  p_0: new_land_threshold --> Likelihood of a new feature. When p_0 > p_nt for all p_nt, we have observed a new landmark
   '''
   def __init__(self, particle_id, params, random=None):
     self.id = particle_id
@@ -30,22 +32,20 @@ class Particle():
     # self.pose = np.zeros(7)
     self.pose = params['initial_pose']
     
-    self.pose_cov = np.eye(7)
+    # self.pose_cov = np.eye(7)
     # self.pose_cov = params['pose_cov']
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
 
-    self.v_sigma = params['v_sigma']
-    self.omega_sigma = params['omega_sigma']
-    self.theta_sigma = params['theta_sigma']
-    # more! 
-
-    self.prob_threshold = params['prob_threshold']
+    self.new_land_threshold = params['new_land_threshold']
     self.sensor_range = params['sensor_range']
 
     self.x_sigma = params['x_sigma']
     self.y_sigma = params['y_sigma']
+    self.theta_sigma = params['theta_sigma']
+    self.v_sigma = params['v_sigma']
+    self.omega_sigma = params['omega_sigma']
 
     self.pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
     
@@ -61,34 +61,42 @@ class Particle():
     #print("Particle: propagate motion:\n control", control, "dt", dt)
     self.pose = self.computeMotionModel(self.pose, control, dt)
     #print("Particle: propagate motion:\n pose", self.pose)
-  '''
+  
   def addPoseNoise(self):
     """Add noise to existing pose"""
     noise = self.computePoseNoise()
     self.pose = self.pose + noise
-  '''
+  
   def updateEKFs(self, meas, meas_cov):
     # TODO Initialize landmarks label/landmark key
     # we might not need this -- we have accurate data association 
 
-    # Get list of data association probabilities
+    # Get list of data association likelihoods
     prob_associate_ls = []
-    for _,landmark in self.landmarks.items():
+    land_idx_ls = []
+    for land_idx, landmark in self.landmarks.items():
       prob_associate = landmark.samplePose(self.pose, self.pose_cov, meas, meas_cov)
       prob_associate_ls.append(prob_associate)
+      land_idx_ls.append(land_idx)
+    prob_associate_ls = np.array(prob_associate_ls)
     # prob_associate_ls = np.array(prob_associate_ls)/sum(prob_associate_ls)
-    # Get the index of the landmark with the maximum data association probability
+
+    # Get the index of the landmark with the maximum data association likelihood
     self.observed_land_idx = None
+    ml_associate = 0
     if len(prob_associate_ls) > 0:
-      self.observed_land_idx = np.argmax(np.array(prob_associate_ls))
-    if len(prob_associate_ls)>0:
-      print("prob_associate_ls, len", len(prob_associate_ls),'max',max(prob_associate_ls))
-    # Store landmarks we want to remove
+      ml_idx = np.argmax(prob_associate_ls)
+      ml_associate = prob_associate_ls[ml_idx]
+      self.observed_land_idx = land_idx_ls[ml_idx]
+    if len(prob_associate_ls) > 0:
+      print("prob_associate_ls, len", len(prob_associate_ls), 'max', ml_associate)
+    
+    # List for landmarks the algorithm determines we should remove
     to_remove = []
 
     # If we have no landmarks or if the observed landmark's data association probability is below a threshold, 
     # create a new landmark. Otherwise, update the observed landmark. Both cases update unobserved landmarks as well.
-    if len(prob_associate_ls) == 0 or prob_associate_ls[self.observed_land_idx] < self.prob_threshold:
+    if len(prob_associate_ls) == 0 or ml_associate < self.new_land_threshold:
       # Update new landmarks
       print('Add new landmarks')
       for (idx, landmark) in self.landmarks.items():
@@ -108,7 +116,7 @@ class Particle():
 
       # Update particle pose and weight
       self.pose = sampled_pose
-      self.weight = self.prob_threshold
+      self.weight = self.new_land_threshold
     else:
       print('Update existing landmarks')
       # Loop through landmarks and update the observed one and unobserved ones
