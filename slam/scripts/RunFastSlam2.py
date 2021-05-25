@@ -17,11 +17,11 @@ params['num_landmarks'] = 0
 params['new_land_threshold'] = 0.01
 params['sensor_range'] = 1
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 0.01
-params['y_sigma'] = 0.01
-params['theta_sigma'] = 0.01
-params['v_sigma'] = 0.01#0.04
-params['omega_sigma'] = 0.01
+params['x_sigma'] = 0.001
+params['y_sigma'] = 0.001
+params['theta_sigma'] = 0.001
+params['v_sigma'] = 0.001#0.04
+params['omega_sigma'] = 0.001
 # params['pose_cov'] = 0.001
 n = 10 #num particle
 random_generator = np.random.default_rng(0)
@@ -85,7 +85,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     all_pose_hist.append(all_poses)
     
     # Plot best particle landmarks
-    particle = max(algorithm.particles, key=lambda p: p.weight)
+    particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)
     if i == NUM_STEPS - 1:
       #particle = algorithm.particles.index(max(particle.weight for particle in algorithm.particles))
       landmarks_pos = []

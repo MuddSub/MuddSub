@@ -151,7 +151,7 @@ class LandmarkEKF():
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
     
     # two_pi_Q_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*self.Q)))
-    two_pi_Q_inv_sqrt = (2*np.pi*np.linalg.det(self.Q)) ** -0.5
+    two_pi_Q_inv_sqrt = (np.linalg.det(2*np.pi*self.Q)) ** -0.5
     
     self.prob_data_association = two_pi_Q_inv_sqrt * np.exp(exponent)
     # I think this should be a multiplication. but np.exp does return a matrix 
@@ -172,7 +172,7 @@ class LandmarkEKF():
          + self.meas_cov
     L_inv = np.linalg.inv(L)
     # two_pi_L_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*L)))
-    two_pi_L_inv_sqrt = (2*np.pi*np.linalg.det(L)) ** -0.5
+    two_pi_L_inv_sqrt = (np.linalg.det(2*np.pi*L)) ** -0.5
     exponent = -.5* self.meas_diff.T @ L_inv @ (self.meas_diff )
     weight = two_pi_L_inv_sqrt * np.exp(exponent)
 

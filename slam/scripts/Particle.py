@@ -28,6 +28,7 @@ class Particle():
     self.random = random
     self.next_idx = 0
     self.weight = 0
+    self.accumulated_weight = 0
 
     # self.pose = np.zeros(7)
     self.pose = params['initial_pose']
@@ -132,7 +133,7 @@ class Particle():
     # Remove unobserved landmarks whose log odds probability of existing fell below 0
     for idx in to_remove:
       self.landmarks.pop(idx)
-    
+
     # Return the particle's weight
     return self.weight
 

@@ -86,6 +86,8 @@ class FastSLAM2():
     for idx, particle in enumerate(self.particles):
       self.weights[idx] *= particle.updateEKFs((range_meas, bearing_meas), meas_cov)
     self.weights /= np.sum(self.weights)
+    for idx, particle in enumerate(self.particles):
+      particle.accumulated_weight += self.weights[idx]
 
     # resampling
     new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles,replace=True, p=self.weights)
