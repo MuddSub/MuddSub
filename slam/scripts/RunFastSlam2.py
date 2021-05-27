@@ -9,19 +9,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 14000
+NUM_STEPS = 900
 MEAS_COV = np.diag([.1, .1])
+SENSOR_RANGE = 1
 params = {}
 params['initial_pose'] = np.array([3.55, -3.38, 0, 0, 0, 0, 0])
 params['num_landmarks'] = 0
-params['new_land_threshold'] = 0.05
-params['sensor_range'] = 1
+params['new_land_threshold'] = .05
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 0.01
-params['y_sigma'] = 0.01
-params['theta_sigma'] = 0.01
-params['v_sigma'] = 0.01#0.04
-params['omega_sigma'] = 0.01
+params['x_sigma'] = 0.001
+params['y_sigma'] = 0.001
+params['theta_sigma'] = 0.001
+params['v_sigma'] = 0.001#0.04
+params['omega_sigma'] = 0.001
 # params['pose_cov'] = 0.001
 n = 10 #num particle
 random_generator = np.random.default_rng(0)
@@ -37,7 +37,9 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   time_list = []
   all_pose_hist = []
   ground_truth_ls = []
+  theta = 0
   for i in range(NUM_STEPS):
+    theta_p = theta
     update = robotData.getNext()
     
     t = update[1][0]
@@ -58,8 +60,15 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       omega_imu = angular_velocity
 
       # Update particle poses
-      all_poses = algorithm.propagateMotion((time, vx, vy, theta_imu, omega_imu))
+      algorithm.addControl((vx, vy, theta_imu, omega_imu),t)
 
+      # hard coding poses
+      # for i in range(len(algorithm.particles)):
+      #   x = robotData.getXTruth(t)
+      #   y = robotData.getYTruth(t)
+      #   theta = robotData.getCompass(t)
+      #   algorithm.particles[i].pose = np.array([x, y, theta, vx, vy, omega_imu, theta_p])
+      
     else:
       measurement = update[1]
       time, subject, range_meas, bearing_meas = measurement
@@ -67,8 +76,10 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       # Update EKFs
       if subject > 5:
         # a list of (x,y), where each (x,y) comes from a particle 
-        all_poses = algorithm.updateMeasurement((time, range_meas, bearing_meas), MEAS_COV)
-        print("step",i,"updated measurement")
+        algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
+        print("step", i, "updated measurement")
+
+    all_poses = [ algorithm.particles[i].pose for i in range(len(algorithm.particles))]
     
     # Plot landmark positions
     '''
@@ -97,24 +108,24 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
 
     # Plot particle positions based on value of plotting
     to_plot = avg_poses if plotting == 'avg' else particle.pose
-    if i > 0.75 * NUM_STEPS:
+    if i > 0.7 * NUM_STEPS and i % 10 == 0:
       plt.plot(to_plot[0], to_plot[1],'ro')
       plt.plot(robotData.getXTruth(t),robotData.getYTruth(t),'bx')
-    elif i % 10 == 0:
+      #plt.annotate(t,(to_plot[0], to_plot[1]))
+    elif i % 20 == 0:
       plt.plot(to_plot[0], to_plot[1],'ro')
       plt.plot(robotData.getXTruth(t),robotData.getYTruth(t),'bx')
   
-  plt.plot(robotData.getXTruth(0),robotData.getYTruth(0),'gx') 
+  plt.plot(robotData.getXTruth(0),robotData.getYTruth(0),'gx')
   plt.plot(all_pose_hist[0][0][0],all_pose_hist[0][0][1],'go')
   landmarksGroundtruth = []
   for _, landmark in dataloader.map.landmarkDict.items():
     landmarksGroundtruth.append(np.array([landmark['X'], landmark['Y']]))
   landmarksGroundtruth = np.array(landmarksGroundtruth)
-  plt.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'co')
+  plt.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx')
   print("num landmark: ground truth",len(landmarksGroundtruth)," what we got", len(algorithm.particles[0].landmarks))
   plt.title("num step = " + str(NUM_STEPS))
   plt.show()
-
 
 def wrapToPi(th):
   th = np.fmod(th, 2*np.pi)

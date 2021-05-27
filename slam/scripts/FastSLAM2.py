@@ -20,7 +20,6 @@ class FastSLAM2():
       self.params['omega_sigma'] = 0.05
       self.params['theta_sigma'] = 0.0125
       self.params['new_land_threshold'] = .5
-      self.params['sensor_range'] = 10
       #TODO Figure out how to get variance for x and y
       self.params['x_sigma'] = 1
       self.params['y_sigma'] = 1
@@ -42,50 +41,59 @@ class FastSLAM2():
       omega_sigma: angular velocity variance
       theta_sigma: angle variance
     '''
-    
     self.prev_t = 0
     self.prev_meas_update = False
     self.createParticles(self.num_particles)
+    
+    self.meas_ls = []
+    self.meas_cov_ls = []
+    self.sensor_range_ls = []
+    self.correspondences = []
+    self.known_correspondences = False
     
   def createParticles(self, n):
     for i in range(n):
       self.particles.append(Particle(i, self.params, random=self.random))
     print(self.params['initial_pose'])
 
-  def propagateMotion(self, control):
+  def addControl(self, control, time):
+    if len(self.meas_ls) > 0:
+      print("num meas before update", len(self.meas_ls))
+    self.measurementUpdate()
+    self.motionUpdate(control, time)
+    self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.correspondences = [], [], [], []
+
+  def addMeasurement(self, meas, meas_cov, sensor_range, correspondence = None):
+    self.meas_ls.append(meas)
+    self.meas_cov_ls.append(meas_cov)
+    self.sensor_range_ls.append(sensor_range)
+    
+    self.known_correspondences = (correspondence != None)
+    
+    if self.known_correspondences:
+      self.correspondence.append(correspondence)
+
+  def motionUpdate(self, control, time):
     # propagate motion
-    #print("FastSLAM control", control)
-    time, vx, vy, theta_imu, omega_imu = control
     dt = max(time - self.prev_t, 0.000001)
-    if (time-self.prev_t == 0):
+    if (time - self.prev_t == 0):
       print("dt is 0")
     for idx, particle in enumerate(self.particles):
-      particle.propagateMotion((vx, vy, theta_imu, omega_imu), dt)
+      particle.motionUpdate(control, dt)
     self.prev_t = time
 
-    # If the previous update was not a measurement update, i.e. if there were two consecutive propagate motion update, 
-    # add noise to all the particle's poses.
-    '''
-    if not self.prev_meas_update:
-      self.addPoseNoise()
-    self.prev_meas_update = False
-    '''
-    return self.get_all_poses()
-
-  def addPoseNoise(self):
-    """Add noise to the pose of all particles"""
+  def measurementUpdate(self):
+    # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
-      particle.addPoseNoise()
+      particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
+    if len(self.meas_ls) > 0:
+      self.resampling()
 
-  def updateMeasurement(self, meas, meas_cov):
-    #print("meas", meas)
-    time, range_meas, bearing_meas = meas
-    
+  def resampling(self):
     #  Collect weight
-    self.weights = np.ones(len(self.particles))
-    for idx, particle in enumerate(self.particles):
-      self.weights[idx] *= particle.updateEKFs((range_meas, bearing_meas), meas_cov)
-    self.weights /= np.sum(self.weights)
+    self.weights = np.array([particle.weight for particle in self.particles])
+    
+    self.weights = self.weights / np.sum(self.weights)
     for idx, particle in enumerate(self.particles):
       particle.accumulated_weight += self.weights[idx]
 
@@ -109,6 +117,7 @@ class FastSLAM2():
     avg_pose = np.average(np.array(poses),axis=0)
     #print(hist)
     return avg_pose
+
   def get_all_poses(self):
     poses =  []   
     for idx, particle in enumerate(self.particles):

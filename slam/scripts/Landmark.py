@@ -69,8 +69,9 @@ class LandmarkEKF():
 
     self.meas_jac_pose, self.meas_jac_land = np.zeros((2,7)),np.zeros((2,7))
 
-    self.pose_cov, self.meas_cov = np.zeros((7,7)), np.zeros((2,2))
-    self.pose_cov_inv = self.pose_cov
+    # self.meas_cov = np.zeros((2,2))
+    # self.pose_cov = np.zeros((7,7))
+    # self.pose_cov_inv = self.pose_cov
 
     self.Q = np.zeros((2,2))
     self.Q_inv = np.zeros((2,2)) 
@@ -125,27 +126,24 @@ class LandmarkEKF():
     self.meas_jac_pose = meas_jac_pose
     self.meas_jac_land = -1 * meas_jac_pose[:2,:2]
     
-  def samplePose(self, pose_est, pose_cov, meas, meas_cov):
+  def samplePose(self, pose_mean, pose_cov, meas, meas_cov):
     # range_meas, bearing_meas = meas 
     self.meas = meas
     self.meas_cov = meas_cov
-    meas_est = self.computeMeasModel(pose_est) # range_est, bearing_est
+    meas_est = self.computeMeasModel(pose_mean) # range_est, bearing_est
     
     self.meas_diff = meas - meas_est #np.array([range_meas - range_est, bearing_meas - bearing_est])
 
-    self.pose_cov = pose_cov
-    self.pose_cov_inv = np.linalg.inv(self.pose_cov)
+    pose_cov_inv = np.linalg.inv(pose_cov)
 
-    self.computeMeasJacobians(pose_est)
+    self.computeMeasJacobians(pose_mean)
     
     self.Q = self.meas_cov + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T
     self.Q_inv = np.linalg.inv(self.Q)
     
-    pose_cov_expected = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + self.pose_cov_inv)
-    pose_mean_expected = pose_cov_expected @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_est
-    # print('meas_jac_pose',self.meas_jac_pose,'\npos_cov_exp',pose_cov_expected,'\nQ_inv',self.Q_inv,'pos_cov_inv',self.pose_cov_inv)
-    self.sampled_pose = pose_mean_expected + self.random.multivariate_normal(np.zeros(7), pose_cov_expected)
-    #print("Sampled pose from landmark.py:", self.sampled_pose)
+    self.pose_cov = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + pose_cov_inv)
+    self.pose_mean = self.pose_cov @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_mean
+    self.sampled_pose = self.pose_mean + self.random.multivariate_normal(np.zeros(7), self.pose_cov)
     meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
@@ -158,7 +156,7 @@ class LandmarkEKF():
     # print('hiiii',self.prob_data_association, two_pi_Q_inv_sqrt, exponent, np.exp(exponent))
     return self.prob_data_association
 
-  def updateObserved(self):
+  def updateObservedLandmark(self, pose_cov):
     self.land_exist_log += self.land_exist_log_inc
     K =  self.prev_land_cov @ self.meas_jac_land.T @ self.Q_inv 
 
@@ -167,7 +165,7 @@ class LandmarkEKF():
     self.land_cov = (self.I - K @ self.meas_jac_land) @ self.prev_land_cov #!!!!!! Problem: size mismatched
     
     # Compute particle weight
-    L = self.meas_jac_pose @ self.pose_cov @ self.meas_jac_pose.T \
+    L = self.meas_jac_pose @ pose_cov @ self.meas_jac_pose.T \
          + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T \
          + self.meas_cov
     L_inv = np.linalg.inv(L)
@@ -179,10 +177,11 @@ class LandmarkEKF():
     # Update previous values
     self.prev_land_mean = self.land_mean
     self.prev_land_cov = self.land_cov
+    self.weight = weight
     #print("weight",weight)
     return weight
 
-  def updateUnobserved(self, sensor_range):
+  def updateUnobservedLandmark(self, sensor_range):
     # Set current landmark mean and cov to previous mean and cov
     self.land_mean = self.prev_land_mean
     self.land_cov = self.prev_land_cov
@@ -195,10 +194,11 @@ class LandmarkEKF():
     # If the log odds probability falls below 0, we do not keep the landmark
     return self.land_exist_log > 0
 
-  def updateNewLandmark(self, sampled_pose, meas, meas_cov):
-    
+  def updateNewLandmark(self, sampled_pose, pose_mean, pose_cov, meas, meas_cov, new_land_threshold):
     self.land_exist_log = self.land_exist_log_inc
     self.sampled_pose = sampled_pose
+    self.pose_mean = pose_mean
+    self.pose_cov = pose_cov
     self.meas = meas
 
     # Initialize landmark mean and covariance, as well as previous mean and covariance
@@ -207,3 +207,4 @@ class LandmarkEKF():
     self.computeMeasJacobians(sampled_pose)
     self.land_cov = np.linalg.inv(self.meas_jac_land @ np.linalg.inv(meas_cov) @ self.meas_jac_land.T)
     self.prev_land_cov = self.land_cov
+    self.weight = new_land_threshold
