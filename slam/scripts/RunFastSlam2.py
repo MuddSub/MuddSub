@@ -12,7 +12,7 @@ from matplotlib.patches import Ellipse
 ROBOT_ID = 0
 START_STEP = 0
 NUM_STEPS = 13000
-MEAS_COV = np.diag([1e-2, 1e-2])
+MEAS_COV = np.diag([0.1, 0.1])
 SENSOR_RANGE = 1
 LANDMARK_NUM = None #14
 
@@ -25,7 +25,7 @@ params['num_landmarks'] = 0
 params['land_default_cov'] = MEAS_COV
 params['land_means'] = {14: np.array([.96,.71])}
 params['land_covs'] = {}
-params['new_land_threshold'] = 1e-2
+params['new_land_threshold'] = 0.5
 #TODO Figure out how to get variance for x and y
 params['x_sigma'] = 1e-3
 params['y_sigma'] = 1e-3
@@ -74,13 +74,13 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       algorithm.addControl((vx, vy, theta_imu, omega_imu),t)
 
       # hard coding poses
-      #'''
+      # '''
       for i in range(len(algorithm.particles)):
         x = robotData.getXTruth(t)
         y = robotData.getYTruth(t)
         theta = robotData.getCompass(t)
         algorithm.particles[i].pose = np.array([x, y, theta, vx, vy, omega_imu, theta_p])
-      #'''
+      # '''
     else:
       measurement = update[1]
       time, subject, range_meas, bearing_meas = measurement
@@ -89,6 +89,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       if (LANDMARK_NUM ==None and subject>5) or subject == LANDMARK_NUM: #if subject > 5 :
         # a list of (x,y), where each (x,y) comes from a particle 
         algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
+        # algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
         print("step", i, "updated measurement")
 
     
@@ -165,28 +166,33 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       landmarksGroundtruth.append(np.array([landmark['X'], landmark['Y']]))
   landmarksGroundtruth = np.array(landmarksGroundtruth)
   
+  print("num landmark: ground truth",len(landmarksGroundtruth)," what we got", len(algorithm.particles[0].landmarks))
+
   # Set up animation
   fig, ax = plt.subplots()
-  particles, = ax.plot([], [], marker='o', markerfacecolor='mediumpurple')
+  particles, = ax.plot([], [], linestyle='None', marker='o', color='gold')
   landmarks, = ax.plot([], [], 'mo')
   groundtruth_path_x = []
   groundtruth_path_y = []
-  groundtruth_path, = ax.plot([], [], 'bo')
+  groundtruth_path, = ax.plot([], [], 'b-')
   best_particle_path_x = []
   best_particle_path_y = []
-  best_particle_path, = ax.plot([], [], 'ro')
-  ax.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx')
-  title = ax.set_title("Step = 0 / " + str(NUM_STEPS))
+  best_particle_path, = ax.plot([], [], 'r-')
+  steps = ax.text(3, 6, "Step = 0 / " + str(NUM_STEPS), horizontalalignment="center", verticalalignment="top")
 
   def init():
-    groundtruth_path_x = []
-    groundtruth_path_y = []
-    best_particle_path_x = []
-    best_particle_path_y = []
-    return particles, landmarks, groundtruth_path, best_particle_path, title
+    ax.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx')
+    ax.set_title("Num steps: " + str(NUM_STEPS))
+    return best_particle_path, groundtruth_path, particles, landmarks, steps
 
   def update(frame):
     particle_poses, landmark_means, landmark_covs, best_particle_idx, t = plot_data[frame]
+
+    if frame == 0:
+      groundtruth_path_x.clear()
+      groundtruth_path_y.clear()
+      best_particle_path_x.clear()
+      best_particle_path_y.clear()
 
     # Plot best particle path
     best_particle_pose = particle_poses[best_particle_idx]
@@ -207,15 +213,12 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       landmarks.set_data(landmark_means[:, 0], landmark_means[:, 1])
 
     # Update title
-    title = ax.set_title("Step = " + str(frame) + " / " + str(NUM_STEPS))
+    steps.set_text("Step = " + str(frame) + " / " + str(NUM_STEPS))
 
     # Return changed artists?
-    return particles, landmarks, groundtruth_path, best_particle_path, title
-  
-  # plt.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx')
-  print("num landmark: ground truth",len(landmarksGroundtruth)," what we got", len(algorithm.particles[0].landmarks))
-  ax.set_title("num step = " + str(NUM_STEPS))
-  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 10), init_func = init, blit=True, interval = 25)
+    return best_particle_path, groundtruth_path, particles, landmarks, steps
+
+  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 10), init_func = init, blit=True, interval = 20, repeat=False)
   plt.show()
 
 

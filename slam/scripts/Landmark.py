@@ -110,7 +110,6 @@ class LandmarkEKF():
     return np.array([lx, ly])
 
   def computeMeasJacobians(self, pose):
-    
     lx, ly = self.prev_land_mean
     x, y, theta, vx, vy, omega, theta_p = pose
     
@@ -120,8 +119,8 @@ class LandmarkEKF():
     meas_jac_pose = np.zeros((2,7))
     
     meas_jac_pose[0,0] = -(lx-x) / range_est
-    meas_jac_pose[1,0] = -(ly-y) / range_est
-    meas_jac_pose[0,1] = (ly-y) / range_est_sqr
+    meas_jac_pose[0,1] = -(ly-y) / range_est
+    meas_jac_pose[1,0] = (ly-y) / range_est_sqr
     meas_jac_pose[1,1] = -(lx-x) / range_est_sqr
     meas_jac_pose[1,2] = -1
     self.meas_jac_pose = meas_jac_pose
