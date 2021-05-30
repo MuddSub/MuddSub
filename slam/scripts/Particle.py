@@ -39,6 +39,13 @@ class Particle():
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
 
+    if self.num_landmarks>0 and self.params['landmarks'] != None and len(self.params['landmarks'])>0:
+      for idx, land_mean in self.params['land_means'].items():
+        land_cov = self.params['land_covs'].get(idx,self.params['land_default_cov'])
+        self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov = land_cov, random=self.random)
+    
+    
+
     self.new_land_threshold = params['new_land_threshold']
 
     self.x_sigma = params['x_sigma']
@@ -76,7 +83,7 @@ class Particle():
     4. update landmark using sampled pose, pose mean, and pose covariance 
     '''
     # Initialize pose mean, pose covariance, and the particle's weight
-    self.pose_mean = self.pose
+    self.pose_mean = np.copy(self.pose)
     self.pose_cov = np.copy(self.default_pose_cov)
     self.weight = 1.0
 
@@ -129,9 +136,11 @@ class Particle():
         if observed_land_idx in self.landmarks:
           # Update observed landmark
           observed_landmark = self.landmarks[observed_land_idx]
+          observed_landmark.samplePose(self.pose_mean, self.pose_cov, meas, meas_cov)
           observed_landmark.updateObservedLandmark(self.pose_cov)
         else:
           # Initialize new landmark
+          
           observed_landmark = LandmarkEKF(random=self.random)
           self.landmarks[observed_land_idx] = observed_landmark
           observed_landmark.updateNewLandmark(self.pose + self.computePoseNoise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
@@ -152,9 +161,9 @@ class Particle():
     
       # Update particle properties
       self.weight *= observed_landmark.weight
-      self.pose_mean = observed_landmark.pose_mean
-      self.pose_cov = observed_landmark.pose_cov
-      self.pose = observed_landmark.sampled_pose
+      self.pose_mean = np.copy(observed_landmark.pose_mean)
+      self.pose_cov = np.copy(observed_landmark.pose_cov)
+      self.pose = np.copy(observed_landmark.sampled_pose)
 
   '''
   def updateEKFs(self, meas_ls, meas_cov):

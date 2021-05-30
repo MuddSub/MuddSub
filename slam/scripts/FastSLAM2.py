@@ -42,7 +42,6 @@ class FastSLAM2():
       theta_sigma: angle variance
     '''
     self.prev_t = 0
-    self.prev_meas_update = False
     self.createParticles(self.num_particles)
     
     self.meas_ls = []
@@ -57,8 +56,9 @@ class FastSLAM2():
     print(self.params['initial_pose'])
 
   def addControl(self, control, time):
-    if len(self.meas_ls) > 0:
-      print("num meas before update", len(self.meas_ls))
+    #if len(self.meas_ls) > 0:
+    #  print("num meas before update", len(self.meas_ls))
+    #print("num landmark for particle 0:", len(self.particles[0].landmarks))
     self.measurementUpdate()
     self.motionUpdate(control, time)
     self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.correspondences = [], [], [], []
@@ -71,7 +71,7 @@ class FastSLAM2():
     self.known_correspondences = (correspondence != None)
     
     if self.known_correspondences:
-      self.correspondence.append(correspondence)
+      self.correspondences.append(correspondence)
 
   def motionUpdate(self, control, time):
     # propagate motion
@@ -86,13 +86,12 @@ class FastSLAM2():
     # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
       particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
-    if len(self.meas_ls) > 0:
+    if len(self.meas_ls) > 1:
       self.resampling()
 
   def resampling(self):
     #  Collect weight
     self.weights = np.array([particle.weight for particle in self.particles])
-    
     self.weights = self.weights / np.sum(self.weights)
     for idx, particle in enumerate(self.particles):
       particle.accumulated_weight += self.weights[idx]
@@ -104,7 +103,7 @@ class FastSLAM2():
       new_particles.append(copy.deepcopy(self.particles[idx]))
       new_particles[-1].random = self.random
     self.particles  = new_particles
-    self.prev_meas_update = True
+
     return self.get_all_poses() #self.compute_avg(self.particles, time)
     
   def compute_avg(self, particles, t):

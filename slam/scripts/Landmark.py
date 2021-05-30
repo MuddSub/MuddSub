@@ -87,6 +87,7 @@ class LandmarkEKF():
     self.land_exist_log_dec = self.logOdds(0.8) # 0.8 works out to around 1.38, rho negative in the FastSLAM 2.0 algorithm
 
     self.label = []
+  
 
   def logOdds(self, probability):
     return np.log(probability / (1 - probability))
@@ -167,7 +168,7 @@ class LandmarkEKF():
     # Compute particle weight
     L = self.meas_jac_pose @ pose_cov @ self.meas_jac_pose.T \
          + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T \
-         + self.meas_cov
+         + self.meas_cov 
     L_inv = np.linalg.inv(L)
     # two_pi_L_inv_sqrt = np.linalg.inv(sqrtm(np.abs(2*np.pi*L)))
     two_pi_L_inv_sqrt = (np.linalg.det(2*np.pi*L)) ** -0.5
