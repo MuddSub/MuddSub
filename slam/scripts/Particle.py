@@ -69,10 +69,10 @@ class Particle():
     self.pose = self.computeMotionModel(self.pose, control, dt)
     #print("Particle: propagate motion:\n pose", self.pose)
   
-  # def addPoseNoise(self):
-  #   """Add noise to existing pose"""
-  #   noise = self.computePoseNoise()
-  #   self.pose = self.pose + noise
+  def addPoseNoise(self):
+    """Add noise to existing pose"""
+    noise = self.computePoseNoise()
+    self.pose = self.pose + noise
   
   def measurementUpdate(self, meas_ls, meas_cov_ls, sensor_range_ls, known_correspondences = False, correspondences = []):
     '''

@@ -27,13 +27,13 @@ params['land_means'] = {14: np.array([.96,.71])}
 params['land_covs'] = {}
 params['new_land_threshold'] = 0.5
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1e-3
-params['y_sigma'] = 1e-3
-params['theta_sigma'] = 1e-3
-params['v_sigma'] = 1e-3#0.04
-params['omega_sigma'] = 1e-3
+params['x_sigma'] = 1e-1
+params['y_sigma'] = 1e-1
+params['theta_sigma'] = 1e-1
+params['v_sigma'] = 1e-1#0.04
+params['omega_sigma'] = 1e-1
 # params['pose_cov'] = 0.001
-n = 1 #num particle
+n = 5 #num particle
 random_generator = np.random.default_rng(0)
 plotting = 'best' #vs 'avg'
 
@@ -80,6 +80,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
         y = robotData.getYTruth(t)
         theta = robotData.getCompass(t)
         algorithm.particles[i].pose = np.array([x, y, theta, vx, vy, omega_imu, theta_p])
+        algorithm.particles[i].addPoseNoise()
       # '''
     else:
       measurement = update[1]
