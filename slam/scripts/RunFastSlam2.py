@@ -16,6 +16,10 @@ MEAS_COV = np.diag([0.1, 0.1])
 SENSOR_RANGE = 1
 LANDMARK_NUM = None #14
 
+'''
+threshold: .3, meas cov: .1, motion cov: 1e-2
+'''
+
 plot_data = []
 
 params = {}
@@ -23,15 +27,16 @@ params['initial_pose'] = np.array([3.55, -3.38, 0, 0, 0, 0, 0])
 
 params['num_landmarks'] = 0
 params['land_default_cov'] = MEAS_COV
-params['land_means'] = {14: np.array([.96,.71])}
+params['land_means'] = {}#{14: np.array([.96,.71])}
 params['land_covs'] = {}
-params['new_land_threshold'] = 0.5
+# too many particles: lower threshold
+params['new_land_threshold'] = .3
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1e-3
-params['y_sigma'] = 1e-3
-params['theta_sigma'] = 1e-3
-params['v_sigma'] = 1e-3#0.04
-params['omega_sigma'] = 1e-3
+params['x_sigma'] = 1e-2
+params['y_sigma'] = 1e-2
+params['theta_sigma'] = 1e-2
+params['v_sigma'] = 1e-2#0.04
+params['omega_sigma'] = 1e-2
 # params['pose_cov'] = 0.001
 n = 1 #num particle
 random_generator = np.random.default_rng(0)
@@ -88,8 +93,8 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       # Update EKFs
       if (LANDMARK_NUM ==None and subject>5) or subject == LANDMARK_NUM: #if subject > 5 :
         # a list of (x,y), where each (x,y) comes from a particle 
-        algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
-        # algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
+        #algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
+        algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
         print("step", i, "updated measurement")
 
     
@@ -169,28 +174,26 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   print("num landmark: ground truth",len(landmarksGroundtruth)," what we got", len(algorithm.particles[0].landmarks))
 
   # Set up animation
-  fig, ax = plt.subplots()
-  particles, = ax.plot([], [], linestyle='None', marker='o', color='gold')
-  landmarks, = ax.plot([], [], 'mo')
+  fig = plt.figure()
+  ax = fig.add_subplot(111)  
+  ax.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx',label='true landmark')
+  particles, = ax.plot([], [], linestyle='None', marker='o', color='gold',label='est motion')
+  landmarks, = ax.plot([], [], 'mo',label='est landmark')
   groundtruth_path_x = []
   groundtruth_path_y = []
-  groundtruth_path, = ax.plot([], [], 'b-')
+  groundtruth_path, = ax.plot([], [], 'b-',label='true path')
   best_particle_path_x = []
   best_particle_path_y = []
-  best_particle_path, = ax.plot([], [], 'r-')
+  best_particle_path, = ax.plot([], [], 'r-',label='est path')
   steps = ax.text(3, 6, "Step = 0 / " + str(NUM_STEPS), horizontalalignment="center", verticalalignment="top")
-
+  ax.legend()
   def init():
-    ax.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx')
+    
     ax.set_title("Num steps: " + str(NUM_STEPS))
+    
     return best_particle_path, groundtruth_path, particles, landmarks, steps
 
   def update(frame):
-    if frame == 0:
-      groundtruth_path_x = []
-      groundtruth_path_y = []
-      best_particle_path_x = []
-      best_particle_path_y = []
 
     particle_poses, landmark_means, landmark_covs, best_particle_idx, t = plot_data[frame]
 
@@ -223,8 +226,9 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
 
     # Return changed artists?
     return best_particle_path, groundtruth_path, particles, landmarks, steps
-
+  
   ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 10), init_func = init, blit=True, interval = 20, repeat=False)
+  fig.tight_layout(rect=[0, 0.03, 1, 0.95])
   plt.show()
 
 
