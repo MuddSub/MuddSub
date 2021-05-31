@@ -32,9 +32,6 @@ class Particle():
 
     # self.pose = np.zeros(7)
     self.pose = params['initial_pose']
-    
-    # self.pose_cov = np.eye(7)
-    # self.pose_cov = params['pose_cov']
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -61,13 +58,7 @@ class Particle():
   # possible solution: create a dictionary of landmark class, each has a list of landmark in that class
   # instead of maximizing in a single update, use update if above certain threshold
   # to enable multiple updates. 
-  
-  def motionUpdate(self, control, dt):
-    # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
-    # the probability of data assocation
-    #print("Particle: propagate motion:\n control", control, "dt", dt)
-    self.pose = self.computeMotionModel(self.pose, control, dt)
-    #print("Particle: propagate motion:\n pose", self.pose)
+
   
   def addPoseNoise(self):
     """Add noise to existing pose"""
@@ -83,6 +74,12 @@ class Particle():
     4. update landmark using sampled pose, pose mean, and pose covariance 
     '''
     # Initialize pose mean, pose covariance, and the particle's weight
+
+    # TO DO: 
+    # pose_mean seems weird, we never use pose mean!!!
+    # need to update pose mean per cycle 
+    # also remove self. 
+
     self.pose_mean = np.copy(self.pose)
     self.pose_cov = np.copy(self.default_pose_cov)
     self.weight = 1.0
@@ -236,6 +233,13 @@ class Particle():
     # Return the particle's weight
     return self.weight
   '''
+  
+  def motionUpdate(self, control, dt):
+    # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
+    # the probability of data assocation
+    #print("Particle: propagate motion:\n control", control, "dt", dt)
+    self.pose = self.computeMotionModel(self.pose, control, dt)
+    #print("Particle: propagate motion:\n pose", self.pose)
 
   def computeMotionModel(self, prev_pose, control, dt):
     vx, vy, theta_imu, omega_imu = control

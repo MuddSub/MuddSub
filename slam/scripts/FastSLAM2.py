@@ -60,6 +60,10 @@ class FastSLAM2():
     #  print("num meas before update", len(self.meas_ls))
     #print("num landmark for particle 0:", len(self.particles[0].landmarks))
     self.measurementUpdate()
+    # only resample if there are more than one particle 
+    # have this check bc a particle can have really small weights and ~0/~0 will be Nan
+    if len(self.particles) > 1:
+      self.resampling()
     self.motionUpdate(control, time)
     self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.correspondences = [], [], [], []
 
@@ -86,8 +90,7 @@ class FastSLAM2():
     # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
       particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
-    if len(self.meas_ls) > 1:
-      self.resampling()
+
 
   def resampling(self):
     #  Collect weight
