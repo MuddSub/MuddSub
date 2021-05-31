@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from std_msgs.msg import Header, String
-from VisionPublisher import VisionPublisher
+from vision.VisionPublisher import VisionPublisher
 from vision.msg import Detection, DetectionArray, BoundingBox2DArray
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Vector3, Pose2D

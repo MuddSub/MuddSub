@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 import rospy
 #from sensor_msgs.msg import CameraInfo, Image, CompressedImage
 from vision.msg import Detection, DetectionArray, BoundingBox2DArray

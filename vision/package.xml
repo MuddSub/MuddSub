@@ -76,6 +76,7 @@
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>dynamic_reconfigure</exec_depend>
+  <exec_depend>VisionPublisher</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
