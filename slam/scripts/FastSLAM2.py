@@ -97,7 +97,14 @@ class FastSLAM2():
       particle.accumulated_weight += self.weights[idx]
 
     # resampling
-    new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles,replace=True, p=self.weights)
+    try:
+      new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles,replace=True, p=self.weights)
+    except:
+      print("Particle weights are NaN")
+      print(self.weights)
+      raise
+      # new_particle_idx_ls = [range(self.num_particles)]
+
     new_particles = []
     for idx in new_particle_idx_ls:
       new_particles.append(copy.deepcopy(self.particles[idx]))
