@@ -1,8 +1,8 @@
 #goal definition
 string goal # maybe use constant here
 int64 measurement
-string: motion_style
-geometry_msgs/Twist.msg: velocity 
+string motion_style
+geometry_msgs/Twist.msg velocity 
 ---
 #result definition
 bool success
