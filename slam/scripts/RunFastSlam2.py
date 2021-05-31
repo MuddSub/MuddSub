@@ -179,13 +179,15 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   title = ax.set_title("Step = 0 / " + str(NUM_STEPS))
 
   def init():
-    groundtruth_path_x = []
-    groundtruth_path_y = []
-    best_particle_path_x = []
-    best_particle_path_y = []
     return particles, landmarks, groundtruth_path, best_particle_path, title
 
   def update(frame):
+    if frame == 0:
+      groundtruth_path_x = []
+      groundtruth_path_y = []
+      best_particle_path_x = []
+      best_particle_path_y = []
+
     particle_poses, landmark_means, landmark_covs, best_particle_idx, t = plot_data[frame]
 
     # Plot best particle path
