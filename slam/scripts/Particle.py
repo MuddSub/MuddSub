@@ -36,9 +36,9 @@ class Particle():
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
 
-    if self.num_landmarks>0 and self.params['landmarks'] != None and len(self.params['landmarks'])>0:
-      for idx, land_mean in self.params['land_means'].items():
-        land_cov = self.params['land_covs'].get(idx,self.params['land_default_cov'])
+    if self.num_landmarks > 0 and params['landmarks'] != None and len(params['landmarks'])>0:
+      for idx, land_mean in params['land_means'].items():
+        land_cov = params['land_covs'].get(idx, params['land_default_cov'])
         self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov = land_cov, random=self.random)
     
     self.new_land_threshold = params['new_land_threshold']
@@ -123,7 +123,6 @@ class Particle():
           observed_landmark = self.landmarks[observed_land_idx]
           observed_landmark.updateObservedLandmark(self.pose_cov)
 
-          
       else:
         # Use the given correspondence
         observed_land_idx = correspondences[meas_idx]
@@ -136,7 +135,6 @@ class Particle():
           observed_landmark.updateObservedLandmark(self.pose_cov)
         else:
           # Initialize new landmark
-          
           observed_landmark = LandmarkEKF(random=self.random)
           self.landmarks[observed_land_idx] = observed_landmark
           observed_landmark.updateNewLandmark(self.pose + self.computePoseNoise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
