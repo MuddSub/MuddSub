@@ -64,6 +64,9 @@ class Particle():
     """Add noise to existing pose"""
     noise = self.computePoseNoise()
     self.pose = self.pose + noise
+
+  def computePoseNoise(self):
+    return self.random.multivariate_normal(np.zeros(7), self.pose_cov)
   
   def measurementUpdate(self, meas_ls, meas_cov_ls, sensor_range_ls, known_correspondences = False, correspondences = []):
     '''
@@ -259,6 +262,5 @@ class Particle():
     
     return pose
 
-  def computePoseNoise(self):
-      return self.random.multivariate_normal(np.zeros(7), self.pose_cov)
+
       
