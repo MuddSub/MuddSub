@@ -41,8 +41,6 @@ class Particle():
         land_cov = self.params['land_covs'].get(idx,self.params['land_default_cov'])
         self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov = land_cov, random=self.random)
     
-    
-
     self.new_land_threshold = params['new_land_threshold']
 
     self.x_sigma = params['x_sigma']
@@ -88,10 +86,11 @@ class Particle():
 
     # If there are no measurements, sample the pose according to the default pose covariance and the pose mean computed by the motion model
     if len(meas_ls) == 0:
-      self.pose = self.pose_mean + self.computePoseNoise()
+      noise = self.computePoseNoise()
+      self.pose = self.pose_mean + noise
       return
 
-    # TODO: if a correspondance has low enough class probability, then we should do data association. 
+    # TODO: if a correspondence has low enough class probability, then we should do data association.
 
     # Iteratively update pose mean and pose covariance using each measurement of the same time step
     for meas_idx, (meas, meas_cov) in enumerate(zip(meas_ls, meas_cov_ls)):
@@ -237,26 +236,19 @@ class Particle():
   def motionUpdate(self, control, dt):
     # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
     # the probability of data assocation
-    #print("Particle: propagate motion:\n control", control, "dt", dt)
     self.pose = self.computeMotionModel(self.pose, control, dt)
-    #print("Particle: propagate motion:\n pose", self.pose)
 
   def computeMotionModel(self, prev_pose, control, dt):
     vx, vy, theta_imu, omega_imu = control
-    prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_v_p = prev_pose
+    prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_theta_p = prev_pose
     
-    #v = (vx**2 + vy**2)**.5
     x = prev_x + vx * dt
     y = prev_y + vy * dt
     theta = wrapToPi(theta_imu)
-    # vx = v * np.cos(theta)
-    # vy = v * np.sin(theta)
-    omega = omega_imu #(theta - prev_theta) / dt # NOT SURE
-    # so far we are not accounting for omega_imu in jocabian
-    theta_p = prev_theta
+    omega = omega_imu
+    theta_p = theta
 
     pose = np.array([x, y, theta, vx, vy, omega, theta_p])
-    
     return pose
 
   def computePoseNoise(self):

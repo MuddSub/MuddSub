@@ -11,7 +11,7 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Ellipse
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 13000
+NUM_STEPS = 2
 MEAS_COV = np.diag([0.1, 0.1])
 SENSOR_RANGE = 1
 LANDMARK_NUM = None #14
@@ -32,13 +32,13 @@ params['land_covs'] = {}
 # too many particles: lower threshold
 params['new_land_threshold'] = .3
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1e-1
-params['y_sigma'] = 1e-1
-params['theta_sigma'] = 1e-1
-params['v_sigma'] = 1e-1#0.04
-params['omega_sigma'] = 1e-1
+params['x_sigma'] = 1
+params['y_sigma'] = 1
+params['theta_sigma'] = 1
+params['v_sigma'] = 1
+params['omega_sigma'] = 1
 # params['pose_cov'] = 0.001
-n = 5 #num particle
+n = 100 #num particle
 random_generator = np.random.default_rng(0)
 plotting = 'best' #vs 'avg'
 
@@ -64,7 +64,6 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       algorithm.prev_t = t
       algorithm.params["initial_pose"][2] = wrapToPi(robotData.getCompass(t))
     if update[0] == "odometry":
-      #print("step",i,"updated odometry")
       odometry = update[1]
       theta_meas = wrapToPi(robotData.getCompass(t))
 
@@ -75,59 +74,42 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       theta_imu = theta_meas
       omega_imu = angular_velocity
 
-      # Update particle poses
-      algorithm.addControl((vx, vy, theta_imu, omega_imu),t)
+      # print("step", i, "updated odometry", (vx, vy, theta_imu, omega_imu))
 
-      # hard coding poses
-      # '''
+      # Update particle poses
+      algorithm.addControl((vx, vy, theta_imu, omega_imu), t)
+
+      # Hard coding poses
+      '''
       for i in range(len(algorithm.particles)):
         x = robotData.getXTruth(t)
         y = robotData.getYTruth(t)
         theta = robotData.getCompass(t)
         algorithm.particles[i].pose = np.array([x, y, theta, vx, vy, omega_imu, theta_p])
         algorithm.particles[i].addPoseNoise()
-      # '''
+      '''
     else:
       measurement = update[1]
       time, subject, range_meas, bearing_meas = measurement
 
       # Update EKFs
-      if (LANDMARK_NUM ==None and subject>5) or subject == LANDMARK_NUM: #if subject > 5 :
+      if (LANDMARK_NUM == None and subject > 5) or subject == LANDMARK_NUM: #if subject > 5 :
+        # Use groundtruth to provide accurate measurement
+        '''
+        landmark = dataloader.map.getLandmarkLocation(subject)
+        landmark_x = landmark['X']
+        landmark_y = landmark['Y']
+        robot_x = robotData.getXTruth(time)
+        robot_y = robotData.getYTruth(time)
+        robot_angle = robotData.getCompass(time)
+        range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
+        bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
+        '''
+
         # a list of (x,y), where each (x,y) comes from a particle 
-        #algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
-        algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
+        algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
+        # algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
         print("step", i, "updated measurement")
-
-    
-    
-    # Plot landmark positions
-    '''
-    landmarks_pos = []
-    for particle in algorithm.particles:
-      for _, landmark in particle.landmarks.items():
-        landmarks_pos.append(np.array(list(landmark.land_mean)))
-    landmarks_pos = np.array(landmarks_pos)
-    if len(landmarks_pos)>0:
-      plt.plot(landmarks_pos[:,0],landmarks_pos[:,1],'yo')
-    '''      
-
-    '''
-    # Get average poses
-    all_poses = [ algorithm.particles[i].pose for i in range(len(algorithm.particles))]
-    avg_poses = np.average(all_poses,axis=0)
-    all_pose_hist.append(all_poses)
-
-    # Plot particle positions based on value of plotting
-    best_particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)
-    to_plot = avg_poses if plotting == 'avg' else best_particle.pose
-    if i > 0.7 * NUM_STEPS and i % 10 == 0:
-      plt.plot(to_plot[0], to_plot[1],'ro')
-      plt.plot(robotData.getXTruth(t),robotData.getYTruth(t),'bx')
-      #plt.annotate(t,(to_plot[0], to_plot[1]))
-    elif i % 20 == 0:
-      plt.plot(to_plot[0], to_plot[1],'ro')
-      plt.plot(robotData.getXTruth(t),robotData.getYTruth(t),'bx')
-    '''
     
     # Log data
     best_particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)
@@ -139,31 +121,13 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       if particle is best_particle:
         best_particle_idx = particle_idx
       particle_poses.append(np.copy(particle.pose))
-      
+
     for _, landmark in best_particle.landmarks.items():
       landmark_means.append(np.copy(landmark.land_mean))
       landmark_covs.append(np.copy(landmark.land_cov))
+
     frame = (np.array(particle_poses), np.array(landmark_means), np.array(landmark_covs), best_particle_idx, t)
     plot_data.append(frame)
-
-  # Plot best particle landmarks at the end
-  #particle = algorithm.particles.index(max(particle.weight for particle in algorithm.particles))
-  # plot 
-  '''
-  best_particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)
-  landmarks_pos = []
-  for _, landmark in best_particle.landmarks.items():
-    landmarks_pos.append(np.array(list(landmark.land_mean)))
-  landmarks_pos = np.array(landmarks_pos)
-  if len(landmarks_pos) > 0:
-    print("plotting landmark")
-    plt.plot(landmarks_pos[:,0], landmarks_pos[:,1], 'go')
-  else:
-    print(landmarks_pos)
-  
-  plt.plot(robotData.getXTruth(0),robotData.getYTruth(0),'yx')
-  plt.plot(all_pose_hist[0][0][0],all_pose_hist[0][0][1],'yo')
-  '''
 
   # Extract landmark groundtruth from dataloader
   landmarksGroundtruth = []
@@ -179,7 +143,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   ax = fig.add_subplot(111)  
   ax.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx',label='true landmark')
   particles, = ax.plot([], [], linestyle='None', marker='o', color='gold',label='est motion')
-  landmarks, = ax.plot([], [], 'mo',label='est landmark')
+  best_particle_landmarks, = ax.plot([], [], 'mo', label='est landmark')
   groundtruth_path_x = []
   groundtruth_path_y = []
   groundtruth_path, = ax.plot([], [], 'b-',label='true path')
@@ -190,10 +154,9 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   ax.legend()
   def init():
     ax.set_title("Num steps: " + str(NUM_STEPS))
-    return best_particle_path, groundtruth_path, particles, landmarks, steps
+    return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
 
   def update(frame):
-
     particle_poses, landmark_means, landmark_covs, best_particle_idx, t = plot_data[frame]
 
     if frame == 0:
@@ -206,6 +169,9 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     best_particle_pose = particle_poses[best_particle_idx]
     best_particle_path_x.append(best_particle_pose[0])
     best_particle_path_y.append(best_particle_pose[1])
+    # avg_particle_pose = np.average(particle_poses, axis=0)
+    # best_particle_path_x.append(avg_particle_pose[0])
+    # best_particle_path_y.append(avg_particle_pose[1])
     best_particle_path.set_data(best_particle_path_x, best_particle_path_y)
 
     # Plot groundtruth path
@@ -213,20 +179,20 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     groundtruth_path_y.append(robotData.getYTruth(t))
     groundtruth_path.set_data(groundtruth_path_x, groundtruth_path_y)
     
-    # Plot particles poses
+    # Plot other particles poses
     particles.set_data(particle_poses[:, 0], particle_poses[:, 1])
 
-    # Plot landmarks
+    # Plot best particle landmarks
     if len(landmark_means) > 0:
-      landmarks.set_data(landmark_means[:, 0], landmark_means[:, 1])
+      best_particle_landmarks.set_data(landmark_means[:, 0], landmark_means[:, 1])
 
     # Update title
     steps.set_text("Step = " + str(frame) + " / " + str(NUM_STEPS))
 
     # Return changed artists?
-    return best_particle_path, groundtruth_path, particles, landmarks, steps
+    return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
   
-  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 10), init_func = init, blit=True, interval = 20, repeat=False)
+  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 1), init_func = init, blit=False, interval = 20, repeat=False)
   fig.tight_layout(rect=[0, 0.03, 1, 0.95])
   plt.show()
 
