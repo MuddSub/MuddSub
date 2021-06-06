@@ -57,8 +57,8 @@ void ControlDispatch::setpointCallback(const controls::State& state)
   auto stateVector = Eigen::Map<Eigen::Matrix<double, 12, 1>>(dataMutable);
 
   controller_->setSetpoint(stateVector);
-  // ROS_INFO("Updated setpoint");
-  std::cout << "Setpoint: " << controller_->getSetpoint().format(eigenInLine) << std::endl;
+
+  auto globalSetpoint = stateVector + plantZero_;
 }
 
 void ControlDispatch::resetCallback(const std_msgs::Empty& msg)

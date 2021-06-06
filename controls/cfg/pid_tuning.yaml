@@ -1,0 +1,24 @@
+surge:
+  kP: 6
+  kI: 0
+  kD: 10
+sway:
+  kP: 6
+  kI: 0
+  kD: 10
+heave:
+  kP: 10
+  kI: 1
+  kD: 20
+roll:
+  kP: 0
+  kI: 0
+  kD: 0
+pitch :
+  kP: 0
+  kI: 0
+  kD: 0
+yaw:
+  kP: 0
+  kI: 0
+  kD: 0

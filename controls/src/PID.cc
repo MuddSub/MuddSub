@@ -1,49 +1,92 @@
 #include "controls/PID.hh"
 #include <iostream>
+#include <cmath>
 
 namespace MuddSub::Controls
 {
-double PID::update(double plantState, double setPoint, double deltaT)
+
+double PID::update(double error, double deltaT)
 {
-    bool gotTuning{true};
-    if(tuneFromParams_)
-    {
-      gotTuning &= nh_.getParam(tuneParamRoot_ + "/kP", kP_);
-      gotTuning &= nh_.getParam(tuneParamRoot_ + "/kI", kI_);
-      gotTuning &= nh_.getParam(tuneParamRoot_ + "/kD", kD_);
-    }
-    if(!gotTuning)
-    {
-      ROS_ERROR("Failed to get tuning from parameter server; make sure it's running");
-      ros::Duration(0.5).sleep();
-    }
-
-    double error = setPoint - plantState;
-    if(isAngle_)
-    {
-        double explementaryError  = (360 - error)*-1;
-        if(std::abs(explementaryError) < std::abs(error))
-        {
-            error = explementaryError;
-        }
-    }
-
-    integralError_ += error * deltaT;
-    integralError_ = std::min(integralError_, windupLimit_);
-    integralError_ =  std::max(integralError_, -1*windupLimit_);
-
-    // First-order IIR filter (infinite impulse response)
-    derivativeError_ = .7*derivativeError_ + .3*(error - previousError_) / deltaT;
-    previousError_ = error;
-
-    auto result = kI_ * integralError_ + kD_ * derivativeError_ + kP_*(error);
+  return doUpdate(error, deltaT);
+}
 
 
-    if(tuneParamRoot_ == "/heave")
-    {
-      ROS_INFO("Prop: %f, Int: %f, Deriv: %f, dt %f", kP_*error, kI_ * integralError_, kD_ * derivativeError_, deltaT);
-    }
-    return result;
+double PID::update(double plantState, double setpoint, double deltaT)
+{
+  double error;
+
+  if(isAngle_)
+  {
+    auto wrapAngle = [](double num){
+      double mod = std::fmod(num, 2*M_PI);
+      if(mod < 0)
+        return mod + 2*M_PI;
+      return mod;
+    };
+
+    setpoint = wrapAngle(setpoint);
+    plantState = wrapAngle(plantState);
+
+    error = std::fmod(setpoint - plantState, 2*M_PI);
+    if(error < 0) error += 2*M_PI;
+
+    double altError = wrapAngle(2*M_PI - error);
+
+    double chosenError = std::min(error, altError);
+
+    // Find the sign by adding to plantstate and seeing if it's right
+    double sumError = wrapAngle(plantState + chosenError);
+    double diffError = wrapAngle(plantState - chosenError);
+
+    if(sumError < diffError)
+      error = chosenError;
+    else
+      error = -1 * chosenError;
+  }
+  else
+  {
+    error = setpoint - plantState;
+  }
+
+  return doUpdate(error, deltaT);
+}
+
+double PID::doUpdate(double error, double deltaT)
+{
+  if(deltaT == 0)
+    return 0;
+
+  bool gotTuning{true};
+  if(tuneFromParams_)
+  {
+    gotTuning &= nh_.getParam(tuneParamRoot_ + "/kP", kP_);
+    gotTuning &= nh_.getParam(tuneParamRoot_ + "/kI", kI_);
+    gotTuning &= nh_.getParam(tuneParamRoot_ + "/kD", kD_);
+  }
+  if(!gotTuning)
+  {
+    ROS_ERROR("Failed to get tuning from parameter server; make sure it's running");
+    ros::Duration(0.5).sleep();
+    return 0;
+  }
+
+  integralError_ += error * deltaT;
+
+
+  // First-order IIR filter (infinite impulse response)
+  double newDerivative = (error - previousError_) / deltaT;
+  derivativeError_ = .8*derivativeError_ + .2*newDerivative;
+  previousError_ = error;
+
+  double derivativeTerm = derivativeError_ * kD_;
+
+  auto integralTerm = kI_ * integralError_;
+  integralTerm = std::min(integralTerm, windupLimit_);
+  integralTerm = std::max(integralTerm, -1*windupLimit_);
+
+  auto result = integralTerm + kD_ * derivativeError_ + kP_*(error);
+
+  return result;
 }
 
 

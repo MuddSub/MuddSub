@@ -51,19 +51,24 @@ PID& SixDegreePID::getHeave()
 }
 
 
-void SixDegreePID::update(const stateVector_t& plantState,
-                          const stateVector_t& setPoint,
+void SixDegreePID::update(const stateVector_t& error,
                           double dT,
                           controlVector_t& control)
 {
+    ROS_INFO("DT: %f", dT);
+    ROS_INFO("===== SURGE =====");
+    control[0] = surge_.update(error[0], dT);
+    ROS_INFO("===== SWAY =====");
+    control[1] = sway_.update(error[1], dT);
+    ROS_INFO("===== HEAVE =====");
+    control[2] = heave_.update(error[2], dT);
 
-    control[0] = surge_.update(plantState[0],setPoint[0],dT);
-    control[1] = sway_.update(plantState[1],setPoint[1],dT);
-    control[2] = heave_.update(plantState[2],setPoint[2],dT);
-
-    control[3] = roll_.update(plantState[3],setPoint[3],dT);
-    control[4] = pitch_.update(plantState[4],setPoint[4],dT);
-    control[5] = yaw_.update(plantState[5],setPoint[5],dT);
+    ROS_INFO("===== ROLL =====");
+    control[3] = roll_.update(error[3], dT);
+    ROS_INFO("===== PITCH =====");
+    control[4] = pitch_.update(error[4], dT);
+    ROS_INFO("===== YAW =====");
+    control[5] = yaw_.update(error[5], dT);
 }
 
 void SixDegreePID::computeControl(const stateVector_t& state,
@@ -73,7 +78,9 @@ void SixDegreePID::computeControl(const stateVector_t& state,
   double deltaT = t - previousTime_;
   previousTime_ = t;
 
-  update(state, setpoint_, deltaT, controlAction);
+  stateVector_t error = getError(state);
+
+  update(error, deltaT, controlAction);
 }
 
 

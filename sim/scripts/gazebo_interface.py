@@ -250,6 +250,10 @@ if __name__ == '__main__':
 
     rate = rospy.Rate(10)
 
+    zeroPub = rospy.Publisher("/controls/set_zero_here", Empty, queue_size=5)
+    msg = Empty()
+    zeroPub.publish(msg)
+
     # pose = geometry_msgs.msg.Pose()
     # pose.position.z = 0
     # pose.orientation.w = 1
