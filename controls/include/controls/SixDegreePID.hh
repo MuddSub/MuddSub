@@ -44,9 +44,8 @@ public:
 
     void tuneController(double kP, double kI, double kD,  PID& controller);
 
-    //format of setPoint and plantState is <surge, sway, heave, roll, pitch, yaw >
-    void update(const stateVector_t& setPoint,
-                const stateVector_t& plantState,
+    //format of error is <surge, sway, heave, roll, pitch, yaw >
+    void update(const stateVector_t& error,
                 double dT,
                 controlVector_t& control);
 

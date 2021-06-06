@@ -15,14 +15,14 @@ private:
     double integralError_;
     double previousError_;
 
-    double windupLimit_{100};
+    double windupLimit_{10};
 
     std::string tuneParamRoot_;
     bool tuneFromParams_{false};
 
     ros::NodeHandle nh_;
 
-    double derivativeError_;
+    double derivativeError_{0};
 
 public:
     PID(double kP, double kI, double kD);
@@ -43,6 +43,7 @@ public:
     double getKD();
 
     double update(double setPoint, double plantState, double deltaT);
+    double update(double error, double deltaT);
 
     void resetController()
     {
@@ -50,6 +51,8 @@ public:
       integralError_ = 0;
     };
 
+private:
+  double doUpdate(double error, double deltaT);
 
 };
 

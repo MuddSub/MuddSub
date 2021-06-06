@@ -2,7 +2,14 @@
 
 #include "controls/Types.hh"
 #include "controls/VehicleDynamics.hh"
+#include <ros/ros.h>
 
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
+
+#include <nav_msgs/Odometry.h>
 
 namespace MuddSub::Controls
 {
@@ -13,9 +20,11 @@ class Controller : public ct::core::Controller<stateDim, controlDim>
 {
 public:
 
+  Controller();
+
   /// Set the 12DOF vehicle setpoint
   /// @param setpoint: Desired location of robot
-  inline void setSetpoint(const stateVector_t& setpoint)
+  void setSetpoint(const stateVector_t& setpoint)
   {
     setpoint_ = setpoint;
   };
@@ -26,6 +35,11 @@ public:
   {
     return setpoint_;
   };
+
+  stateVector_t getError();
+
+  /// Get the error (setpoint - plantstate) with angles corrected
+  stateVector_t getError(const stateVector_t& plantState);
 
   /// The controller needs knowledge of the vehicle dynamics to solve the
   /// control problem, in the case of a model-based controller.
@@ -62,5 +76,11 @@ protected:
 
   /// For computing dT: Store the previous time
   double previousTime_;
+
+  double angleError(double setpoint, double plant);
+
+  tf2_ros::Buffer tfBuffer_;
+  tf2_ros::TransformListener tf2Listener_;
+
 };
 }

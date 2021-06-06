@@ -5,6 +5,7 @@
 #include "controls/State.h"
 #include "controls/Controller.hh"
 #include "controls/Types.hh"
+#include "controls/Utils.hh"
 
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
