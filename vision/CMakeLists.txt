@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   vision_msgs
   dynamic_reconfigure
+  usb_cam
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
@@ -84,7 +86,7 @@ generate_messages(
   vision_msgs
 
 )
-catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
+catkin_install_python(PROGRAMS scripts/VisionExampleNode.py scripts/VisionSubscriber.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
