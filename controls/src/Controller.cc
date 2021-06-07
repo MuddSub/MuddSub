@@ -16,7 +16,7 @@ stateVector_t Controller::getError()
   geometry_msgs::TransformStamped transformStamped;
   try
   {
-    transformStamped = tfBuffer_.lookupTransform("turtle2", "turtle1",
+    transformStamped = tfBuffer_.lookupTransform("robot_plant_state", "robot_setpoint",
                              ros::Time(0));
   }
   catch (tf2::TransformException &e)
@@ -26,36 +26,50 @@ stateVector_t Controller::getError()
     return result;
   }
 
-  auto position = geometry_msgs::Vector3Stamped;
-  position.vector.x = plantState[0];
-  position.vector.y = plantState[1];
-  position.vector.z = plantState[2];
+  // Translation errors
+  result[0] = transformStamped.transform.translation.x;
+  result[1] = transformStamped.transform.translation.y;
+  result[2] = transformStamped.transform.translation.z;
 
-  auto velocity = geometry_msgs::Vector3Stamped;
-  position.vector.x = plantState[6];
-  position.vector.y = plantState[7];
-  position.vector.z = plantState[8];
+  // Roll, pitch, yaw errors
+  tf2::Quaternion q;
+  tf2::fromMsg(transformStamped.transform.rotation, q);
+  tf2::Matrix3x3 m(q);
+  double roll, pitch, yaw;
+  m.getRPY(result[3], result[4], result[5]);
 
+  // TODO (critical) : apply transform ROTATION to setpoint and plantstate velocities
 
-  for(auto i = 0; i < 12; ++i)
-  {
-    double setpointElement{setpoint_[i]};
-    double plantStateElement{plantState[i]};
-    double error{0};
+  /*
+    - Get transform from world_ned to robot_plant_state
+    - zero out the translation parts, so it's effectively a rotation between world
+      frame and robot frame
+    - Apply that transform/rotation to the setpoint and plant state velocity vectors 
+  */
 
-    // Elements 3-5 are angles
-    if(i >= 3 && i <= 5)
-    {
-      error = angleError(setpointElement, plantStateElement);
-    }
-    else
-    {
-      error = setpointElement - plantStateElement;
-    }
+  // Velocity errors (last 6 elements of plant/setpoint vectors)
+  for(int i = 6; i < 12; ++i)
+    result[i] = setpoint_[i] - plantState_[i];
 
-    result[i] = error;
-  }
-  std::cerr << "ERROR: " << result << std::endl;
+  // for(auto i = 0; i < 12; ++i)
+  // {
+  //   double setpointElement{setpoint_[i]};
+  //   double plantStateElement{plantState[i]};
+  //   double error{0};
+  //
+  //   // Elements 3-5 are angles
+  //   if(i >= 3 && i <= 5)
+  //   {
+  //     error = angleError(setpointElement, plantStateElement);
+  //   }
+  //   else
+  //   {
+  //     error = setpointElement - plantStateElement;
+  //   }
+  //
+  //   result[i] = error;
+  // }
+  // std::cerr << "ERROR: " << result << std::endl;
   return result;
 }
 

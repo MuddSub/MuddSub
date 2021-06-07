@@ -55,8 +55,6 @@ void broadcastStateAsTF(const stateVector_t& state,
   transform.transform.rotation = orientation;
 
   broadcaster.sendTransform(transformStamped);
-
-
 };
 
 
