@@ -1,5 +1,9 @@
 #include "controls/SixDegreePID.hh"
 
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Scalar.h>
+#include <tf2/LinearMath/Quaternion.h>
+
 namespace MuddSub::Controls
 {
 

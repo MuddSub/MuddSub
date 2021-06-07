@@ -29,6 +29,10 @@ public:
     setpoint_ = setpoint;
   };
 
+  void setPlantState(const stateVector_t& plantState)
+  {
+    plantState_ = plantState;
+  };
 
   /// Returns the 12DOF setpoint.
   inline stateVector_t getSetpoint()
@@ -68,6 +72,8 @@ protected:
   /// Current 12DOF setpoint.
   stateVector_t setpoint_;
 
+  stateVector_t plantState_;
+  
   // Is it model based? If so, you must set the dynamics.
   bool modelBased_{false};
 

@@ -42,7 +42,11 @@ stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
 
 void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
-  plantState_ = odomToState(msg) - plantZero_;
+  auto state = odomToState(msg);
+  broadcastStateAsTF(state, "world_ned", "robot_plant_state");
+
+  plantState_ = odom - plantZero_;
+  controller_->setPlantState(plantState_);
   std::cout << "Plant State: " << plantState_.format(eigenInLine) << std::endl;
 }
 
@@ -59,6 +63,7 @@ void ControlDispatch::setpointCallback(const controls::State& state)
   controller_->setSetpoint(stateVector);
 
   auto globalSetpoint = stateVector + plantZero_;
+  broadcastStateAsTF(globalSetpoint, "world_ned", "robot_setpoint");
 }
 
 void ControlDispatch::resetCallback(const std_msgs::Empty& msg)
