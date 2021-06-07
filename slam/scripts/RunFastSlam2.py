@@ -32,11 +32,11 @@ params['land_covs'] = {}
 # too many particles: lower threshold
 params['new_land_threshold'] = .3
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1
-params['y_sigma'] = 1
-params['theta_sigma'] = 1
+params['x_sigma'] = 1e-3
+params['y_sigma'] = 1e-3
+params['theta_sigma'] = 1e-3
 params['v_sigma'] = 1
-params['omega_sigma'] = 1
+params['omega_sigma'] = 1e-3
 # params['pose_cov'] = 0.001
 n = 100 #num particle
 random_generator = np.random.default_rng(0)
@@ -153,7 +153,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   steps = ax.text(3, 6, "Step = 0 / " + str(NUM_STEPS), horizontalalignment="center", verticalalignment="top")
   ax.legend()
   def init():
-    ax.set_title("Num steps: " + str(NUM_STEPS))
+    ax.set_title("Num steps: " + str(NUM_STEPS) + ", Num particle: "+ str(n))
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
 
   def update(frame):

@@ -77,9 +77,7 @@ class Particle():
     # Initialize pose mean, pose covariance, and the particle's weight
 
     # TO DO: 
-    # pose_mean seems weird, we never use pose mean!!!
-    # need to update pose mean per cycle 
-    # also remove self. 
+    #  remove self? 
 
     self.pose_mean = np.copy(self.pose)
     self.pose_cov = np.copy(self.default_pose_cov)
@@ -162,6 +160,30 @@ class Particle():
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
 
+  
+  def motionUpdate(self, control, dt):
+    # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
+    # the probability of data assocation
+    self.pose = self.computeMotionModel(self.pose, control, dt)
+
+  def computeMotionModel(self, prev_pose, control, dt):
+    vx, vy, theta_imu, omega_imu = control
+    prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_theta_p = prev_pose
+    
+    vx += self.random.normal(0, self.v_sigma)
+    vy += self.random.normal(0, self.v_sigma)
+
+    x = prev_x + vx * dt
+    y = prev_y + vy * dt
+    theta = wrapToPi(theta_imu)
+    omega = omega_imu
+    theta_p = theta
+
+    pose = np.array([x, y, theta, vx, vy, omega, theta_p])
+    return pose
+
+
+
   '''
   def updateEKFs(self, meas_ls, meas_cov):
     # TODO Initialize landmarks label/landmark key
@@ -233,24 +255,3 @@ class Particle():
     # Return the particle's weight
     return self.weight
   '''
-  
-  def motionUpdate(self, control, dt):
-    # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
-    # the probability of data assocation
-    self.pose = self.computeMotionModel(self.pose, control, dt)
-
-  def computeMotionModel(self, prev_pose, control, dt):
-    vx, vy, theta_imu, omega_imu = control
-    prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_theta_p = prev_pose
-    
-    x = prev_x + vx * dt
-    y = prev_y + vy * dt
-    theta = wrapToPi(theta_imu)
-    omega = omega_imu
-    theta_p = theta
-
-    pose = np.array([x, y, theta, vx, vy, omega, theta_p])
-    return pose
-
-
-      

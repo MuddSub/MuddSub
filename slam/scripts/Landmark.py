@@ -97,7 +97,7 @@ class LandmarkEKF():
     
     lx, ly = self.prev_land_mean
 
-    range_est = ((lx-x)**2+(ly-y)**2)**.5
+    range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
     bearing_est = wrapToPi(np.arctan2((ly-y),(lx-x))-theta)
 
     return np.array([range_est, bearing_est])
@@ -118,13 +118,13 @@ class LandmarkEKF():
 
     meas_jac_pose = np.zeros((2,7))
     
-    meas_jac_pose[0,0] = -(lx-x) / range_est
-    meas_jac_pose[0,1] = -(ly-y) / range_est
-    meas_jac_pose[1,0] = (ly-y) / range_est_sqr
-    meas_jac_pose[1,1] = -(lx-x) / range_est_sqr
-    meas_jac_pose[1,2] = -1
+    meas_jac_pose[0, 0] = -(lx-x) / range_est
+    meas_jac_pose[0, 1] = -(ly-y) / range_est
+    meas_jac_pose[1, 0] = (ly-y) / range_est_sqr
+    meas_jac_pose[1, 1] = -(lx-x) / range_est_sqr
+    meas_jac_pose[1, 2] = -1
     self.meas_jac_pose = meas_jac_pose
-    self.meas_jac_land = -1 * meas_jac_pose[:2,:2]
+    self.meas_jac_land = -1 * meas_jac_pose[:2, :2]
     
   def samplePose(self, pose_mean, pose_cov, meas, meas_cov):
     # range_meas, bearing_meas = meas 
