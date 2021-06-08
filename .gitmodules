@@ -27,3 +27,6 @@
 	url = https://github.com/stereolabs/zed-ros-examples
 [submodule "thirdparty/uuv_simulator/"]
 	branch = master
+[submodule "thirdparty/BlueRobotics_MS5837_Library"]
+	path = thirdparty/BlueRobotics_MS5837_Library
+	url = https://github.com/bluerobotics/BlueRobotics_MS5837_Library
