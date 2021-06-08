@@ -51,10 +51,13 @@ void broadcastStateAsTF(const stateVector_t& state,
   auto& position = odom.pose.pose.position;
   auto& orientation = odom.pose.pose.orientation;
 
-  transform.transform.translation = position;
+  transform.transform.translation.x = position.x;
+  transform.transform.translation.y = position.y;
+  transform.transform.translation.z = position.z;
+
   transform.transform.rotation = orientation;
 
-  broadcaster.sendTransform(transformStamped);
+  broadcaster.sendTransform(transform);
 };
 
 

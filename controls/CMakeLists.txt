@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   ct_core
   ct_optcon
+  tf2_geometry_msgs
 )
 
 add_message_files(
@@ -30,7 +31,7 @@ generate_messages(
 
 catkin_package(
 	INCLUDE_DIRS include
-	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs ct_core ct_optcon message_runtime
+	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs ct_core ct_optcon message_runtime tf2_geometry_msgs
 	DEPENDS system_lib
 )
 

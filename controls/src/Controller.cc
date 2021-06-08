@@ -38,38 +38,53 @@ stateVector_t Controller::getError()
   double roll, pitch, yaw;
   m.getRPY(result[3], result[4], result[5]);
 
-  // TODO (critical) : apply transform ROTATION to setpoint and plantstate velocities
+  for(int i = 3; i < 6; ++i)
+  {
+    double& val = result[i];
+    if(val > M_PI)
+    {
+      val = M_PI - val;
+    }
+  }
 
-  /*
-    - Get transform from world_ned to robot_plant_state
-    - zero out the translation parts, so it's effectively a rotation between world
-      frame and robot frame
-    - Apply that transform/rotation to the setpoint and plant state velocity vectors 
-  */
+  geometry_msgs::Vector3Stamped velocityError;
+  velocityError.vector.x = setpoint_[6] - plantState_[6];
+  velocityError.vector.y = setpoint_[7] - plantState_[7];
+  velocityError.vector.z = setpoint_[8] - plantState_[8];
 
-  // Velocity errors (last 6 elements of plant/setpoint vectors)
-  for(int i = 6; i < 12; ++i)
-    result[i] = setpoint_[i] - plantState_[i];
+  geometry_msgs::Vector3Stamped angularVelocityError;
+  velocityError.vector.x = setpoint_[9] - plantState_[9];
+  velocityError.vector.y = setpoint_[10] - plantState_[10];
+  velocityError.vector.z = setpoint_[11] - plantState_[11];
 
-  // for(auto i = 0; i < 12; ++i)
-  // {
-  //   double setpointElement{setpoint_[i]};
-  //   double plantStateElement{plantState[i]};
-  //   double error{0};
-  //
-  //   // Elements 3-5 are angles
-  //   if(i >= 3 && i <= 5)
-  //   {
-  //     error = angleError(setpointElement, plantStateElement);
-  //   }
-  //   else
-  //   {
-  //     error = setpointElement - plantStateElement;
-  //   }
-  //
-  //   result[i] = error;
-  // }
-  // std::cerr << "ERROR: " << result << std::endl;
+  geometry_msgs::TransformStamped plantTransformStamped;
+
+  try
+  {
+    plantTransformStamped = tfBuffer_.lookupTransform("world_ned", "robot_plant_state",
+                             ros::Time(0));
+  }
+  catch (tf2::TransformException &e)
+  {
+    ROS_WARN("%s",e.what());
+    ros::Duration(0.1).sleep();
+    return result;
+  }
+
+  geometry_msgs::Vector3Stamped velocityErrorTransformed,
+                                angularVelocityErrorTransformed;
+
+  tf2::doTransform(velocityError, velocityErrorTransformed, plantTransformStamped);
+  tf2::doTransform(angularVelocityError, angularVelocityErrorTransformed, plantTransformStamped);
+
+  result[6] = velocityErrorTransformed.vector.x;
+  result[7] = velocityErrorTransformed.vector.y;
+  result[8] = velocityErrorTransformed.vector.z;
+
+  result[9] = angularVelocityErrorTransformed.vector.x;
+  result[10] = angularVelocityErrorTransformed.vector.y;
+  result[11] = angularVelocityErrorTransformed.vector.z;
+
   return result;
 }
 
