@@ -3,7 +3,7 @@
 
 namespace MuddSub::Controls
 {
-  
+
 //Compute the error
 stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
                                          const stateVector_t& setpoint) const
@@ -90,12 +90,6 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
                    controlActionPitch, controlActionLQR[3];
 
   std::cout << "Control Action Computed " << controlAction.format(eigenInLine) << std::endl;
-}
-
-
-DecoupledLQR* DecoupledLQR::clone() const
-{
-  return new DecoupledLQR(*this);
 }
 
 // Throw out roll and pitch

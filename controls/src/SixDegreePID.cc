@@ -60,18 +60,11 @@ void SixDegreePID::update(const stateVector_t& error,
                           controlVector_t& control)
 {
     ROS_INFO("DT: %f", dT);
-    ROS_INFO("===== SURGE =====");
     control[0] = surge_.update(error[0], dT);
-    ROS_INFO("===== SWAY =====");
     control[1] = sway_.update(error[1], dT);
-    ROS_INFO("===== HEAVE =====");
     control[2] = heave_.update(error[2], dT);
-
-    ROS_INFO("===== ROLL =====");
     control[3] = roll_.update(error[3], dT);
-    ROS_INFO("===== PITCH =====");
     control[4] = pitch_.update(error[4], dT);
-    ROS_INFO("===== YAW =====");
     control[5] = yaw_.update(error[5], dT);
 }
 
@@ -82,7 +75,7 @@ void SixDegreePID::computeControl(const stateVector_t& state,
   double deltaT = t - previousTime_;
   previousTime_ = t;
 
-  stateVector_t error = getError(state);
+  stateVector_t error = getError();
 
   update(error, deltaT, controlAction);
 }

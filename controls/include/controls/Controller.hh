@@ -10,6 +10,7 @@
 #include <geometry_msgs/Vector3Stamped.h>
 
 #include <nav_msgs/Odometry.h>
+#include <math.h>
 
 namespace MuddSub::Controls
 {
@@ -73,7 +74,7 @@ protected:
   stateVector_t setpoint_;
 
   stateVector_t plantState_;
-  
+
   // Is it model based? If so, you must set the dynamics.
   bool modelBased_{false};
 

@@ -45,7 +45,7 @@ void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
   auto state = odomToState(msg);
   broadcastStateAsTF(state, "world_ned", "robot_plant_state");
 
-  plantState_ = odom - plantZero_;
+  plantState_ = state - plantZero_;
   controller_->setPlantState(plantState_);
   std::cout << "Plant State: " << plantState_.format(eigenInLine) << std::endl;
 }

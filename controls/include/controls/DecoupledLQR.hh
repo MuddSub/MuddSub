@@ -48,9 +48,6 @@ public:
   /// LQR control is 4DOF wrench: [x,y,z,yaw]
   static constexpr unsigned int controlDimLQR = 4;
 
-  /// Clone the object
-  DecoupledLQR* clone() const;
-
   /// Given the state and setpoint, compute the error.
   stateVector_t computeError(const stateVector_t& state,
                               const stateVector_t& setpoint) const;
