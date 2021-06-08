@@ -108,7 +108,7 @@
         -->
         <conversion>
           <type>Basic</type>
-          <rotorConstant>0.01</rotorConstant>
+          <rotorConstant>1</rotorConstant>
         </conversion>
 
         <!-- 2) Dead-zone nonlinearity described in Bessa, 2006

@@ -19,7 +19,6 @@ thruster_manager:
   #   <rotorConstant>0.0</rotorConstant>
   # </conversion>
   # You can set the conversion function to be:
-  conversion_fcn: proportional
+  conversion_fcn: unity
   conversion_fcn_params:
-    gain: 0.01
-  
+    dummy: none

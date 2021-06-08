@@ -1,0 +1,53 @@
+<launch>
+  <!-- Debug flag -->
+  <arg name="debug" default="0"/>
+
+  <!-- Vehicle's initial pose -->
+  <arg name="x"     default="0"/>
+  <arg name="y"     default="0"/>
+  <arg name="z"     default="0"/>
+  <arg name="roll"  default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw"   default="0"/>
+
+  <arg name="use_geodetic" default="false"/>
+  <arg name="latitude" default="0"/>
+  <arg name="longitude" default="0"/>
+  <arg name="depth" default="0"/>
+
+  <arg name="latitude_ref" default="0"/>
+  <arg name="longitude_ref" default="0"/>
+  <arg name="altitude_ref" default="0"/>
+
+  <!-- Mode to open different robot configurations as set the in file
+  nomenclature standard for the files in /robots
+
+  /robots/<mode>.xacro
+  -->
+  <arg name="mode" default="default"/>
+
+  <!-- Vehicle's namespace -->
+  <arg name="namespace" default="alfie"/>
+
+  <arg name="world_frame" default="world"/>
+
+
+  <group ns="$(arg namespace)">
+    <param name="robot_description"
+           command="rosrun xacro xacro $(find core)/descriptions/alfie_description/robots/$(arg mode).xacro" />
+
+		<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+		</node>
+
+    <!-- Publish robot model for ROS -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+      <param name="robot_description" value="/$(arg namespace)/robot_description" />
+    </node>
+  </group>
+
+  <!-- Publish state and tf for in relation to the world frame -->
+  <include file="$(find uuv_assistants)/launch/message_to_tf.launch">
+    	<arg name="namespace" value="$(arg namespace)"/>
+  </include>
+
+</launch>
