@@ -43,11 +43,11 @@ stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
 void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
   auto state = odomToState(msg);
-  broadcastStateAsTF(state, "world_ned", "robot_plant_state");
 
   plantState_ = state - plantZero_;
+
   controller_->setPlantState(plantState_);
-  std::cout << "State: " << state << " Zero: " << plantZero_ << " Plant State: " << plantState_.format(eigenInLine) << std::endl;
+  std::cout << " Plant State: " << plantState_.format(eigenInLine) << std::endl;
 }
 
 void ControlDispatch::setpointCallback(const controls::State& state)
@@ -91,6 +91,9 @@ void ControlDispatch::iterate()
   double t = ros::Time::now().toSec();
   controlVector_t control;
   controller_->computeControl(plantState_, t, control);
+
+  broadcastStateAsTF(plantState_ + plantZero_, "world_ned", "robot_plant_state");
+  broadcastStateAsTF(setpoint_ + plantZero_, "world_ned", "robot_setpoint");
 
   publishControl(control);
 }

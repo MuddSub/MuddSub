@@ -22,7 +22,7 @@ stateVector_t Controller::getError()
   catch (tf2::TransformException &e)
   {
     ROS_WARN("%s",e.what());
-    ros::Duration(0.1).sleep();
+    ROS_ERROR("A:LKDFJS:LKJ");
     return result;
   }
 
@@ -66,8 +66,8 @@ stateVector_t Controller::getError()
   }
   catch (tf2::TransformException &e)
   {
+    ROS_ERROR("A:S:DFLKDFJDSFKDSFL PLANT ");
     ROS_WARN("%s",e.what());
-    ros::Duration(0.1).sleep();
     return result;
   }
 
@@ -84,6 +84,7 @@ stateVector_t Controller::getError()
   result[9] = angularVelocityErrorTransformed.vector.x;
   result[10] = angularVelocityErrorTransformed.vector.y;
   result[11] = angularVelocityErrorTransformed.vector.z;
+  std::cout << "ERROR: " << result.format(eigenInLine) << std::endl;
 
   return result;
 }
