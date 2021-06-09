@@ -29,4 +29,4 @@
 	branch = master
 [submodule "thirdparty/BlueRobotics_MS5837_Library"]
 	path = thirdparty/BlueRobotics_MS5837_Library
-	url = https://github.com/bluerobotics/BlueRobotics_MS5837_Library
+	url = https://github.com/MuddSub/BlueRobotics_MS5837_Library
