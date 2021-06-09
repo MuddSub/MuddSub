@@ -30,3 +30,6 @@
 [submodule "thirdparty/BlueRobotics_MS5837_Library"]
 	path = thirdparty/BlueRobotics_MS5837_Library
 	url = https://github.com/MuddSub/BlueRobotics_MS5837_Library
+[submodule "thirdparty/imu_vn_100"]
+	path = thirdparty/imu_vn_100
+	url = https://github.com/muddsub/imu_vn_100
