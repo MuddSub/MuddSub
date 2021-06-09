@@ -21,10 +21,10 @@ class GazeboInterface:
     def __init__(self):
 
         ## Subscribe to the wrench produced by Controls, bypassing thruster allocation
-        self.wrenchSub = rospy.Subscriber("/controls/robot/wrench", geometry_msgs.msg.WrenchStamped, self.wrenchCB)
+        self.wrenchSub = rospy.Subscriber("/controls/robot/wrench", geometry_msgs.msg.WrenchStamped, self.wrenchCB, queue_size=1)
 
         ## Get state updates from Gazebo
-        self.stateSub = rospy.Subscriber("/gazebo/model_states", ModelStates, self.stateCB)
+        self.stateSub = rospy.Subscriber("/gazebo/model_states", ModelStates, self.stateCB, queue_size=1)
 
         ## Publish the sim's view of odometry
         self.odomPub = rospy.Publisher("/sim/ground_truth_pose", Odometry, queue_size=5)
