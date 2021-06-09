@@ -88,6 +88,7 @@ protected:
 
   tf2_ros::Buffer tfBuffer_;
   tf2_ros::TransformListener tf2Listener_;
+  Eigen::IOFormat eigenInLine{Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", ";"};
 
 };
 }
