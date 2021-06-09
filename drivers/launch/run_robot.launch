@@ -1,0 +1,12 @@
+<launch>
+  <include file="$(find drivers)/launch/drive_motors.launch"/>
+
+  <!-- silly slam -->
+  <node name="silly_slam" pkg="slam" type="silly_slam.py" />
+
+  <!-- Also run IMU and depth from here -->
+
+
+  <include file="$(find controls)/launch/control_dispatch.launch"/>
+
+</launch>

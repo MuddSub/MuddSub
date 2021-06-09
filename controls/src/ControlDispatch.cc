@@ -11,7 +11,7 @@ ControlDispatch::ControlDispatch()
   controller_->setDynamics(std::shared_ptr<VehicleDynamics>(&dynamics_));
 
   setpointSub_ = nh_.subscribe("/robot_setpoint", 1, &ControlDispatch::setpointCallback, this);
-  plantStateSub_ = nh_.subscribe("/slam/robot/pose", 1, &ControlDispatch::plantCallback, this);
+  plantStateSub_ = nh_.subscribe("/slam/robot/state", 1, &ControlDispatch::plantCallback, this);
   resetSub_ = nh_.subscribe("/reset_controller", 1, &ControlDispatch::resetCallback, this);
 
   zeroSub_ = nh_.subscribe("/controls/robot/set_zero_to_odom", 1, &ControlDispatch::zeroToCallback, this);

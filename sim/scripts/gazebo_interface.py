@@ -37,7 +37,7 @@ class GazeboInterface:
         ## If the parameter /slam_use_ground_truth == 1, then also publish the ground truth
         ##  pose as the output of localization.
         # TODO: Move to slam/
-        self.slamPub = rospy.Publisher("/slam/robot/pose", Odometry, queue_size=1)
+        self.slamPub = rospy.Publisher("/slam/robot/state", Odometry, queue_size=1)
 
         self.resetPub = rospy.Publisher("/reset_controller", Empty, queue_size=1)
 

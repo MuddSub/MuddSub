@@ -38,6 +38,6 @@ def handleState(msg):
 
     rospy.loginfo(outstring)
 
-stateSub = rospy.Subscriber("/slam/robot/pose", Odometry, handleState)
+stateSub = rospy.Subscriber("/slam/robot/state", Odometry, handleState)
 
 rospy.spin()
