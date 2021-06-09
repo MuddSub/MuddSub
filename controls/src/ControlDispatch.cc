@@ -47,7 +47,7 @@ void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 
   plantState_ = state - plantZero_;
   controller_->setPlantState(plantState_);
-  std::cout << "Plant State: " << plantState_.format(eigenInLine) << std::endl;
+  std::cout << "State: " << state << " Zero: " << plantZero_ << " Plant State: " << plantState_.format(eigenInLine) << std::endl;
 }
 
 void ControlDispatch::setpointCallback(const controls::State& state)
@@ -61,9 +61,7 @@ void ControlDispatch::setpointCallback(const controls::State& state)
   auto stateVector = Eigen::Map<Eigen::Matrix<double, 12, 1>>(dataMutable);
 
   controller_->setSetpoint(stateVector);
-
-  auto globalSetpoint = stateVector + plantZero_;
-  broadcastStateAsTF(globalSetpoint, "world_ned", "robot_setpoint");
+  setpoint_ = stateVector;
 }
 
 void ControlDispatch::resetCallback(const std_msgs::Empty& msg)
