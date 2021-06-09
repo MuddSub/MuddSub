@@ -19,6 +19,8 @@
   <run_depend> uuv_thruster_manager </run_depend>
   <run_depend> uuv_descriptions </run_depend>
   <run_depend> drivers </run_depend>
+  <run_depend> imu_vn_100 </run_depend>
+  <run_depend> sim </run_depend>
 
   <export>
    	  <metapackage />

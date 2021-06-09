@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   sensor_msgs
+  imu_vn_100
 )
 
 ## Generate messages in the 'msg' folder

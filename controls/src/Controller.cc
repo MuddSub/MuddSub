@@ -22,7 +22,6 @@ stateVector_t Controller::getError()
   catch (tf2::TransformException &e)
   {
     ROS_WARN("%s",e.what());
-    ROS_ERROR("A:LKDFJS:LKJ");
     return result;
   }
 
@@ -66,7 +65,6 @@ stateVector_t Controller::getError()
   }
   catch (tf2::TransformException &e)
   {
-    ROS_ERROR("A:S:DFLKDFJDSFKDSFL PLANT ");
     ROS_WARN("%s",e.what());
     return result;
   }
