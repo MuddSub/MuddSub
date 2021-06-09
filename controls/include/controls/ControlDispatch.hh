@@ -47,6 +47,7 @@ private:
 
   stateVector_t plantState_{stateVector_t::Zero()};
   stateVector_t plantZero_{stateVector_t::Zero()};
+  stateVector_t setpoint_{stateVector_t::Zero()};
 
   void plantCallback(const nav_msgs::Odometry& msg);
   void resetCallback(const std_msgs::Empty& msg);
