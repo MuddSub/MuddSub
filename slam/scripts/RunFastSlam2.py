@@ -9,12 +9,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Ellipse
+import argparse
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 2
-MEAS_COV = np.diag([0.1, 0.1])
+NUM_STEPS = 13000
+MEAS_COV = np.diag([0.01, 0.01])
 SENSOR_RANGE = 1
 LANDMARK_NUM = None #14
+
+HARDCODE_POSE = False
+HARDCODE_MEAS = True
+NO_MEASUREMENTS = True
+PLOT_AVG = True
 
 '''
 threshold: .3, meas cov: .1, motion cov: 1e-2
@@ -23,35 +29,31 @@ threshold: .3, meas cov: .1, motion cov: 1e-2
 plot_data = []
 
 params = {}
-params['initial_pose'] = np.array([3.55, -3.38, 0, 0, 0, 0, 0])
+params['initial_pose'] = np.array([3.55, -3.38, 0])
 
 params['num_landmarks'] = 0
 params['land_default_cov'] = MEAS_COV
 params['land_means'] = {}#{14: np.array([.96,.71])}
 params['land_covs'] = {}
 # too many particles: lower threshold
-params['new_land_threshold'] = .3
+params['new_land_threshold'] = .1
 #TODO Figure out how to get variance for x and y
 params['x_sigma'] = 1e-3
 params['y_sigma'] = 1e-3
-params['theta_sigma'] = 1e-3
-params['v_sigma'] = 1
-params['omega_sigma'] = 1e-3
-# params['pose_cov'] = 0.001
-n = 100 #num particle
+params['theta_sigma'] = 1e-10
+
+n = 10 #num particle
 random_generator = np.random.default_rng(0)
-plotting = 'best' #vs 'avg'
+
 
 def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
   params['initial_pose'][0] = robotData.getXTruth(0)
   params['initial_pose'][1] = robotData.getYTruth(0)
-  
+  params['initial_pose'][2] = robotData.getCompass(0)
   algorithm = FastSLAM2.FastSLAM2(n=n, params=params,random=random_generator)
-  time_list = []
-  all_pose_hist = []
-  ground_truth_ls = []
+
   theta = 0
   for i in range(NUM_STEPS):
     
@@ -69,42 +71,35 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
 
       # Use groundtruth to calculate odometry input
       time, velocity, angular_velocity = odometry
-      vx = velocity * np.cos(theta_meas)
-      vy = velocity * np.sin(theta_meas)
-      theta_imu = theta_meas
-      omega_imu = angular_velocity
-
       # print("step", i, "updated odometry", (vx, vy, theta_imu, omega_imu))
 
       # Update particle poses
-      algorithm.addControl((vx, vy, theta_imu, omega_imu), t)
+      # algorithm.addControl((vx, vy, theta_imu, omega_imu), t)
+      algorithm.addControl((velocity, angular_velocity), t)
 
       # Hard coding poses
-      '''
-      for i in range(len(algorithm.particles)):
-        x = robotData.getXTruth(t)
-        y = robotData.getYTruth(t)
-        theta = robotData.getCompass(t)
-        algorithm.particles[i].pose = np.array([x, y, theta, vx, vy, omega_imu, theta_p])
-        algorithm.particles[i].addPoseNoise()
-      '''
+      if HARDCODE_POSE:
+        for i in range(len(algorithm.particles)):
+          x = algorithm.particles[i].pose[0]
+          y = algorithm.particles[i].pose[1]
+          theta = robotData.getCompass(t)
+          algorithm.particles[i].pose = np.array([x, y, theta])
     else:
       measurement = update[1]
       time, subject, range_meas, bearing_meas = measurement
-
-      # Update EKFs
-      if (LANDMARK_NUM == None and subject > 5) or subject == LANDMARK_NUM: #if subject > 5 :
-        # Use groundtruth to provide accurate measurement
-        '''
-        landmark = dataloader.map.getLandmarkLocation(subject)
-        landmark_x = landmark['X']
-        landmark_y = landmark['Y']
-        robot_x = robotData.getXTruth(time)
-        robot_y = robotData.getYTruth(time)
-        robot_angle = robotData.getCompass(time)
-        range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
-        bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
-        '''
+      if not NO_MEASUREMENTS:
+        # Update EKFs
+        if (LANDMARK_NUM == None and subject > 5) or subject == LANDMARK_NUM: #if subject > 5 :
+          # Use groundtruth to provide accurate measurement
+          if HARDCODE_MEAS:
+            landmark = dataloader.map.getLandmarkLocation(subject)
+            landmark_x = landmark['X']
+            landmark_y = landmark['Y']
+            robot_x = robotData.getXTruth(time)
+            robot_y = robotData.getYTruth(time)
+            robot_angle = robotData.getCompass(time)
+            range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
+            bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
 
         # a list of (x,y), where each (x,y) comes from a particle 
         algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
@@ -166,12 +161,14 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       best_particle_path_y.clear()
 
     # Plot best particle path
-    best_particle_pose = particle_poses[best_particle_idx]
-    best_particle_path_x.append(best_particle_pose[0])
-    best_particle_path_y.append(best_particle_pose[1])
-    # avg_particle_pose = np.average(particle_poses, axis=0)
-    # best_particle_path_x.append(avg_particle_pose[0])
-    # best_particle_path_y.append(avg_particle_pose[1])
+    if PLOT_AVG:
+      avg_particle_pose = np.average(particle_poses, axis=0)
+      best_particle_path_x.append(avg_particle_pose[0])
+      best_particle_path_y.append(avg_particle_pose[1])
+    else:
+      best_particle_pose = particle_poses[best_particle_idx]
+      best_particle_path_x.append(best_particle_pose[0])
+      best_particle_path_y.append(best_particle_pose[1])
     best_particle_path.set_data(best_particle_path_x, best_particle_path_y)
 
     # Plot groundtruth path
@@ -192,7 +189,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     # Return changed artists?
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
   
-  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 1), init_func = init, blit=False, interval = 20, repeat=False)
+  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 10), init_func = init, blit=False, interval = 20, repeat=False)
   fig.tight_layout(rect=[0, 0.03, 1, 0.95])
   plt.show()
 

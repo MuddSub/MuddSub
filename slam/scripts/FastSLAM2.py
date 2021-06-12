@@ -1,5 +1,5 @@
 import numpy as np
-import copy 
+import copy
 from Particle import *
 
 class FastSLAM2():
@@ -14,13 +14,11 @@ class FastSLAM2():
       self.params = params
     else:
       self.params = {}
-      self.params['initial_pose'] = np.array([0, 0, 0, 0, 0, 0, 0])
+      self.params['initial_pose'] = np.array([0, 0, 0])
       self.params['num_landmarks'] = 0
       self.params['v_sigma'] = 0.04
-      self.params['omega_sigma'] = 0.05
       self.params['theta_sigma'] = 0.0125
       self.params['new_land_threshold'] = .5
-      #TODO Figure out how to get variance for x and y
       self.params['x_sigma'] = 1
       self.params['y_sigma'] = 1
       
@@ -62,7 +60,7 @@ class FastSLAM2():
     self.measurementUpdate()
     # only resample if there are more than one particle 
     # have this check bc a particle can have really small weights and ~0/~0 will be Nan
-    if len(self.particles) > 1 and len(self.meas_ls)>0:
+    if len(self.particles) > 1 and len(self.meas_ls) > 0:
       self.resampling()
     self.motionUpdate(control, time)
     self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.correspondences = [], [], [], []
@@ -102,6 +100,7 @@ class FastSLAM2():
     # resampling
     try:
       new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles,replace=True, p=self.weights)
+      
     except:
       print("Particle weights are NaN")
       print(self.weights)

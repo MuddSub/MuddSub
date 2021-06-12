@@ -30,8 +30,15 @@ class Particle():
     self.weight = 0
     self.accumulated_weight = 0
 
-    # self.pose = np.zeros(7)
+
+    self.x_sigma = params['x_sigma']
+    self.y_sigma = params['y_sigma']
+    self.theta_sigma = params['theta_sigma']
+
+    self.default_pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma])
+    self.pose_cov = np.copy(self.default_pose_cov)
     self.pose = params['initial_pose']
+    self.addPoseNoise()
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -42,14 +49,6 @@ class Particle():
         self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov = land_cov, random=self.random)
     
     self.new_land_threshold = params['new_land_threshold']
-
-    self.x_sigma = params['x_sigma']
-    self.y_sigma = params['y_sigma']
-    self.theta_sigma = params['theta_sigma']
-    self.v_sigma = params['v_sigma']
-    self.omega_sigma = params['omega_sigma']
-
-    self.default_pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma, self.v_sigma, self.v_sigma, self.omega_sigma, self.theta_sigma])
 
     self.observed_land_idx = None
   # need to modify data association to match observation with specific features 
@@ -64,7 +63,7 @@ class Particle():
     self.pose = self.pose + noise
 
   def computePoseNoise(self):
-    return self.random.multivariate_normal(np.zeros(7), self.pose_cov)
+    return self.random.multivariate_normal(np.zeros(3), self.pose_cov)
   
   def measurementUpdate(self, meas_ls, meas_cov_ls, sensor_range_ls, known_correspondences = False, correspondences = []):
     '''
@@ -167,6 +166,17 @@ class Particle():
     self.pose = self.computeMotionModel(self.pose, control, dt)
 
   def computeMotionModel(self, prev_pose, control, dt):
+    v, w = control
+    if -1e-10 <= w <= 1e-10:
+      w = 1e-10
+
+    x, y, theta = prev_pose
+    next_theta = theta + w*dt
+    next_x = x + v/w *( -np.sin(theta) + np.sin(next_theta))
+    next_y = y + v/w *( np.cos(theta) - np.cos(next_theta))
+    return np.array([next_x, next_y, next_theta])
+  '''
+  def computeSimplerMotionModel(self, prev_pose, control, dt):
     vx, vy, theta_imu, omega_imu = control
     prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_theta_p = prev_pose
     
@@ -181,9 +191,7 @@ class Particle():
 
     pose = np.array([x, y, theta, vx, vy, omega, theta_p])
     return pose
-
-
-
+  '''
   '''
   def updateEKFs(self, meas_ls, meas_cov):
     # TODO Initialize landmarks label/landmark key

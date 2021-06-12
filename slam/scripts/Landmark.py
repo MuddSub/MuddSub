@@ -4,7 +4,7 @@ from scipy.linalg import sqrtm
 # aka numpify (but not now)
 
 '''
-s: pose --> robot pose (7 states)
+s: pose --> robot pose (3 states)
 sigma_s_t,n_t: pose_cov_expected --> the pose cov for the **new** pose sampling distribution in data association.  
 sigma_s_t,n_t: pose_mean_expected --> the pose mean for the **new** pose sampling distribution in data association. 
 s_nt,t: sampled pose --> the pose sampled from the **new** distribution in data association
@@ -62,15 +62,15 @@ class LandmarkEKF():
     # If the data association variable is not known, the sampled pose is used to calculate the probability of having
     # observed the landmark given the measurement, and the landmark that maximizes this probability is chosen. That
     # is why the sampled pose is saved in the EKF.
-    self.sampled_pose = np.zeros(7)
+    self.sampled_pose = np.zeros(3)
 
     self.meas = np.zeros(2)
     self.meas_diff = np.zeros(2)
 
-    self.meas_jac_pose, self.meas_jac_land = np.zeros((2,7)),np.zeros((2,7))
+    self.meas_jac_pose, self.meas_jac_land = np.zeros((2,3)),np.zeros((2,3))
 
     # self.meas_cov = np.zeros((2,2))
-    # self.pose_cov = np.zeros((7,7))
+    # self.pose_cov = np.zeros((3,3))
     # self.pose_cov_inv = self.pose_cov
 
     self.Q = np.zeros((2,2))
@@ -93,8 +93,8 @@ class LandmarkEKF():
     return np.log(probability / (1 - probability))
 
   def computeMeasModel(self, pose):
-    x,y,theta, vx, vy, omega, theta_p = pose
-    
+    #x,y,theta, vx, vy, omega, theta_p = pose
+    x, y, theta = pose
     lx, ly = self.prev_land_mean
 
     range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
@@ -103,20 +103,21 @@ class LandmarkEKF():
     return np.array([range_est, bearing_est])
 
   def computeMeasModelInverse(self, pose):
-    x, y, theta, vx, vy, omega, theta_p = pose
+    #x, y, theta, vx, vy, omega, theta_p = pose
+    x, y, theta = pose
     range_meas, bearing_meas = self.meas
     lx = x + range_meas * np.cos(theta + bearing_meas)
     ly = y + range_meas * np.sin(theta + bearing_meas)
     return np.array([lx, ly])
-
-  def computeMeasJacobians(self, pose):
+  '''
+  def computeOldMeasJacobians(self, pose):
     lx, ly = self.prev_land_mean
     x, y, theta, vx, vy, omega, theta_p = pose
     
     range_est_sqr = ((lx-x)**2+(ly-y)**2)
     range_est = range_est_sqr**.5
 
-    meas_jac_pose = np.zeros((2,7))
+    meas_jac_pose = np.zeros((2,3))
     
     meas_jac_pose[0, 0] = -(lx-x) / range_est
     meas_jac_pose[0, 1] = -(ly-y) / range_est
@@ -125,7 +126,23 @@ class LandmarkEKF():
     meas_jac_pose[1, 2] = -1
     self.meas_jac_pose = meas_jac_pose
     self.meas_jac_land = -1 * meas_jac_pose[:2, :2]
+  '''
+  def computeMeasJacobians(self, pose):
+    lx, ly = self.prev_land_mean
+    x, y, theta, = pose
     
+    range_est_sqr = ((lx-x)**2+(ly-y)**2)
+    range_est = range_est_sqr**.5
+
+    meas_jac_pose = np.zeros((2,3))
+    
+    meas_jac_pose[0, 0] = -(lx-x) / range_est
+    meas_jac_pose[0, 1] = -(ly-y) / range_est
+    meas_jac_pose[1, 0] = (ly-y) / range_est_sqr
+    meas_jac_pose[1, 1] = -(lx-x) / range_est_sqr
+    meas_jac_pose[1, 2] = -1
+    self.meas_jac_pose = meas_jac_pose
+    self.meas_jac_land = -1 * meas_jac_pose[:2, :2]
   def samplePose(self, pose_mean, pose_cov, meas, meas_cov):
     # range_meas, bearing_meas = meas 
     self.meas = meas
@@ -143,7 +160,7 @@ class LandmarkEKF():
     
     self.pose_cov = np.linalg.inv(self.meas_jac_pose.T @ self.Q_inv @ self.meas_jac_pose + pose_cov_inv)
     self.pose_mean = self.pose_cov @ self.meas_jac_pose.T @ self.Q_inv @ self.meas_diff + pose_mean
-    self.sampled_pose = self.pose_mean + self.random.multivariate_normal(np.zeros(7), self.pose_cov)
+    self.sampled_pose = self.pose_mean + self.random.multivariate_normal(np.zeros(3), self.pose_cov)
     meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
