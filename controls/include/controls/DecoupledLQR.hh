@@ -40,7 +40,6 @@ class DecoupledLQR : public Controller
 
 public:
   DecoupledLQR() = default;
-  DecoupledLQR(const DecoupledLQR&) = default;
 
   /// LQR has state [x,y,z,yaw, x', y', z', yaw']
   static constexpr unsigned int stateDimLQR = 8;

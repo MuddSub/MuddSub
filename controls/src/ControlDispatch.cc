@@ -44,6 +44,8 @@ void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
   auto state = odomToState(msg);
 
+  state[5] = msg.pose.pose.orientation.z;
+
   plantState_ = state - plantZero_;
 
   controller_->setPlantState(plantState_);
