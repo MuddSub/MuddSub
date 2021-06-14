@@ -154,6 +154,7 @@ class Particle():
     
       # Update particle properties
       self.weight *= observed_landmark.weight
+      self.weight = max(self.weight, 1e-50)
       self.pose_mean = np.copy(observed_landmark.pose_mean)
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)

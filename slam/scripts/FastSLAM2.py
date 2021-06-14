@@ -87,8 +87,8 @@ class FastSLAM2():
   def measurementUpdate(self):
     # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
-      # particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
-      particle.measurementUpdateLocalization(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
+      particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
+      # particle.measurementUpdateLocalization(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
 
 
   def resampling(self):

@@ -7,21 +7,23 @@ from Dataloader import *
 import FastSLAM2
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+# from matplotlib.animation import FuncAnimation
+import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 import argparse
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 12500
+NUM_STEPS = 20000
 MEAS_COV = np.diag([0.01, 0.01])
 SENSOR_RANGE = 1
 LANDMARK_NUM = None #14
 
-HARDCODE_POSE = False
+HARDCODE_COMPASS = True
 HARDCODE_MEAS = False
 NO_MEASUREMENTS = False
 PLOT_AVG = True
-INIT_LANDMARKS = True
+INIT_LANDMARKS = False
+KNOWN_CORRESPONDENCES = True
 
 '''
 threshold: .3, meas cov: .1, motion cov: 1e-2
@@ -39,9 +41,9 @@ params['land_covs'] = {}
 # too many particles: lower threshold
 params['new_land_threshold'] = .1
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1e-4
-params['y_sigma'] = 1e-4
-params['theta_sigma'] = 1e-4
+params['x_sigma'] = 1e-5
+params['y_sigma'] = 1e-5
+params['theta_sigma'] = 1e-5
 
 n = 10 #num particle
 random_generator = np.random.default_rng()
@@ -92,7 +94,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       algorithm.addControl((velocity, angular_velocity), t)
 
       # Hard coding poses
-      if HARDCODE_POSE:
+      if HARDCODE_COMPASS:
         for i in range(len(algorithm.particles)):
           x = algorithm.particles[i].pose[0]
           y = algorithm.particles[i].pose[1]
@@ -116,8 +118,11 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
             range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
             bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
           print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
-          algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
-          # algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
+
+          if KNOWN_CORRESPONDENCES:
+            algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
+          else:
+            algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
     
     # Log data
     best_particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)
@@ -202,10 +207,14 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     # Return changed artists?
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
   
-  ani = FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 10), init_func = init, blit=False, interval = 20, repeat=False)
+  anim = animation.FuncAnimation(fig, update, frames=range(0, NUM_STEPS, 20), init_func = init, blit=False, interval = 33, repeat=False)
   fig.tight_layout(rect=[0, 0.03, 1, 0.95])
   plt.show()
-
+  print('Saving animation...')
+  f = r'../animations/FastSLAM2_3.gif'
+  writergif = animation.PillowWriter(fps=30)
+  anim.save(f, writer=writergif)
+  print('Done!')
 
 def error_ellipse(points, cov, nstd=2):
     """
