@@ -36,3 +36,6 @@
 [submodule "thirdparty/ms5837-python"]
 	path = thirdparty/ms5837-python
 	url = https://github.com/MuddSub/ms5837-python
+[submodule "thirdparty/dvl-python"]
+	path = thirdparty/dvl-python
+	url = https://github.com/MuddSub/dvl-python
