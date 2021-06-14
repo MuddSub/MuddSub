@@ -30,7 +30,6 @@ class Particle():
     self.weight = 0
     self.accumulated_weight = 0
 
-
     self.x_sigma = params['x_sigma']
     self.y_sigma = params['y_sigma']
     self.theta_sigma = params['theta_sigma']
@@ -43,10 +42,10 @@ class Particle():
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
 
-    if self.num_landmarks > 0 and params['landmarks'] != None and len(params['landmarks'])>0:
+    if self.num_landmarks > 0 and params['land_means'] != None and len(params['land_means'])>0:
       for idx, land_mean in params['land_means'].items():
         land_cov = params['land_covs'].get(idx, params['land_default_cov'])
-        self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov = land_cov, random=self.random)
+        self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov=land_cov, random=self.random)
     
     self.new_land_threshold = params['new_land_threshold']
 
@@ -159,7 +158,22 @@ class Particle():
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
 
-  
+  def measurementUpdateLocalization(self, meas_ls, meas_cov_ls, sensor_range_ls, known_correspondences=False, correspondences=[]):
+    self.weight = 1
+
+    # If there are no measurements, sample the pose according to the default pose covariance and the pose mean computed by the motion model
+    if len(meas_ls) == 0:
+      self.addPoseNoise()
+      return
+    
+    for meas, meas_cov, idx in zip(meas_ls, meas_cov_ls, correspondences):
+      observed_landmark = self.landmarks[idx]
+      # print("Observed landmark:", idx, "with mean", observed_landmark.land_mean)
+      self.weight *= observed_landmark.computeWeightLocalization(self.pose, meas, meas_cov)
+
+    # print("Weight is", self.weight)
+    self.weight = max(self.weight, 1e-50)
+
   def motionUpdate(self, control, dt):
     # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
     # the probability of data assocation
@@ -171,95 +185,7 @@ class Particle():
       w = 1e-10
 
     x, y, theta = prev_pose
-    next_theta = theta + w*dt
-    next_x = x + v/w *( -np.sin(theta) + np.sin(next_theta))
-    next_y = y + v/w *( np.cos(theta) - np.cos(next_theta))
+    next_theta = wrapToPi(theta + w * dt)
+    next_x = x + v/w * (-np.sin(theta) + np.sin(next_theta))
+    next_y = y + v/w * ( np.cos(theta) - np.cos(next_theta))
     return np.array([next_x, next_y, next_theta])
-  '''
-  def computeSimplerMotionModel(self, prev_pose, control, dt):
-    vx, vy, theta_imu, omega_imu = control
-    prev_x, prev_y, prev_theta, prev_vx, prev_vy, prev_omega, prev_theta_p = prev_pose
-    
-    vx += self.random.normal(0, self.v_sigma)
-    vy += self.random.normal(0, self.v_sigma)
-
-    x = prev_x + vx * dt
-    y = prev_y + vy * dt
-    theta = wrapToPi(theta_imu)
-    omega = omega_imu
-    theta_p = theta
-
-    pose = np.array([x, y, theta, vx, vy, omega, theta_p])
-    return pose
-  '''
-  '''
-  def updateEKFs(self, meas_ls, meas_cov):
-    # TODO Initialize landmarks label/landmark key
-    # we might not need this -- we have accurate data association 
-
-    # Get list of data association likelihoods
-    prob_associate_ls = []
-    land_idx_ls = []
-    for land_idx, landmark in self.landmarks.items():
-      for meas in meas_ls:
-        prob_associate, self.pose, self.pose_cov = landmark.samplePose(self.pose, self.pose_cov, meas, meas_cov)
-      prob_associate_ls.append(prob_associate)
-      land_idx_ls.append(land_idx)
-    prob_associate_ls = np.array(prob_associate_ls)
-    # prob_associate_ls = np.array(prob_associate_ls)/sum(prob_associate_ls)
-
-    # Get the index of the landmark with the maximum data association likelihood
-    self.observed_land_idx = None
-    ml_associate = 0
-    if len(prob_associate_ls) > 0:
-      ml_idx = np.argmax(prob_associate_ls)
-      ml_associate = prob_associate_ls[ml_idx]
-      self.observed_land_idx = land_idx_ls[ml_idx]
-    if len(prob_associate_ls) > 0:
-      print("prob_associate_ls, len", len(prob_associate_ls), 'max', ml_associate)
-    
-    # List for landmarks the algorithm determines we should remove
-    to_remove = []
-
-    # If we have no landmarks or if the observed landmark's data association probability is below a threshold, 
-    # create a new landmark. Otherwise, update the observed landmark. Both cases update unobserved landmarks as well.
-    if len(prob_associate_ls) == 0 or ml_associate < self.new_land_threshold:
-      # Update new landmarks
-      print('Add new landmarks')
-      for (idx, landmark) in self.landmarks.items():
-        keep = landmark.updateUnobserved(self.sensor_range)
-        if not keep:
-          to_remove.append(idx)
-
-      # Initialize new landmark EKF
-      new_landmark = LandmarkEKF(random=self.random)
-      noise = self.computePoseNoise()
-      #print('noise', noise)
-      sampled_pose = self.pose + noise
-     
-      new_landmark.updateNewLandmark(sampled_pose, meas, meas_cov)
-      self.landmarks[self.next_idx]=new_landmark
-      self.next_idx+=1
-
-      # Update particle pose and weight
-      self.pose = sampled_pose
-      self.weight = self.new_land_threshold
-    else:
-      print('Update existing landmarks')
-      # Loop through landmarks and update the observed one and unobserved ones
-      for idx, landmark in self.landmarks.items():
-        if idx == self.observed_land_idx:
-          self.pose = landmark.sampled_pose
-          self.weight = landmark.updateObserved()
-        else:
-          keep = landmark.updateUnobserved(self.sensor_range)
-          if not keep:
-            to_remove.append(idx)
-
-    # Remove unobserved landmarks whose log odds probability of existing fell below 0
-    for idx in to_remove:
-      self.landmarks.pop(idx)
-
-    # Return the particle's weight
-    return self.weight
-  '''

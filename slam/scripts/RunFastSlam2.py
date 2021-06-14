@@ -12,15 +12,16 @@ from matplotlib.patches import Ellipse
 import argparse
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 13000
+NUM_STEPS = 12500
 MEAS_COV = np.diag([0.01, 0.01])
 SENSOR_RANGE = 1
 LANDMARK_NUM = None #14
 
 HARDCODE_POSE = False
-HARDCODE_MEAS = True
-NO_MEASUREMENTS = True
+HARDCODE_MEAS = False
+NO_MEASUREMENTS = False
 PLOT_AVG = True
+INIT_LANDMARKS = True
 
 '''
 threshold: .3, meas cov: .1, motion cov: 1e-2
@@ -38,22 +39,35 @@ params['land_covs'] = {}
 # too many particles: lower threshold
 params['new_land_threshold'] = .1
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1e-3
-params['y_sigma'] = 1e-3
-params['theta_sigma'] = 1e-10
+params['x_sigma'] = 1e-4
+params['y_sigma'] = 1e-4
+params['theta_sigma'] = 1e-4
 
 n = 10 #num particle
-random_generator = np.random.default_rng(0)
-
+random_generator = np.random.default_rng()
+algorithm = None
 
 def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
+  global algorithm
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
   params['initial_pose'][0] = robotData.getXTruth(0)
   params['initial_pose'][1] = robotData.getYTruth(0)
   params['initial_pose'][2] = robotData.getCompass(0)
-  algorithm = FastSLAM2.FastSLAM2(n=n, params=params,random=random_generator)
 
+  if INIT_LANDMARKS:
+    # Load in landmarks
+    params['num_landmarks'] = 15
+    params['land_means'] = {}
+    for idx, landmark in dataloader.map.landmarkDict.items():
+      x = landmark['X']
+      y = landmark['Y']
+      params['land_means'][idx] = np.array([x, y])
+
+  # Create instance of FastSLAM2
+  algorithm = FastSLAM2.FastSLAM2(n=n, params=params, random=random_generator)
+
+  # Start loop
   theta = 0
   for i in range(NUM_STEPS):
     
@@ -90,21 +104,20 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       if not NO_MEASUREMENTS:
         # Update EKFs
         if (LANDMARK_NUM == None and subject > 5) or subject == LANDMARK_NUM: #if subject > 5 :
+          landmark = dataloader.map.getLandmarkLocation(subject)
+          landmark_x = landmark['X']
+          landmark_y = landmark['Y']
+
           # Use groundtruth to provide accurate measurement
           if HARDCODE_MEAS:
-            landmark = dataloader.map.getLandmarkLocation(subject)
-            landmark_x = landmark['X']
-            landmark_y = landmark['Y']
             robot_x = robotData.getXTruth(time)
             robot_y = robotData.getYTruth(time)
             robot_angle = robotData.getCompass(time)
             range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
             bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
-
-        # a list of (x,y), where each (x,y) comes from a particle 
-        algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
-        # algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
-        print("step", i, "updated measurement")
+          print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
+          algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
+          # algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
     
     # Log data
     best_particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)
@@ -131,7 +144,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       landmarksGroundtruth.append(np.array([landmark['X'], landmark['Y']]))
   landmarksGroundtruth = np.array(landmarksGroundtruth)
   
-  print("num landmark: ground truth",len(landmarksGroundtruth)," what we got", len(algorithm.particles[0].landmarks))
+  print("num landmark: ground truth", len(landmarksGroundtruth), " what we got", len(algorithm.particles[0].landmarks))
 
   # Set up animation
   fig = plt.figure()

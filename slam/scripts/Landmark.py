@@ -51,12 +51,12 @@ def wrapToPi(th):
   return th
 
 class LandmarkEKF():
-  def __init__(self, land_mean=np.zeros(2), land_cov = np.eye(2),random=None):
+  def __init__(self, land_mean=np.zeros(2), land_cov=np.eye(2), random=None):
     self.prev_land_mean = land_mean
     self.prev_land_cov = land_cov
 
-    self.land_mean = np.zeros(2)
-    self.land_cov = np.zeros((2,2))
+    self.land_mean = np.copy(land_mean)
+    self.land_cov = np.copy(land_cov)
 
     # In FastSLAM 2.0, the pose is sampled taking into account the measurement and the data association variable. 
     # If the data association variable is not known, the sampled pose is used to calculate the probability of having
@@ -88,9 +88,14 @@ class LandmarkEKF():
 
     self.label = []
   
-
   def logOdds(self, probability):
     return np.log(probability / (1 - probability))
+
+  def gauss(self, x, mu, std):
+    a = 1 / (std * np.sqrt(2 * np.pi))
+    b = -0.5 / (std ** 2)
+    g = a * np.exp(b * (x - mu) ** 2)
+    return g
 
   def computeMeasModel(self, pose):
     #x,y,theta, vx, vy, omega, theta_p = pose
@@ -98,7 +103,7 @@ class LandmarkEKF():
     lx, ly = self.prev_land_mean
 
     range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
-    bearing_est = wrapToPi(np.arctan2((ly-y),(lx-x))-theta)
+    bearing_est = wrapToPi(np.arctan2((ly - y), (lx - x)) - theta)
 
     return np.array([range_est, bearing_est])
 
@@ -109,24 +114,7 @@ class LandmarkEKF():
     lx = x + range_meas * np.cos(theta + bearing_meas)
     ly = y + range_meas * np.sin(theta + bearing_meas)
     return np.array([lx, ly])
-  '''
-  def computeOldMeasJacobians(self, pose):
-    lx, ly = self.prev_land_mean
-    x, y, theta, vx, vy, omega, theta_p = pose
-    
-    range_est_sqr = ((lx-x)**2+(ly-y)**2)
-    range_est = range_est_sqr**.5
 
-    meas_jac_pose = np.zeros((2,3))
-    
-    meas_jac_pose[0, 0] = -(lx-x) / range_est
-    meas_jac_pose[0, 1] = -(ly-y) / range_est
-    meas_jac_pose[1, 0] = (ly-y) / range_est_sqr
-    meas_jac_pose[1, 1] = -(lx-x) / range_est_sqr
-    meas_jac_pose[1, 2] = -1
-    self.meas_jac_pose = meas_jac_pose
-    self.meas_jac_land = -1 * meas_jac_pose[:2, :2]
-  '''
   def computeMeasJacobians(self, pose):
     lx, ly = self.prev_land_mean
     x, y, theta, = pose
@@ -143,6 +131,7 @@ class LandmarkEKF():
     meas_jac_pose[1, 2] = -1
     self.meas_jac_pose = meas_jac_pose
     self.meas_jac_land = -1 * meas_jac_pose[:2, :2]
+  
   def samplePose(self, pose_mean, pose_cov, meas, meas_cov):
     # range_meas, bearing_meas = meas 
     self.meas = meas
@@ -172,6 +161,15 @@ class LandmarkEKF():
     # I think this should be a multiplication. but np.exp does return a matrix 
     # print('hiiii',self.prob_data_association, two_pi_Q_inv_sqrt, exponent, np.exp(exponent))
     return self.prob_data_association
+
+  def computeWeightLocalization(self, pose, meas, meas_cov):
+    range_meas, bearing_meas = meas
+    range_meas_est, bearing_meas_est = self.computeMeasModel(pose)
+    range_std = np.sqrt(meas_cov[0, 0])
+    bearing_std = np.sqrt(meas_cov[1, 1])
+    range_prob = self.gauss(range_meas_est, range_meas, range_std)
+    bearing_prob = self.gauss(bearing_meas_est, bearing_meas, bearing_std)
+    return range_prob * bearing_prob
 
   def updateObservedLandmark(self, pose_cov):
     self.land_exist_log += self.land_exist_log_inc

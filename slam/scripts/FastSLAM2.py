@@ -87,7 +87,8 @@ class FastSLAM2():
   def measurementUpdate(self):
     # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
-      particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
+      # particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
+      particle.measurementUpdateLocalization(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
 
 
   def resampling(self):
@@ -99,13 +100,12 @@ class FastSLAM2():
 
     # resampling
     try:
-      new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles,replace=True, p=self.weights)
-      
+      new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles, replace=True, p=self.weights)
     except:
       print("Particle weights are NaN")
       print(self.weights)
-      raise
-      # new_particle_idx_ls = [range(self.num_particles)]
+      # raise
+      new_particle_idx_ls = list(range(self.num_particles))
 
     new_particles = []
     for idx in new_particle_idx_ls:
