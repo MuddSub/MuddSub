@@ -16,7 +16,7 @@ def collectSensors():
 	sensor = sensor.strip()
 	items = sensor.split(',')
 	rospy.loginfo(sensor)
-	if items[0] == "depth":
+	if items[0] == "depth" and len(items) == 2:
 		return "depth", float(items[1])
 	elif len(items) == 8:
 		return "dvl", items
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 				dvl_msg.valid = sensor[1][6] == 'y'
 				# dvl_msg.status = bool(float(sensor[1][7]))
 				dvlp.publish(dvl_msg)
-			ser.write("thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n".format(*thrusters))	
+			# ser.write("thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n".format(*thrusters))	
 			rate.sleep()
 			
 
