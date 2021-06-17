@@ -33,7 +33,7 @@
 [submodule "thirdparty/imu_vn_100"]
 	path = thirdparty/imu_vn_100
 	url = https://github.com/muddsub/imu_vn_100
-[submodule "thirdparty/ms5837-python"]
+[submodule "drivers/scripts/ms5837-python"]
 	path = drivers/scripts/ms5837-python
 	url = https://github.com/MuddSub/ms5837-python
 [submodule "thirdparty/dvl-python"]
