@@ -6,6 +6,7 @@
 
   <!-- Also run IMU and depth from here -->
   <include file="$(find imu_vn_100)/launch/imu.launch" />
+  <node name="depth_sensor_jetson" pkg="drivers" type="depth_sensor_jetson.py" />
 
   <include file="$(find controls)/launch/control_dispatch.launch"/>
 

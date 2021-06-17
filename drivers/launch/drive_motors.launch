@@ -1,5 +1,4 @@
 <launch>
-	<arg name="use_depth" default="True" />
   <!-- Convert Kg force to PWM number (1100-1900) -->
   	<node name="force_to_pulse" pkg="drivers" type="kgf_to_pulse.py" output="screen" />
 
