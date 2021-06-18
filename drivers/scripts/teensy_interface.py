@@ -2,10 +2,9 @@
 
 import rospy
 import serial
-from std_msgs.msg import Int32
+from std_msgs.msg import Int32, Float64
 
 from DepthSensorPublisher import DepthSensorPublisher
-from std_msgs.msg import Float64
 from drivers.msg import DVL
 
 global ser
