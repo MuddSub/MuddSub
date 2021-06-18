@@ -39,3 +39,9 @@
 [submodule "thirdparty/dvl-python"]
 	path = thirdparty/dvl-python
 	url = https://github.com/MuddSub/dvl-python
+[submodule "drivers/scripts/Adafruit_Python_PCA9685"]
+	path = drivers/scripts/Adafruit_Python_PCA9685
+	url = https://github.com/MuddSub/Adafruit_Python_PCA9685
+[submodule "drivers/scripts/Adafruit_Python_GPIO"]
+	path = drivers/scripts/Adafruit_Python_GPIO
+	url = https://github.com/MuddSub/Adafruit_Python_GPIO

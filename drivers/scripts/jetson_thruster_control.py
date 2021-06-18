@@ -23,6 +23,9 @@ import logging
 import time
 import math
 
+import rospy
+from std_msgs.msg import Float64, Int32
+import Adafruit_Python_GPIO.Adafruit_GPIO.I2C as I2C
 
 # Registers/etc:
 PCA9685_ADDRESS    = 0x40
@@ -57,7 +60,6 @@ def software_reset(i2c=None, **kwargs):
     """Sends a software reset (SWRST) command to all servo drivers on the bus."""
     # Setup I2C interface for device 0x00 to talk to all of them.
     if i2c is None:
-        import Adafruit_GPIO.I2C as I2C
         i2c = I2C
     self._device = i2c.get_i2c_device(0x00, **kwargs)
     self._device.writeRaw8(0x06)  # SWRST
@@ -70,7 +72,6 @@ class PCA9685(object):
         """Initialize the PCA9685."""
         # Setup I2C interface for the device.
         if i2c is None:
-            import Adafruit_GPIO.I2C as I2C
             i2c = I2C
         self._device = i2c.get_i2c_device(address, **kwargs)
         self.set_all_pwm(0, 0)
@@ -108,7 +109,7 @@ class PCA9685(object):
         self._device.write8(LED0_OFF_L+4*channel, off & 0xFF)
         self._device.write8(LED0_OFF_H+4*channel, off >> 8)
 
-    def new_set_pwm(self, channel, on_time):
+    def set_pwm_microsecs(self, on_time, channel):
         """Sets a single PWM channel with a microsecond input instead of on and off"""
         period = 1000000/frequency
         active = on_time * 4095 / period + 40
@@ -120,3 +121,18 @@ class PCA9685(object):
         self._device.write8(ALL_LED_ON_H, on >> 8)
         self._device.write8(ALL_LED_OFF_L, off & 0xFF)
         self._device.write8(ALL_LED_OFF_H, off >> 8)
+
+if __name__ == '__main__':
+	controller = PCA9685()
+
+	rospy.init_node('jetson_thruster_control', anonymous=True)
+	hfl_subscriber = rospy.Subscriber('/robot/pwm/hfl', Int32, controller.set_pwm_microsecs, (7), queue_size=1)
+	hfr_subscriber = rospy.Subscriber('/robot/pwm/hfr', Int32, controller.set_pwm_microsecs, (2), queue_size=1)
+	hbl_subscriber = rospy.Subscriber('/robot/pwm/hbl', Int32, controller.set_pwm_microsecs, (6), queue_size=1)
+	hbr_subscriber = rospy.Subscriber('/robot/pwm/hbr', Int32, controller.set_pwm_microsecs, (3), queue_size=1)
+	
+	vfl_subscriber = rospy.Subscriber('/robot/pwm/vfl', Int32, controller.set_pwm_microsecs, (5), queue_size=1)
+	vfr_subscriber = rospy.Subscriber('/robot/pwm/vfr', Int32, controller.set_pwm_microsecs, (0), queue_size=1)
+	vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, controller.set_pwm_microsecs, (4), queue_size=1)
+	vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, controller.set_pwm_microsecs, (1), queue_size=1)
+	rospy.spin()
