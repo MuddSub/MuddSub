@@ -4,6 +4,7 @@ import rospy
 import smach
 from std_msgs.msg import Bool, Float64, String
 import smach_ros
+import sys
 
 class MonitorKillSwitch(smach.State):
     def __init__(self):
@@ -14,7 +15,10 @@ class MonitorKillSwitch(smach.State):
     def callback(self,data):
         self.to_kill = data.data
     def execute(self,data):
+        print("updating kill switch")
+        sys.stdout.flush()
         if self.to_kill:
+            self.to_kill = None
             return 'abort'
         else: 
             return 'active'
@@ -26,9 +30,12 @@ class MonitorStartSwitch(smach.State):
     def callback(self,data):
         self.to_start = data.data
     def execute(self,data):
+        print("\nmonitor start "+str(self.to_start))
+        sys.stdout.flush()
         if self.to_start==None:
             return 'active'
         elif self.to_start:
+            self.to_start = None
             return 'success'
         else: 
             return 'abort'
@@ -40,10 +47,13 @@ class MonitorStartSwitchReset(smach.State):
     def callback(self,data):
         self.to_start = data.data
     def execute(self,data):
-        if self.to_start or self.to_start==None:
-            return 'active'
-        else:
+        print("\nmonitor start reset "+str(self.to_start))
+        sys.stdout.flush()
+        if self.to_start==False:
+            self.to_start = None
             return 'success'
+        else:
+            return 'active'
 class Reset(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['success', 'abort'])
@@ -63,7 +73,15 @@ class RunMission(smach.State):
         self.to_start = data.data
     # call back seems weird
     def execute(self, userdata):
-        rospy.loginfo('Executing state RunMission with status '+self.status)
+        #rospy.loginfo('Executing state RunMission with status '+self.status)
+        print("\nmission: start sleep")
+        sys.stdout.flush()
+        for i in range(20):
+          print(i,"seconds")
+          sys.stdout.flush()
+          rospy.sleep(1)
+        print("mission: end sleep"+'\n')
+        sys.stdout.flush()
         if self.status!=None and self.status in ['abort','success','active']:
             return self.status
         else:
@@ -72,17 +90,24 @@ class RunMission(smach.State):
 
 # main
 def main():
+    print("start")
+    sys.stdout.flush()
     rospy.init_node('state_machine')
     def monitor_mission_child_cb(outcome):
-        print(outcome)
+        print("\nchild "+str(outcome)+'\n')
+        sys.stdout.flush()
+        '''
         if outcome['MonitorKillSwitch']=='abort' \
           or outcome['RunMission']=='abort' \
           or outcome['RunMission']=='success':
             return True
         else: 
             return False
+        '''
+        return True
     def monitor_mission_outcome_cb(outcome):
-        print('here')
+        print('\noutcome '+str(outcome)+'\n')
+        sys.stdout.flush()
         if outcome['MonitorKillSwitch']=='abort' \
           or outcome['RunMission']=='abort':
             return 'abort'

@@ -27,7 +27,7 @@ class StartSwitchResetMonitor(smach.State):
     def callback(self,data):
         self.to_start = data.data
     def execute(self,data):
-        if self.to_start or self.to_start==None:
+        if not self.to_start or self.to_start==None:
             return 'active'
         else:
             return 'succeeded'
