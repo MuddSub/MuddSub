@@ -41,11 +41,11 @@ params['land_covs'] = {}
 # too many particles: lower threshold
 params['new_land_threshold'] = .1
 #TODO Figure out how to get variance for x and y
-params['x_sigma'] = 1e-5
-params['y_sigma'] = 1e-5
-params['theta_sigma'] = 1e-5
+params['x_sigma'] = 1e-4
+params['y_sigma'] = 1e-4
+params['theta_sigma'] = 1e-4
 
-n = 10 #num particle
+n = 50 #num particle
 random_generator = np.random.default_rng()
 algorithm = None
 
@@ -129,17 +129,19 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     particle_poses = []
     landmark_means = []
     landmark_covs = []
+    landmark_idxs = []
     
     for particle_idx, particle in enumerate(algorithm.particles):
       if particle is best_particle:
         best_particle_idx = particle_idx
       particle_poses.append(np.copy(particle.pose))
 
-    for _, landmark in best_particle.landmarks.items():
+    for idx, landmark in best_particle.landmarks.items():
       landmark_means.append(np.copy(landmark.land_mean))
       landmark_covs.append(np.copy(landmark.land_cov))
+      landmark_idxs.append(idx)
 
-    frame = (np.array(particle_poses), np.array(landmark_means), np.array(landmark_covs), best_particle_idx, t)
+    frame = (np.array(particle_poses), np.array(landmark_means), np.array(landmark_covs), best_particle_idx, landmark_idxs, t)
     plot_data.append(frame)
 
   # Extract landmark groundtruth from dataloader
@@ -170,7 +172,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
 
   def update(frame):
-    particle_poses, landmark_means, landmark_covs, best_particle_idx, t = plot_data[frame]
+    particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, t = plot_data[frame]
 
     if frame == 0:
       groundtruth_path_x.clear()
@@ -202,7 +204,10 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
       best_particle_landmarks.set_data(landmark_means[:, 0], landmark_means[:, 1])
 
     # Update title
-    steps.set_text("Step = " + str(frame) + " / " + str(NUM_STEPS))
+    if frame/NUM_STEPS > .9:
+      steps.set_text('')
+    else:
+      steps.set_text("Step = " + str(frame) + " / " + str(NUM_STEPS))
 
     # Return changed artists?
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps
@@ -214,7 +219,46 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   f = r'../animations/FastSLAM2_3.gif'
   writergif = animation.PillowWriter(fps=30)
   anim.save(f, writer=writergif)
-  print('Done!')
+  print('Animation Saved!')
+  if KNOWN_CORRESPONDENCES:
+    
+    # sqrted differences between the (pose-landmark distance) 
+    # for ground truth and estimation 
+    sqrt_pose_landmark_dist_error = [] 
+
+    for particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, time in plot_data:
+          #print("time step",time, "landmark means length",len(landmark_means))
+          #print(landmark_idxs,landmark_means)
+          if len(landmark_means)==0:
+            continue
+          # ground truth data
+          ground_truth_pose_landmark_dist = []
+          estimated_pose_landmark_dist = []
+          robot_x = robotData.getXTruth(time)
+          robot_y = robotData.getYTruth(time)
+          robot_angle = robotData.getCompass(time)  
+          for idx, (landmark_x, landmark_y) in enumerate(landmarksGroundtruth):
+            if idx+6 in landmark_idxs:
+              range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
+              ground_truth_pose_landmark_dist.append(range_meas)
+          # fast slam data
+          best_particle_pose = particle_poses[best_particle_idx]
+          best_particle_x = best_particle_pose[0]
+          best_particle_y = best_particle_pose[1]      
+          for landmark_x, landmark_y in landmark_means:
+            range_meas = ((best_particle_x - landmark_x) ** 2 + (best_particle_y - landmark_y) ** 2) ** 0.5
+            estimated_pose_landmark_dist.append(range_meas)      
+          ground_truth_pose_landmark_dist = np.array(ground_truth_pose_landmark_dist)
+          estimated_pose_landmark_dist = np.array(estimated_pose_landmark_dist)
+          sqrt_pose_landmark_dist_error.append(np.average((ground_truth_pose_landmark_dist-estimated_pose_landmark_dist)**2))
+    sqrt_pose_landmark_dist_error = np.array(sqrt_pose_landmark_dist_error)
+    print("sqrt_pose_landmark_dist_error",sum(sqrt_pose_landmark_dist_error**.5))
+    print("avg",np.mean(sqrt_pose_landmark_dist_error**.5))
+    print("median",np.median(sqrt_pose_landmark_dist_error**.5))
+    print("final",sqrt_pose_landmark_dist_error[-1]**.5)
+    plt.plot(sqrt_pose_landmark_dist_error**.5)
+    plt.show()
+
 
 def error_ellipse(points, cov, nstd=2):
     """
