@@ -216,6 +216,7 @@ def makeColorMap(text, height, width):
 
 def printGrid(grid):
     """Create a graphical representation of the grid in matplotlib"""
+    usedCells = 0
     data = []
     for i in range(len(grid)):
         newarray = []
@@ -226,10 +227,13 @@ def printGrid(grid):
                 newarray += [1]
             elif(grid[i][j].string == "2"):
                 newarray += [2]
+                usedCells+=1
             else:
                 newarray += [3]
+                usedCells +=1
         data += [newarray]
     #print(data)
+    print("UsedCells", usedCells)
     height = len(grid)
     width = len(grid[0])
 
@@ -284,6 +288,7 @@ def DFS(grid, distance, x, y):
 
 def testHeuristicFunctions(testingText, width, length):
 
+    print("Euclidean Distance")
     gridE = makeGridfromMaze(width, length, testingText, "e")
     printGrid(gridE)
     solveGrid(gridE, 0, 0, width-1, length-1)
@@ -291,18 +296,21 @@ def testHeuristicFunctions(testingText, width, length):
     printGrid(gridE)
     astarDistanceE = gridE[width-1][length-1].f
 
+    print("Chebyshev  Distance")
     gridC = makeGridfromMaze(width, length, testingText, "c")
     solveGrid(gridC, 0, 0, width-1, length-1)
     makeParent(gridC, gridC[width-1][length-1])
     printGrid(gridC)
     astarDistanceC = gridC[width-1][length-1].f
 
+    print("Octile Distance")
     gridO = makeGridfromMaze(width, length, testingText, "o")
     solveGrid(gridO, 0, 0, width-1, length-1)
     makeParent(gridO, gridO[width-1][length-1])
     printGrid(gridO)
     astarDistanceO = gridO[width-1][length-1].f
 
+    print("Manhattan Distance")
     gridM = makeGridfromMaze(width, length, testingText, "m")
     solveGrid(gridM, 0, 0, width-1, length-1)
     makeParent(gridM, gridM[width-1][length-1])
@@ -346,19 +354,34 @@ def main():
 """
 
     print(len(mazeText))
-    width = 10
-    length = 10
+    width = 25
+    length = 25
     testingText = """
-0011000000
-0000000011
-0010101001
-0010001001
-0001011000
-0110100101
-0100100000
-1000001000
-1010100100
-1100101100"""
+0000000001001000100000000
+1000001100011001001000010
+1010100000000101000001110
+0000101000000100010100000
+0100101011000010001111010
+1101000000000000001000001
+0111111110100010001100001
+0010000000010000110001101
+1000011000000100001000110
+1001100000000011000000000
+0010100101000000000010110
+0000110000000011000100110
+1000110101100001011100010
+0000100000100110011000100
+0000000110001010000001101
+1110101010000000101010101
+1011011100110111001001001
+1010010111101100110011100
+0000011000010111010000010
+0101110011011000001001000
+0001000100110001000000000
+0000000110000011011000000
+1100000101001011100010100
+0100010000100000000100100
+0100000000011101000010000"""
 
     testHeuristicFunctions(testingText, width, length)
    
@@ -373,6 +396,7 @@ def main():
         print()
     solveGrid(grid, 0, 0, width-1, length-1)
     makeParent(grid, grid[width-1][length-1])
+    printGrid(grid)
 
     """actualDistance = solveGridDFS(grid, 0, 0, width-1, length-1)
     astarDistance = grid[width-1][length-1].f
