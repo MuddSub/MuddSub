@@ -33,6 +33,7 @@ class Particle():
     self.x_sigma = params['x_sigma']
     self.y_sigma = params['y_sigma']
     self.theta_sigma = params['theta_sigma']
+    self.can_change_landmark = params['can_change_landmark']
 
     self.default_pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma])
     self.pose_cov = np.copy(self.default_pose_cov)
@@ -110,8 +111,9 @@ class Particle():
           ml_associated = prob_associate_ls[ml_idx]
           
         # If we dont have any landmark, or assocation probability is really low, then we are seeing new landmarks 
-        if len(prob_associate_ls) == 0 or ml_associated < self.new_land_threshold:
+        if len(prob_associate_ls) == 0 or (ml_associated < self.new_land_threshold and self.can_change_landmark):
           # Initialize new landmark
+         
           observed_land_idx = len(land_idx_ls) + 1
           observed_landmark = LandmarkEKF(random=self.random) 
           self.landmarks[observed_land_idx] = observed_landmark
@@ -138,19 +140,19 @@ class Particle():
           self.landmarks[observed_land_idx] = observed_landmark
           observed_landmark.updateNewLandmark(self.pose + self.computePoseNoise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
         ml_idx = observed_land_idx
+      if self.can_change_landmark:
+        # Update unobserved landmarks
+        landmark_idxs_to_remove = []
+        for landmark_idx, landmark in self.landmarks.items():
+          # Don't update observed landmark
+          if landmark_idx != observed_land_idx:
+            keep = landmark.updateUnobservedLandmark(sensor_range_ls[meas_idx],sensor_bearing_ls[meas_idx])
+            if not keep:
+              landmark_idxs_to_remove.append(landmark_idx)
 
-      # Update unobserved landmarks
-      landmark_idxs_to_remove = []
-      for landmark_idx, landmark in self.landmarks.items():
-        # Don't update observed landmark
-        if landmark_idx != observed_land_idx:
-          keep = landmark.updateUnobservedLandmark(sensor_range_ls[meas_idx],sensor_bearing_ls[meas_idx])
-          if not keep:
-            landmark_idxs_to_remove.append(landmark_idx)
-
-      # Remove unobserved landmarks whose log odds probability of existing fell below 0
-      for idx in landmark_idxs_to_remove:
-        self.landmarks.pop(idx)
+        # Remove unobserved landmarks whose log odds probability of existing fell below 0
+        for idx in landmark_idxs_to_remove:
+          self.landmarks.pop(idx)
     
       # Update particle properties
       self.weight *= observed_landmark.weight

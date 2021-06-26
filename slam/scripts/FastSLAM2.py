@@ -21,6 +21,7 @@ class FastSLAM2():
       self.params['new_land_threshold'] = .5
       self.params['x_sigma'] = 1
       self.params['y_sigma'] = 1
+      self.params['can_change_landmark'] = False
       
     # self.random = np.random.default_rng(seed)
     self.random = random
@@ -144,14 +145,15 @@ class FastSLAM2():
       landmark_means = []
       landmark_covs = []
       landmark_idxs = []
-      
+      landmark_map = {}
       for particle_idx, particle in enumerate(self.particles):
         if particle is best_particle:
           best_particle_idx = particle_idx
         particle_poses.append(np.copy(particle.pose))
 
       for idx, landmark in best_particle.landmarks.items():
+        landmark_map[idx] = landmark.land_mean
         landmark_means.append(np.copy(landmark.land_mean))
         landmark_covs.append(np.copy(landmark.land_cov))
         landmark_idxs.append(idx)
-      return np.array(particle_poses), np.array(landmark_means), np.array(landmark_covs), best_particle_idx, landmark_idxs
+      return np.array(particle_poses), np.array(landmark_means), np.array(landmark_covs), best_particle_idx, landmark_idxs,landmark_map

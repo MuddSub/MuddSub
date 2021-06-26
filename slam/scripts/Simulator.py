@@ -149,7 +149,7 @@ def runSim():
       np.random.normal(y,noise_start['y']))\
       for key, (x,y) in list(sim.landmarks.items())}
   print("initial landmark",estimated_init_landmarks)
-  n = 50
+  n = 10
 
   params = {
     'initial_pose':np.array(sim.robot),
@@ -161,36 +161,39 @@ def runSim():
     'land_means': estimated_init_landmarks,
     'land_covs' : {},
     'land_default_cov': np.diag([0.01, 0.01]),
-    'new_land_threshold':1.3
+    'new_land_threshold':1.3,
+    'can_change_landmark':False
   }
   curr_target = str(0)
-  final_taret = sim.landmarks[str(len(sim.landmarks)-1)]
+  final_taret = str(len(sim.landmarks)-1)
 
   slam = FastSLAM2(n,params, np.random.default_rng())
 
   sim.set_target(sim.landmarks['0'])
-  robot_pose = None
+  slam_robot_pose = None
   for i in range(NUM_STEPS):
     print('---\nstep',i)
     # plotting, and also get current slam state
-    particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs = slam.get_pose_and_landmarks()
-    robot_pose = particle_poses[best_particle_idx]
-    print('slam robot pose',robot_pose,"\nactual robot pose", sim.robot)
+    particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, landmark_maps = slam.get_pose_and_landmarks()
+    slam_robot_pose = particle_poses[best_particle_idx]
+    slam_landmark_pose = landmark_maps[curr_target]
+    print('slam robot pose',slam_robot_pose,"\nactual robot pose", sim.robot)
     print('target',sim.target)
     print('slam landmark',landmark_means)
     frame = (particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, sim.t)
-    plot_data.append(frame)
+
     
     # get the final target
-    if is_close(robot_pose, final_taret, .5, np.pi/4):
+    if is_close(slam_robot_pose, landmark_maps[final_taret], .5, np.pi/4):
       NUM_STEPS = i
       break
+    plot_data.append(frame)
     # move on to new target
-    if is_close(robot_pose, sim.landmarks[curr_target],.5, np.pi/4):
+    if is_close(slam_robot_pose, slam_landmark_pose,.5, np.pi/4):
       curr_target = str(int(curr_target)+1)
-      landmark_pose = sim.landmarks[curr_target]
-      sim.set_target(landmark_pose)
-    
+      slam_landmark_pose = landmark_maps[curr_target]
+
+    sim.set_target(slam_landmark_pose)
     actual_measurements = sim.read_measurement()
     location_filter = lambda x: [ item[:3] for item in x]
     print("measurements",location_filter(actual_measurements))
@@ -206,7 +209,7 @@ def runSim():
   #plotting 
   landmarsName =  [idx for idx, (x,y) in list(sim.landmarks.items())]
   landmarksGroundtruth = np.array([np.array([x,y]) for idx, (x,y) in list(sim.landmarks.items())])
-  print("end of sim","actual landmarks",sim.landmarks, "slam robot pose",robot_pose,"actual robot pose", sim.robot)
+  print("end of sim","actual landmarks",sim.landmarks, "slam robot pose",slam_robot_pose,"actual robot pose", sim.robot)
   plotter.plot(n,plot_data,sim.robot_history,landmarksGroundtruth,landmarsName, NUM_STEPS,KNOWN_CORRESPONDENCES=True,PLOT_AVG=False)
   
 runSim()
