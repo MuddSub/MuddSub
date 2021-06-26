@@ -45,13 +45,14 @@ class FastSLAM2():
     self.meas_ls = []
     self.meas_cov_ls = []
     self.sensor_range_ls = []
+    self.sensor_bearing_ls = []
     self.correspondences = []
     self.known_correspondences = False
     
   def createParticles(self, n):
     for i in range(n):
       self.particles.append(Particle(i, self.params, random=self.random))
-    print(self.params['initial_pose'])
+    print("fast slam 2 initial pose",self.params['initial_pose'])
 
   def addControl(self, control, time):
     #if len(self.meas_ls) > 0:
@@ -63,12 +64,13 @@ class FastSLAM2():
     if len(self.particles) > 1 and len(self.meas_ls) > 0:
       self.resampling()
     self.motionUpdate(control, time)
-    self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.correspondences = [], [], [], []
+    self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.sensor_bearing_ls, self.correspondences = [], [], [], [], []
 
-  def addMeasurement(self, meas, meas_cov, sensor_range, correspondence = None):
+  def addMeasurement(self, meas, meas_cov, sensor_range, sensor_bearing, correspondence = None):
     self.meas_ls.append(meas)
     self.meas_cov_ls.append(meas_cov)
     self.sensor_range_ls.append(sensor_range)
+    self.sensor_bearing_ls.append(sensor_bearing)
     
     self.known_correspondences = (correspondence != None)
     
@@ -79,7 +81,7 @@ class FastSLAM2():
     # propagate motion
     dt = max(time - self.prev_t, 0.000001)
     if (time - self.prev_t == 0):
-      print("dt is 0")
+      print("fast slam 2 warning: dt is 0")
     for idx, particle in enumerate(self.particles):
       particle.motionUpdate(control, dt)
     self.prev_t = time
@@ -87,7 +89,7 @@ class FastSLAM2():
   def measurementUpdate(self):
     # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
-      particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
+      particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.sensor_bearing_ls, self.known_correspondences, self.correspondences)
       # particle.measurementUpdateLocalization(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
 
 
@@ -102,8 +104,7 @@ class FastSLAM2():
     try:
       new_particle_idx_ls = self.random.choice(list(range(self.num_particles)), size=self.num_particles, replace=True, p=self.weights)
     except:
-      print("Particle weights are NaN")
-      print(self.weights)
+      print("fast slam 2 warming: Particle weights are NaN",self.weights)
       # raise
       new_particle_idx_ls = list(range(self.num_particles))
 
@@ -131,4 +132,26 @@ class FastSLAM2():
     for idx, particle in enumerate(self.particles):
       poses.append(particle.pose[:2])
     return poses
-    
+
+  def get_pose(self,option='best'):
+    if option=='best':
+      best_particle = max(self.particles, key=lambda p: p.accumulated_weight)
+      return best_particle.pose
+  def get_pose_and_landmarks(self,option='best'):
+    if option=='best':
+      best_particle = max(self.particles, key=lambda p: p.accumulated_weight)
+      particle_poses = []
+      landmark_means = []
+      landmark_covs = []
+      landmark_idxs = []
+      
+      for particle_idx, particle in enumerate(self.particles):
+        if particle is best_particle:
+          best_particle_idx = particle_idx
+        particle_poses.append(np.copy(particle.pose))
+
+      for idx, landmark in best_particle.landmarks.items():
+        landmark_means.append(np.copy(landmark.land_mean))
+        landmark_covs.append(np.copy(landmark.land_cov))
+        landmark_idxs.append(idx)
+      return np.array(particle_poses), np.array(landmark_means), np.array(landmark_covs), best_particle_idx, landmark_idxs

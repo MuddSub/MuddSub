@@ -195,19 +195,19 @@ class LandmarkEKF():
     self.weight = weight
     #print("weight",weight)
     return weight
-
-  def updateUnobservedLandmark(self, sensor_range):
+  # sensor_bearing considers the angle between the left most to the right most field of views
+  def updateUnobservedLandmark(self, sensor_range, sensor_bearing = np.pi):
     # Set current landmark mean and cov to previous mean and cov
     self.land_mean = self.prev_land_mean
     self.land_cov = self.prev_land_cov
 
     # Update probability of the landmark existing based on whether it should have been measured
-    range_meas, _ = self.computeMeasModel(self.sampled_pose)
-    if range_meas <= sensor_range:
+    range_meas, bearing_meas = self.computeMeasModel(self.sampled_pose)
+    if range_meas <= sensor_range and bearing_meas <= sensor_bearing/2:
       self.land_exist_log -= self.land_exist_log_dec
 
     # If the log odds probability falls below 0, we do not keep the landmark
-    return self.land_exist_log > 0
+    return self.land_exist_log >= 0
 
   def updateNewLandmark(self, sampled_pose, pose_mean, pose_cov, meas, meas_cov, new_land_threshold):
     self.land_exist_log = self.land_exist_log_inc

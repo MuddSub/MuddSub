@@ -16,6 +16,7 @@ START_STEP = 0
 NUM_STEPS = 20000
 MEAS_COV = np.diag([0.01, 0.01])
 SENSOR_RANGE = 1
+SENSOR_BEARING = np.pi
 LANDMARK_NUM = None #14
 
 HARDCODE_COMPASS = True
@@ -120,9 +121,9 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
           print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
 
           if KNOWN_CORRESPONDENCES:
-            algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, subject)
+            algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, SENSOR_BEARING, subject)
           else:
-            algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE)
+            algorithm.addMeasurement((range_meas, bearing_meas), MEAS_COV, SENSOR_RANGE, SENSOR_BEARING)
     
     # Log data
     best_particle = max(algorithm.particles, key=lambda p: p.accumulated_weight)

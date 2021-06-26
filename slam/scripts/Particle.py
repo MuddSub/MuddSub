@@ -64,7 +64,7 @@ class Particle():
   def computePoseNoise(self):
     return self.random.multivariate_normal(np.zeros(3), self.pose_cov)
   
-  def measurementUpdate(self, meas_ls, meas_cov_ls, sensor_range_ls, known_correspondences = False, correspondences = []):
+  def measurementUpdate(self, meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []):
     '''
     For best results, meas_ls should be sorted by range from closest to furthest.
     1. sample paricle pose per landmark 
@@ -144,7 +144,7 @@ class Particle():
       for landmark_idx, landmark in self.landmarks.items():
         # Don't update observed landmark
         if landmark_idx != observed_land_idx:
-          keep = landmark.updateUnobservedLandmark(sensor_range_ls[meas_idx])
+          keep = landmark.updateUnobservedLandmark(sensor_range_ls[meas_idx],sensor_bearing_ls[meas_idx])
           if not keep:
             landmark_idxs_to_remove.append(landmark_idx)
 
@@ -159,7 +159,7 @@ class Particle():
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
 
-  def measurementUpdateLocalization(self, meas_ls, meas_cov_ls, sensor_range_ls, known_correspondences=False, correspondences=[]):
+  def measurementUpdateLocalization(self, meas_ls, meas_cov_ls, sensor_range_ls,sensor_bearing_ls, known_correspondences=False, correspondences=[]):
     self.weight = 1
 
     # If there are no measurements, sample the pose according to the default pose covariance and the pose mean computed by the motion model

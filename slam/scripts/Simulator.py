@@ -148,8 +148,8 @@ def runSim():
       np.random.normal(x,noise_start['x']),\
       np.random.normal(y,noise_start['y']))\
       for key, (x,y) in list(sim.landmarks.items())}
-
-  n = 10
+  print("initial landmark",estimated_init_landmarks)
+  n = 50
 
   params = {
     'initial_pose':np.array(sim.robot),
@@ -161,7 +161,7 @@ def runSim():
     'land_means': estimated_init_landmarks,
     'land_covs' : {},
     'land_default_cov': np.diag([0.01, 0.01]),
-    'new_land_threshold':1.1
+    'new_land_threshold':1.3
   }
   curr_target = str(0)
   final_taret = sim.landmarks[str(len(sim.landmarks)-1)]
@@ -175,7 +175,9 @@ def runSim():
     # plotting, and also get current slam state
     particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs = slam.get_pose_and_landmarks()
     robot_pose = particle_poses[best_particle_idx]
-    print('expected robot pose',robot_pose,"\nactual robot pose", sim.robot,'\ntarget',sim.target)
+    print('slam robot pose',robot_pose,"\nactual robot pose", sim.robot)
+    print('target',sim.target)
+    print('slam landmark',landmark_means)
     frame = (particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, sim.t)
     plot_data.append(frame)
     
@@ -204,7 +206,7 @@ def runSim():
   #plotting 
   landmarsName =  [idx for idx, (x,y) in list(sim.landmarks.items())]
   landmarksGroundtruth = np.array([np.array([x,y]) for idx, (x,y) in list(sim.landmarks.items())])
-  print("end of sim","actual landmarks",sim.landmarks, "expected robot pose",robot_pose,"actual robot pose", sim.robot)
+  print("end of sim","actual landmarks",sim.landmarks, "slam robot pose",robot_pose,"actual robot pose", sim.robot)
   plotter.plot(n,plot_data,sim.robot_history,landmarksGroundtruth,landmarsName, NUM_STEPS,KNOWN_CORRESPONDENCES=True,PLOT_AVG=False)
   
 runSim()
