@@ -6,7 +6,7 @@ from std_msgs.msg import Header
 from drivers.msg import Depth
 from sensor_msgs.msg import FluidPressure
 from sensor_msgs.msg import Temperature
-from ms5837-python import *
+from ms5837_python import *
 
 def depthSensorJetson():
 	rospy.init_node('depth_sensor_jetson', anonymous=True)
