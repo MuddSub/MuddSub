@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from std_msgs.msg import Header
-from SLAMPublisher import SLAMPublisher
+from slam.SLAMPublisher import SLAMPublisher
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance
 from geometry_msgs.msg import Pose
@@ -44,6 +44,9 @@ def slamExampleNode():
         print("position_x ", params["position_x"])
         print("position_y ", params["position_y"])
         print("position_z ", params["position_z"])
+
+        num_particle = params["number_of_particles"]
+        print(num_particle)
 
         rot = Quaternion(0.4, 0.2, 0.3, 0.5)
         pose = PoseWithCovariance(Pose(pos, rot), [0.8] * 36)

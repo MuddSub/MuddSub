@@ -69,6 +69,11 @@ def visionPubNode():
         visionPublisher.publishDetectionArray(detectionArray)
         rate.sleep()
 
+    def create_yaml():
+        f = open("hi.yaml", w)
+        
+    rospy.on_shutdown(create_yaml)
+
 if __name__ == '__main__':
     try:
         visionPubNode()
