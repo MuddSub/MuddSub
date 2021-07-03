@@ -80,7 +80,7 @@ generate_messages(
   geometry_msgs
 )
 
-catkin_install_python(PROGRAMS scripts/HydrophonesExampleNode.py
+catkin_install_python(PROGRAMS scripts/HydrophonesExampleNode.py scripts/dumpParams.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
