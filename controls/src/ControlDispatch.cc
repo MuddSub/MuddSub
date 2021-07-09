@@ -107,7 +107,7 @@ void ControlDispatch::setZero(const nav_msgs::Odometry& msg)
 
 void ControlDispatch::setZeroToCurrent()
 {
-  plantZero_ = plantState_;
+  plantZero_ = plantState_ + plantZero_;
 }
 
 }
