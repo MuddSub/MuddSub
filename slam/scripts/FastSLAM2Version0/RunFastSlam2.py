@@ -45,12 +45,12 @@ params['new_land_threshold'] = .1
 params['x_sigma'] = 1e-4
 params['y_sigma'] = 1e-4
 params['theta_sigma'] = 1e-4
-
+params['can_change_landmark'] = True
 n = 50 #num particle
 random_generator = np.random.default_rng()
 algorithm = None
 
-def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
+def runFastSlam2(pkl = '../../datasets/Jar/dataset1.pkl'):
   global algorithm
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
