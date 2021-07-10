@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 from Particle import *
+from collections import namedtuple
 
 class FastSLAM2():
   '''
@@ -9,6 +10,19 @@ class FastSLAM2():
     # yRange: 2 tuple containing the minimum and maximum y values for the robot
     and all of the parameters used by the Particle class
   '''
+
+  # meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []
+  _MEAS = namedtuple('MEAS', ['meas_data', 'meas_cov', 'sensor_constraints', 'data_association'])
+
+  class MEAS(_MEAS):
+    '''
+    meas_data:            A tuple or namedtuple containing the measurement data, i.e. range and bearing or just bearing depending on the type of data the robot expects to receive.
+    meas_cov:             A square numpy array that is the covariance matrix for the measurement data
+    sensor_constraints:   A tuple or namedtuple containing sensor constraints, such as maximum range and viewing angle, or just viewing angle depending on the sensor the data is collected by.
+    data_association:     A hashable 
+    '''
+    pass
+
   def __init__(self, n,  params=None, random=None):
     if params is not None:
       self.params = params

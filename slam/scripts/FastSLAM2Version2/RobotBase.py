@@ -3,8 +3,6 @@ class RobotBase(ABC):
     def __init__(self, pose_dimension):
         self.pose_dimension = pose_dimension
 
-        @abstract
-
     @abstractmethod
     def computeMeasModel(self):
         pass

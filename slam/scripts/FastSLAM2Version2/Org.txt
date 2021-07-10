@@ -1,9 +1,14 @@
 RunFastSlam2 or Simulator
 - has a dataset
 
+Modify: modify in place 
+Compute: return values, no modificaiton in place. 
+Update: modify and compute 
+
 FastSLAM2: interface with dataset. (DONE)
 params: named tuple
 @external interface:
+- add setter and getter
  - addMeasurement: external interface
  - addControl: external interface
  - getPoseAndLandmarks ... has helper function compute_avg
