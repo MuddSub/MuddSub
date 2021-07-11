@@ -9,8 +9,6 @@ if __name__ == "__main__":
     parser.add_argument("output")
     parser.add_argument("namespace")
     args = parser.parse_args(rospy.myargv(sys.argv)[1:])
-    rospy.loginfo("dump_params -___")
-    rospy.loginfo("args " + str(args))
     rospy.spin()
     params = rospy.get_param(args.namespace)
     with open(args.output, "w") as file_path:

@@ -1,7 +1,0 @@
-<launch>
-  <node name="dump_params" pkg="hydrophones" type="dumpParams.py" args="$(find hydrophones)/cfg/test_hydrophones_params.yaml /hydrophones_server" />
-  <rosparam file="$(find hydrophones)/cfg/hydrophones_params.yaml" command="load" ns="hydrophones_server" />
-  <node pkg="hydrophones" name="hydrophones_server" type="HydrophonesServer.py">
-    <param name="test_param" value="400" />
-  </node>
-</launch>
