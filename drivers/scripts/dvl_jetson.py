@@ -13,7 +13,7 @@ if __name__ == '__main__':
 		rospy.logerr("Couldn't open serial")
 		exit()
 	dvlp = rospy.Publisher('/drivers/dvl', DVL, queue_size=1)
-	rate = rospy.Rate(10000)
+	rate = rospy.Rate(100)
 	
 	while not rospy.is_shutdown():
 		dvl_msg = DVL()
