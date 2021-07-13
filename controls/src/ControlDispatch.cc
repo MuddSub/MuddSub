@@ -44,7 +44,7 @@ void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
   auto state = odomToState(msg);
 
-  state[5] = msg.pose.pose.orientation.z;
+  state[5] = msg.pose.pose.orientation.z; // seth said was hacky, maybe remove
 
   plantState_ = state - plantZero_;
 
@@ -115,7 +115,6 @@ void ControlDispatch::setZeroToCurrent()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ControlsDispatch");
-  ros::NodeHandle nh;
 
   MuddSub::Controls::ControlDispatch controller;
 

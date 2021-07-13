@@ -52,9 +52,9 @@ stateVector_t Controller::getError()
   velocityError.vector.z = setpoint_[8] - plantState_[8];
 
   geometry_msgs::Vector3Stamped angularVelocityError;
-  velocityError.vector.x = setpoint_[9] - plantState_[9];
-  velocityError.vector.y = setpoint_[10] - plantState_[10];
-  velocityError.vector.z = setpoint_[11] - plantState_[11];
+  angularVelocityError.vector.x = setpoint_[9] - plantState_[9];
+  angularVelocityError.vector.y = setpoint_[10] - plantState_[10];
+  angularVelocityError.vector.z = setpoint_[11] - plantState_[11];
 
   geometry_msgs::TransformStamped plantTransformStamped;
 
