@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+import rospy
+import smach
+from std_msgs.msg import Bool
+import go_to_target, locate_target
+
+class MonitorKillSwitch(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes=['active','aborted'])  
+        self.to_kill = None
+        self.kill_switch_subscriber = rospy.Subscriber('kill_switch',Bool, self.callback)
+
+    def callback(self,data):
+        self.to_kill = data.data
+    def execute(self,data):
+        if self.to_kill:
+            return 'aborted'
+        else: 
+            return 'active'
+
+def add_kill_monitor(State):
+  def monitor_task_child_cb(outcome):
+      if outcome['MonitorKill']=='aborted' \
+        or outcome['RunState']=='aborted' \
+        or outcome['RunState']=='succeeded':
+          return True
+      else: 
+          return False
+  def monitor_task_outcome_cb(outcome):
+      if outcome['MonitorKill']=='aborted': 
+          return 'preempted'
+      elif outcome['RunState']=='aborted':
+          return 'aborted'
+      elif outcome['RunState']=='succeeded':
+          return 'succeeded'
+      elif outcome['RunState']== 'active' \
+        and outcome['MonitorKill']== 'active':
+          return 'active'
+      else:
+          return 'aborted' 
+  
+  REMAPPING = {"userdata":"userdata"}
+  MonitorState = smach.Concurrence(outcomes = ['preempted','aborted','succeeded','active'],
+                                      default_outcome= 'active',
+                                    child_termination_cb = monitor_task_child_cb,
+                                    outcome_cb = monitor_task_outcome_cb,
+                                    input_keys=['userdata'],output_keys=['userdata'])
+
+  with MonitorState:
+      smach.Concurrence.add('RunState',State, remapping=REMAPPING)
+      smach.Concurrence.add('MonitorKill',MonitorKillSwitch())
+  return MonitorState
+  
+def generate_task(task_name,taskAction):
+  
+  TaskUnderTemplate = smach.StateMachine(outcomes=['aborted','succeeded','preempted'],input_keys=['userdata'],output_keys=['userdata'])
+  LocalizationPhrase = 'Locate'+task_name
+  AdvancementPhrase = 'GoTo'+task_name
+  TaskSpecificPhrase = 'ActOn'+task_name
+  REMAPPING = {"userdata":"userdata"}
+  with TaskUnderTemplate:
+    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),
+          transitions={'succeeded':AdvancementPhrase,
+                       'active':  LocalizationPhrase,
+                       'aborted':'aborted',
+                       'preempted':'preempted'},
+          remapping=REMAPPING)
+    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target.GoToTarget(task_name)),
+          transitions={'succeeded':TaskSpecificPhrase,
+                       'active':AdvancementPhrase,
+                       'aborted': 'aborted',
+                       'preempted':'preempted'},
+          remapping=REMAPPING)
+    smach.StateMachine.add(TaskSpecificPhrase,add_kill_monitor(taskAction), 
+          transitions={'succeeded':'succeeded',
+                       'active':TaskSpecificPhrase, 
+                       'aborted':'aborted',
+                       'preempted':'preempted'},
+          remapping=REMAPPING)
+  return TaskUnderTemplate
