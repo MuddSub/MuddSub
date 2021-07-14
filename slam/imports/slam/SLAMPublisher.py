@@ -3,7 +3,7 @@
 import rospy
 from nav_msgs.msg import Odometry
 from slam.msg import Map
-
+from slam.msg import Obstacle
 class SLAMPublisher:
     """
     Publishes SLAM messages describing the states of both the robot and the environment.

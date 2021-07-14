@@ -88,4 +88,4 @@ include_directories(
 #target_include_directories(SLAMEvalServer PRIVATE ${PYTHON_INCLUDE_DIRS})
 #add_dependencies(SLAMEvalServer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-catkin_install_python(PROGRAMS scripts/SLAMExampleNode.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} ) 
+#catkin_install_python(PROGRAMS scripts/SLAMExampleNode.py DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION} ) 

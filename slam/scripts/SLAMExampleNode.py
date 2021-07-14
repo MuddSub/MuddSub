@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 from std_msgs.msg import Header
-from slam.SLAMPublisher.py import SLAMPublisher
+from slam.SLAMPublisher import SLAMPublisher
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance
 from geometry_msgs.msg import Pose
