@@ -35,7 +35,7 @@ class LocateTarget(smach.State):
     pass
   
   def execute(self, userdata):
-    if self.target_confidence >= threshold: # slam's confidence in our target
+    if self.target_confidence >= threshold:
       return 'success'
     else:
       if (time() - self.startTime) > timeoutTime:
