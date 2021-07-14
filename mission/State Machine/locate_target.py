@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import smach
-# import Map.msg      # whatever will import the correct slam messge
+# import obstacle.msg      # whatever will import the correct slam messge
 
 # very arbitrary constant values
 threshold = .8
@@ -18,8 +18,8 @@ class LocateTarget(smach.State):
     smach.State.__init__(self, outcomes=['active', 'success', 'abort'], input_keys = ['target'])
     self.startTime = time()
     self.lastSearch = self.startTime
-    # subscriber to be uncommented when we know the actual message type
-    # self.slam_subscriber = rospy.Subscriber('slam/Map', geometry_msgs/PoseWithCovarianceStamped, self.callback, (userdata))
+    # subscriber might need to change - we have it as slam/obstacle right now but the message type may change
+    self.slam_subscriber = rospy.Subscriber('/slam/Map', slam/obstacle, self.callback, (userdata))
     self.target_confidence = 0
 
   def callback(self, data, userdata):
@@ -27,8 +27,12 @@ class LocateTarget(smach.State):
       if data[i][0] == userdata.target:
         self.target_confidence = data[i][4] # theoretically this is the confidence for the target position
         return data[i][4]
-    self.target_confidence = 0
+    self.target_confidence = 0 # if we don't get entries of data that match our desired target, set the confidence to 0
     return 0
+
+  def search(self, userdata):
+    # need to decide on what search pattern to do
+    pass
   
   def execute(self, userdata):
     if self.target_confidence >= threshold: # slam's confidence in our target
@@ -39,4 +43,5 @@ class LocateTarget(smach.State):
       elif (time() - self.lastSearch) > searchTime:
         self.lastSearch = time()
         #initiate search pattern
+        self.search(userdata)
     return 'active'
