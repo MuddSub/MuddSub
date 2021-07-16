@@ -56,9 +56,6 @@ class SillySlam:
 				msg.pose.pose.orientation.w = 1
 			else:
 				msg.pose.pose.orientation = self.orientation
-				self.orientation.z = np.radians(self.orientation.z)
-
-
 
 			msg.pose.pose.position.x = self.x_pos
 			msg.pose.pose.position.y = self.y_pos
