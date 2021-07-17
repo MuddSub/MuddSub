@@ -1,17 +1,10 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from scripts.FastSLAM2Version2.RobotBase import RobotBase
+from Util import wrapToPi
+import RobotBase
 class Alfie(RobotBase):
     def __init__(self, pose_dimension):
         self.pose_dimension = pose_dimension
-
-    def wrapToPi(th):
-        th = np.fmod(th, 2*np.pi)
-        if th >= np.pi:
-            th -= 2*np.pi
-        if th <= -np.pi:
-            th += 2*np.pi
-        return th
     
     def computeMeasModel(self, pose, prev_land_mean):
         #x,y,theta, vx, vy, omega, theta_p = pose
