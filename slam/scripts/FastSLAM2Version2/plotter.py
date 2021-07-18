@@ -49,7 +49,7 @@ def plot(n,plot_data,groundtruth_path_data,landmarksGroundtruth,landmarsName,NUM
     # Plot groundtruth path
     groundtruth_path_x.append(groundtruth_path_data[t][0])
     groundtruth_path_y.append(groundtruth_path_data[t][1])
-    groundtruth_path.set_data(groundtruth_path_x, groundtruth_path_y)
+    groundtruth_path.set_data(groundtruth_path_x, groundtruth_path_y) # can we set them directly> groundtruth_path[:t,0]
     
     # Plot other particles poses
     particles.set_data(particle_poses[:, 0], particle_poses[:, 1])
