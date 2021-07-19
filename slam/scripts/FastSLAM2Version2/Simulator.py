@@ -2,7 +2,7 @@ import copy
 from FastSLAM2 import FastSLAM2
 from SimAlfie2D import SimAlfie2D
 import numpy as np
-import plotter
+from Validtion import plot_data, evaluate 
 from Util import wrapToPi
 
 class Sensor():
@@ -79,38 +79,33 @@ def runSim():
       np.random.normal(y,noise_start['y']))\
       for key, (x,y) in list(sim.landmarks.items())}
   print("initial landmark",estimated_init_landmarks)
-  n = 10
-
-  params = {
-    'initial_pose':np.array(sim.robot_pose),
-    'num_landmarks': len(sim.landmarks),
-    'x_sigma': .05**2, # it is actually v_x
-    'y_sigma': .05**2, # v_y
-    'theta_sigma': (np.pi/360)**2,
-    'v_sigma' : None,# this parameter is useless
-    'land_means': estimated_init_landmarks,
-    'land_covs' : {},
-    'land_default_cov': np.diag([0.01, 0.01]),
-    'new_land_threshold':1.3,
-    'can_change_landmark':False
-  }
+  num_particles = 10
+  params = FastSLAM2Parameters(
+    num_particles = num_particles,
+    is_landmarks_fixed = True, 
+    new_landmark_threshold = 1.3,
+    initial_pose = np.array(sim.robot_pose),
+    default_pose_cov = np.array([.05**2,.05**2,(np.pi/360)**2]),
+    initial_landmarks = estimated_init_landmarks
+  )
   curr_target = str(0)
   final_taret = str(len(sim.landmarks)-1)
 
-  slam = FastSLAM2(n,params, np.random.default_rng())
+  slam = FastSLAM2(parameters = params, random = np.random.default_rng())
 
   sim.set_target(sim.landmarks['0'])
   slam_robot_pose = None
   for i in range(NUM_STEPS):
     print('---\nstep',i)
     # plotting, and also get current slam state
-    particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, landmark_maps = slam.getPoseAndLandmarks()
+    frame = t , best_particle_idx, particle_poses, landmark_idxs, landmark_means, landmark_covs = slam.getPoseAndLandmarksForPlot()
+
     slam_robot_pose = particle_poses[best_particle_idx]
     slam_landmark_pose = landmark_maps[curr_target]
     print('slam robot pose',slam_robot_pose,"\nactual robot pose", sim.robot_pose)
     print('target',sim.target)
     print('slam landmark',landmark_means)
-    frame = (particle_poses, landmark_means, landmark_covs, best_particle_idx, landmark_idxs, sim.t)
+    
 
     
     # get the final target

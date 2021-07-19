@@ -1,12 +1,19 @@
 from dataclasses import dataclass
 import numpy as np
-
+from collections import namedtuple
 LandmarkConstants = namedtuple('LandmarkConstants',['exist_log_inc','exist_log_dec'])
 
+@dataclass 
+class FastSLAM2Parameters:
+  num_particles: int
 
+  is_landmarks_fixed: bool
+  new_landmark_threshold: float
+
+  initial_landmarks: dict()
 
 @dataclass
-class _EFK: # a landmark class
+class _EKF: # a landmark class
   # main values
   name: str = ''
   mean: np.ndarray = np.array([]) #landmark mean
@@ -34,6 +41,6 @@ class MEAS(_MEAS):
   meas_data:            A tuple or namedtuple containing the measurement data, i.e. range and bearing or just bearing depending on the type of data the robot expects to receive.
   meas_cov:             A square numpy array that is the covariance matrix for the measurement data
   sensor_constraints:   A tuple or namedtuple containing sensor constraints, such as maximum range and viewing angle, or just viewing angle depending on the sensor the data is collected by.
-  data_association:     A hashable 
+  data_association:     A hashable ??????
   '''
   pass

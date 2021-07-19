@@ -46,3 +46,14 @@ Robot -> abstract class --> DONE
 
 abbreviation:
 measurement -> meas
+
+
+summary: 
+Models: contain data structures 
+Robots: contain any physics dependent info (2D vs 3D etc)
+Particles: FastSlam2 particles 
+FastSLAM2: main algorithm
+Utils: util file 
+
+Plotter
+Simulator 

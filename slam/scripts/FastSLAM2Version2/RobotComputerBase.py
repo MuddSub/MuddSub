@@ -25,5 +25,5 @@ class RobotComputerBase(ABC):
     def is_landmark_in_range(self, measurement, acceptable_range):
         return measurement < acceptable_range
   
-    def compute_pose_noise(self,pose,pose_cov):
-      return self._random.multivariate_normal(np.zeros(pose.shape), pose_cov)
+    def compute_noisy_pose(self,pose,pose_cov):
+      return self._random.multivariate_normal(pose, pose_cov)
