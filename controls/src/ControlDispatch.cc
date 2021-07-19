@@ -44,12 +44,10 @@ void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
 {
   auto state = odomToState(msg);
 
-  state[5] = msg.pose.pose.orientation.z; // seth said was hacky, maybe remove
-
   plantState_ = state - plantZero_;
 
   controller_->setPlantState(plantState_);
-  std::cout << " Plant State: " << plantState_.format(eigenInLine) << std::endl;
+  std::cout << " PLANT STATE: " << plantState_.format(eigenInLine) << std::endl;
 }
 
 void ControlDispatch::setpointCallback(const controls::State& state)
@@ -121,10 +119,10 @@ int main(int argc, char** argv)
   ros::Rate loopRate = 20;
   while(ros::ok())
   {
-    std::cout << "\x1b[2J\x1b[H";
     controller.iterate();
     ros::spinOnce();
     loopRate.sleep();
+    std::cout << "\x1b[2J\x1b[H";
   }
 
 }
