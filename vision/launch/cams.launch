@@ -10,5 +10,5 @@
   </node>
 
   <node pkg="rosbag" type="record" name="rosbag_record"
-    args="record -o $(find vision)/bags/camera_log /usb_cam_0/image_compressed" />
+    args="record -o /mnt/front_camera /usb_cam_0/image_compressed" />
 </launch>

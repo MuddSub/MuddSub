@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rosbag" type="play" name="rosbag" required="true" args="/mnt/front_camera_2021-07-20-11-04-49.bag"/>
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" required="true" ouput="screen" cwd="ROS_HOME">
+    <remap from="iamge" to="/camera/image_raw/"/>
+  </node>
+</launch>
