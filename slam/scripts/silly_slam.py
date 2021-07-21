@@ -78,6 +78,7 @@ class SillySlam:
 				self.x_pos += self.x_velocity * self.dt
 				self.y_pos += self.y_velocity * self.dt
 				self.z_pos += self.z_velocity * self.dt
+			self.prevTime = None
 
 if __name__ == '__main__':
 	rospy.init_node("silly_slam")
