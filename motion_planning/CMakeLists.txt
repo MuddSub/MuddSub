@@ -35,12 +35,12 @@ generate_messages(
 )
 
 
-catkin_package(
+#catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES motion_planning
 #  CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
 #  DEPENDS system_lib
-)
+#)
 
 
 include_directories(
@@ -53,6 +53,9 @@ include_directories(include
   ${catkin_INCLUDE_DIRS}
 )
 
+catkin_install_python(PROGRAMS scripts/MotionPlanningExampleNode.py scripts/MotionPlanningServer.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 add_executable(MotionPlanningExampleNode
 	src/MotionPlanningExampleNode.cc
   src/MotionPlanningPublisher.cc
