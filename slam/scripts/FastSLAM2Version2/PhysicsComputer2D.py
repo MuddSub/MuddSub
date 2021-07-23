@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from Util import wrapToPi
-from RobotComputerBase import RobotComputerBase
-class Alfie2D(RobotComputerBase):
+from PhysicsComputerBase import PhysicsComputerBase
+class PhysicsComputer2D(PhysicsComputerBase):
     def __init__(self, random, initial_pose, default_pose_cov = None):
         super().__init__(random)
         self.initial_pose = initial_pose

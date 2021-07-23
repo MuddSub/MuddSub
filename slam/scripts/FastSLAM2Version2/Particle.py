@@ -2,13 +2,13 @@ import numpy as np
 from scipy.linalg import sqrtm
 from collections import namedtuple
 from Models import _EKF, MEAS, LandmarkConstants
-from RobotComputerBase import RobotComputerBase
+from PhysicsComputer2D import PhysicsComputer2D
 from typing import List
 class Particle():
   '''
   Class representing a particle in FastSLAM2
   '''
-  def __init__(self, robot: RobotComputerBase, particle_id = None, **kwargs):
+  def __init__(self, physics: PhysicsComputer2D, particle_id = None, **kwargs):
     # random=None, map=None, num_landmarks_fixed=False, new_landmark_threshold=0.1, id=None
 
     # Private variables from kwargs
@@ -19,7 +19,7 @@ class Particle():
     
 
     # Private required variables 
-    self._robot = robot
+    self._physics = physics
 
     # Private paramters
     self._landmark_constants = LandmarkConstants(exist_log_inc=.1,exist_log_dec=.1) 
@@ -27,8 +27,8 @@ class Particle():
     # Public variables
     self.weight = 0
     self.accumulated_weight = 0
-    self.pose = np.copy(robot.initial_pose)
-    self.pose_cov = np.copy(robot.default_pose_cov)
+    self.pose = np.copy(physics.initial_pose)
+    self.pose_cov = np.copy(physics.default_pose_cov)
     self.landmarks = kwargs.get('initial_landmarks', {})
 
   def set_params(self, **kwargs):
@@ -48,7 +48,7 @@ class Particle():
     Update particle pose using motion model
     '''
     self._log('motion1',self.pose)
-    self.pose = self._robot.compute_motion_model(self.pose, control, dt)
+    self.pose = self._physics.compute_motion_model(self.pose, control, dt)
     self._log('motion2',self.pose)
 
   def update_meas(self, meas_ls: List[MEAS]):
@@ -63,7 +63,7 @@ class Particle():
     self.weight = 1.0 
     # ++++++ No Measurment: sample the pose using motion model
     if len(meas_ls) == 0:
-      self.pose = self._robot.compute_noisy_pose(pose_mean, pose_cov)
+      self.pose = self._physics.compute_noisy_pose(pose_mean, pose_cov)
       return
     # ++++++ Access each measurement 
     curr_landmark = None
@@ -86,7 +86,7 @@ class Particle():
         if curr_landmark == None \
           or (curr_landmark.association_prob < self._new_landmark_threshold and self._is_landmarks_fixed):
           curr_landmark = self.landmarks[len(self.landmarks) + 1 ] = \
-            self._init_landmark(self._robot.compute_noisy_pose(pose_mean,pose_cov), pose_mean, pose_cov, meas.meas_data, meas.meas_cov)
+            self._init_landmark(self._physics.compute_noisy_pose(pose_mean,pose_cov), pose_mean, pose_cov, meas.meas_data, meas.meas_cov)
           self._log('meas 4',self.pose)
         else:
           self._update_observed_landmark(curr_landmark, pose_cov, meas.meas_cov)
@@ -104,7 +104,7 @@ class Particle():
           self._log('meas 8',self.pose)
         else: 
           curr_landmark = self.landmarks[meas.correspondence] = \
-            self._init_landmark( self._robot.compute_noisy_pose(pose_mean,pose_cov), pose_mean, pose_cov, meas.meas_data, meas.meas_cov, meas.correspondence)
+            self._init_landmark( self._physics.compute_noisy_pose(pose_mean,pose_cov), pose_mean, pose_cov, meas.meas_data, meas.meas_cov, meas.correspondence)
           self._log('meas 9',self.pose)
       # ++++++ Penalize landmarks that we expect to see   
       if self._is_landmarks_fixed:
@@ -119,8 +119,8 @@ class Particle():
       self._log('meas 11',self.pose)
   
   def _update_dependencies_on_landmark(self, landmark: _EKF,  pose_mean, pose_cov, meas_data, meas_cov):
-    est_meas_data = self._robot.compute_meas_model(pose_mean, landmark.mean) # range_est, bearing_est
-    landmark.meas_jac_pose, landmark.meas_jac_land = self._robot.compute_meas_jacobians(pose_mean, landmark.mean)
+    est_meas_data = self._physics.compute_meas_model(pose_mean, landmark.mean) # range_est, bearing_est
+    landmark.meas_jac_pose, landmark.meas_jac_land = self._physics.compute_meas_jacobians(pose_mean, landmark.mean)
     landmark.innovation = meas_data - est_meas_data
 
     landmark.inv_pose_cov = np.linalg.inv(pose_cov) 
@@ -133,7 +133,7 @@ class Particle():
     landmark.sampled_pose = self._random.multivariate_normal(pose_mean, pose_cov)
 
   def _update_landmark_association_prob(self, meas_data, landmark):
-    improved_meas_data = self._robot.compute_meas_model(landmark.sampled_pose, landmark.mean) #range_improved, bearing_improved
+    improved_meas_data = self._physics.compute_meas_model(landmark.sampled_pose, landmark.mean) #range_improved, bearing_improved
     improved_innovation = meas_data - improved_meas_data
     
     exponent = -.5*(improved_innovation).T @ landmark.inv_Q @ improved_innovation
@@ -161,15 +161,15 @@ class Particle():
   def _init_landmark(self, sampled_pose,  pose_mean, pose_cov, meas_data, meas_cov, name = None):
     landmark = _EKF()
     landmark.name = name
-    landmark.mean = self._robot.compute_inverse_meas_model(sampled_pose,meas_data)
-    landmark.meas_jac_pose, landmark.meas_jac_land = self._robot.compute_meas_jacobians(sampled_pose, landmark.mean)
+    landmark.mean = self._physics.compute_inverse_meas_model(sampled_pose,meas_data)
+    landmark.meas_jac_pose, landmark.meas_jac_land = self._physics.compute_meas_jacobians(sampled_pose, landmark.mean)
     landmark.cov = np.linalg.inv(landmark.meas_jac_land @ np.linalg.inv(meas_cov) @ landmark.meas_jac_land.T)
     
     landmark.exist_log = self._landmark_constants.exist_log_inc
     
     landmark.pose_mean = pose_mean
     landmark.pose_cov = pose_cov
-    landmark.sampled_pose = self._robot.compute_noisy_pose(pose_mean, pose_cov)
+    landmark.sampled_pose = self._physics.compute_noisy_pose(pose_mean, pose_cov)
     landmark.particle_weight = self._new_landmark_threshold
     return landmark
 
@@ -178,8 +178,8 @@ class Particle():
 
     if len(landmark.sampled_pose) ==  0:
       pass
-    expected_meas_data = self._robot.compute_meas_model(landmark.sampled_pose, landmark.mean)
-    if self._robot.is_landmark_in_range(expected_meas_data, sensor_constraints).all():
+    expected_meas_data = self._physics.compute_meas_model(landmark.sampled_pose, landmark.mean)
+    if self._physics.is_landmark_in_range(expected_meas_data, sensor_constraints).all():
       landmark.exist_log -= self._landmark_constants.exist_log_dec
     return landmark.exist_log >= 0 # If the log odds probability falls below 0, we do not keep the landmark
 

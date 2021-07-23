@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-class RobotComputerBase(ABC):
+class PhysicsComputerBase(ABC):
     '''
     Provides Robot Physics Computatons 
     '''
