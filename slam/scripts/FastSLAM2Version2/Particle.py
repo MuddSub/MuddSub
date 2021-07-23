@@ -20,7 +20,7 @@ class Particle():
     self._landmarks = {}
 
     # to do: move this to util
-    LandmarkConstants = namedtuple('LandmarkConstants',['exist_log_inc','exist_log_dec'])
+    LandmarkConstants = namedtuple('LandmarkConstants', ['exist_log_inc', 'exist_log_dec'])
     self._landmark_constants = LandmarkConstants(.1, .1, 0)
 
     # Public variables
