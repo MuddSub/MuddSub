@@ -1,33 +1,40 @@
 RunFastSlam2 or Simulator
 - has a dataset
 
+Modify: modify in place 
+Compute: return values, no modificaiton in place. 
+Update: modify and compute 
+
 FastSLAM2: interface with dataset. (DONE)
 params: named tuple
 @external interface:
+++++ get_robot_position TODO 
+++++ get_landmarks TODO
+- add setter and getter
  - addMeasurement: external interface
  - addControl: external interface
- - getPoseAndLandmarks ... has helper function compute_avg
+ - getPoseAndLandmarks ... has helper function compute_avg # currently produce old data structure 
 @internal functions
  - _createParticle()
  - _updateMotion: call particles to update motion 
  - _updateMeas: call particles to update measurements
     - Measurement data class:  include an option for known correspondence --> maybe named tuple  
- - _resample
+ - _resample 
 
 Particle
- - updateMotion: call Robot for motion update
- - updateMeas
+ - updateMotion: call Robot for motion update  --> DONE
+ - updateMeas --> In Progress
  - updatePoseDistribution -> use the measurement and an EKF to update the current pose distribution
    ### *Note: in between these two functions, we need to sample the pose ###
  - getLandmarkLikelihood -> return both proposed particle pose distribution and prob of association for that landmark 
    (replace sample pose in landmark)
  - updateObservedLandmark, updateUnobservedLandmark, initLandmark...
 
-EKF: data only, replacing landmark.py
+EKF: data only, replacing landmark.py  --> TEMP DONE
 
-Util
+Util --> DONE
   - wrapToPi....
-Robot -> abstract class
+Robot -> abstract class --> DONE
     Public variables:
         default_meas_cov
     Abstract methods:
@@ -39,3 +46,14 @@ Robot -> abstract class
 
 abbreviation:
 measurement -> meas
+
+
+summary: 
+Models: contain data structures 
+Robots: contain any physics dependent info (2D vs 3D etc)
+Particles: FastSlam2 particles 
+FastSLAM2: main algorithm
+Utils: util file 
+
+Plotter
+Simulator 
