@@ -13,7 +13,7 @@ from matplotlib.patches import Ellipse
 import argparse
 from Util import wrapToPi
 from Models import MEAS,FastSLAM2Parameters
-from PhysicsComputer2D import PhysicsComputer2D
+from RobotPhysics2D import RobotPhysics2D
 from Validation import plot
 ROBOT_ID = 0
 START_STEP = 0
@@ -64,8 +64,8 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   # Create instance of FastSLAM2
   random = np.random.default_rng()
   initial_pose = np.array([robotData.getXTruth(0),robotData.getYTruth(0), robotData.getCompass(0)])
-  physics= PhysicsComputer2D(random, initial_pose, default_pose_cov)
-  algorithm = FastSLAM2(physics, parameters = params, random = random)
+  robotPhysics= RobotPhysics2D(random, initial_pose, default_pose_cov)
+  algorithm = FastSLAM2(robotPhysics, parameters = params, random = random)
 
   # Start loop
   theta = 0
@@ -78,7 +78,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     groundtruth_path_data.append([robotData.getXTruth(t),robotData.getYTruth(t)])
     if i==0:
       algorithm.prev_t = t
-      algorithm._physics.initial_pose[2] = wrapToPi(robotData.getCompass(t))
+      algorithm._robotPhysics.initial_pose[2] = wrapToPi(robotData.getCompass(t))
     if update[0] == "odometry":
       odometry = update[1]
       theta_meas = wrapToPi(robotData.getCompass(t))

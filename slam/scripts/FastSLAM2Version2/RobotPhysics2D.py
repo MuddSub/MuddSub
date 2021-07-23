@@ -1,14 +1,17 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from Util import wrapToPi
-from PhysicsComputerBase import PhysicsComputerBase
-class PhysicsComputer2D(PhysicsComputerBase):
+from RobotPhysicsBase import RobotPhysicsBase
+
+class RobotPhysics2D(RobotPhysicsBase):
     def __init__(self, random, initial_pose, default_pose_cov = None):
         super().__init__(random)
         self.initial_pose = initial_pose
         self.default_pose_cov = default_pose_cov
+
     def update_default_pose_cov(self, x_sigma, y_sigma, theta_sigma):
         self.default_pose_cov = np.array([x_sigma, y_sigma, theta_sigma])
+
     def compute_meas_model(self, pose, landmark_mean):
         #x,y,theta, vx, vy, omega, theta_p = pose
         x, y, theta = pose
@@ -56,4 +59,5 @@ class PhysicsComputer2D(PhysicsComputerBase):
         next_y = y + v/w * ( np.cos(theta) - np.cos(next_theta))
         return np.array([next_x, next_y, next_theta])
     
+    def 
     

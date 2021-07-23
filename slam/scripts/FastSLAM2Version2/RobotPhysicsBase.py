@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 import numpy as np
-class PhysicsComputerBase(ABC):
+class RobotPhysicsBase(ABC):
     '''
     Provides Robot Physics Computatons 
     '''
     def __init__(self, random):
         self._random = random 
+
     @abstractmethod
     def compute_meas_model(self):
         pass
@@ -22,8 +23,9 @@ class PhysicsComputerBase(ABC):
     def compute_motion_model(self):
         pass
 
-    def is_landmark_in_range(self, measurement, acceptable_range):
-        return measurement < acceptable_range
+    @abstractmethod
+    def is_landmark_in_range(self, pose, landmark_pos, sensor_constraints):
+        pass
   
-    def compute_noisy_pose(self,pose,pose_cov):
+    def compute_noisy_pose(self, pose, pose_cov):
       return self._random.multivariate_normal(pose, pose_cov)

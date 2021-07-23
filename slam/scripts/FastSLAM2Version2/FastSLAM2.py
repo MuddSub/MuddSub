@@ -6,7 +6,7 @@ from Models import MEAS,FastSLAM2Parameters
 # meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []
 
 class FastSLAM2():
-  def __init__(self, physics, parameters: FastSLAM2Parameters, random=np.random.default_rng()):
+  def __init__(self, robotPhysics, parameters: FastSLAM2Parameters, random=np.random.default_rng()):
 
     self.num_particles = parameters.num_particles
     self.particles = []
@@ -20,14 +20,14 @@ class FastSLAM2():
       'new_landmark_threshold':parameters.new_landmark_threshold,\
       'initial_landmarks': parameters.initial_landmarks
     }
-    self._physics = physics
+    self._robotPhysics = robotPhysics
 
     self._create_particles(self.num_particles)
 
   def _create_particles(self, n):
     for i in range(n):
-      self.particles.append(Particle(physics = self._physics, particle_id=i, **self._particles_params))
-    self._log('info',"fast slam 2 initial pose",self._physics.initial_pose)
+      self.particles.append(Particle(robotPhysics = self._robotPhysics, particle_id=i, **self._particles_params))
+    self._log('info',"fast slam 2 initial pose",self._robotPhysics.initial_pose)
 
   def add_control(self, control, time):
     self._update_meas()
