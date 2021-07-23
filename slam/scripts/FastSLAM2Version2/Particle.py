@@ -16,7 +16,6 @@ class Particle():
     self._random = kwargs.get('random', np.random.default_rng())
     self._is_landmarks_fixed = kwargs.get('is_landmarks_fixed', False)
     self._new_landmark_threshold = kwargs.get('new_landmark_threshold', 0.1)
-    
 
     # Private required variables 
     self._physics = physics
