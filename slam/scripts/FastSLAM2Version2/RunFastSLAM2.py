@@ -12,12 +12,12 @@ import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 import argparse
 from Util import wrapToPi
-from Models import MEAS,FastSLAM2Parameters
+from Models import Meas, FastSLAM2Parameters
 from RobotPhysics2D import RobotPhysics2D
 from Validation import plot
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 20000
+NUM_STEPS = 100
 MEAS_COV = np.diag([0.01, 0.01])
 SENSOR_RANGE = 1
 SENSOR_BEARING = np.pi
@@ -27,7 +27,7 @@ HARDCODE_COMPASS = True
 HARDCODE_MEAS = False
 NO_MEASUREMENTS = False
 PLOT_AVG = True
-INIT_LANDMARKS = False
+INIT_LANDMARKS = True
 KNOWN_CORRESPONDENCES = True
 
 '''
@@ -41,14 +41,14 @@ default_pose_cov = np.diag([1e-4,1e-4,1e-4])
 
 params = FastSLAM2Parameters(
   num_particles = num_particles,
-  is_landmarks_fixed = True, 
-  new_landmark_threshold = .1,
+  is_landmarks_fixed = True,
   initial_landmarks = {}
 )
+
 random_generator = np.random.default_rng()
 algorithm = None
 
-def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
+def runFastSlam2(pkl = '../../datasets/Jar/dataset1.pkl'):
   global algorithm
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
@@ -64,8 +64,8 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
   # Create instance of FastSLAM2
   random = np.random.default_rng()
   initial_pose = np.array([robotData.getXTruth(0),robotData.getYTruth(0), robotData.getCompass(0)])
-  robotPhysics= RobotPhysics2D(random, initial_pose, default_pose_cov)
-  algorithm = FastSLAM2(robotPhysics, parameters = params, random = random)
+  robot_physics = RobotPhysics2D(random, initial_pose, default_pose_cov)
+  algorithm = FastSLAM2(robot_physics, parameters=params, random = random)
 
   # Start loop
   theta = 0
@@ -78,7 +78,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
     groundtruth_path_data.append([robotData.getXTruth(t),robotData.getYTruth(t)])
     if i==0:
       algorithm.prev_t = t
-      algorithm._robotPhysics.initial_pose[2] = wrapToPi(robotData.getCompass(t))
+      algorithm._robot_physics.initial_pose[2] = wrapToPi(robotData.getCompass(t))
     if update[0] == "odometry":
       odometry = update[1]
       theta_meas = wrapToPi(robotData.getCompass(t))
@@ -117,7 +117,7 @@ def runFastSlam2(pkl = '../datasets/Jar/dataset1.pkl'):
             bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
           print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
           
-          meas = MEAS((range_meas, bearing_meas),MEAS_COV,(SENSOR_RANGE, SENSOR_BEARING), subject)         
+          meas = Meas((range_meas, bearing_meas), MEAS_COV,(SENSOR_RANGE, SENSOR_BEARING), subject)         
           algorithm.add_measurement(meas)
     
     # Log data

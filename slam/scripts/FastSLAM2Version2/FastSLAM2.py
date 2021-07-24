@@ -2,32 +2,31 @@ import numpy as np
 import copy
 from Particle import *
 from collections import namedtuple
-from Models import MEAS,FastSLAM2Parameters
+from Models import Meas, FastSLAM2Parameters
 # meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []
 
 class FastSLAM2():
-  def __init__(self, robotPhysics, parameters: FastSLAM2Parameters, random=np.random.default_rng()):
+  def __init__(self, robot_physics, parameters: FastSLAM2Parameters, random=np.random.default_rng()):
 
     self.num_particles = parameters.num_particles
     self.particles = []
 
-    self._meas_ls: list[MEAS] = [] 
+    self._meas_ls: list[Meas] = [] 
     self._prev_t = 0
     self._random = random
     self._particles_params = {
       'random': self._random,\
-      'is_landmarks_fixed':parameters.is_landmarks_fixed,\
-      'new_landmark_threshold':parameters.new_landmark_threshold,\
+      'is_landmarks_fixed': parameters.is_landmarks_fixed,\
       'initial_landmarks': parameters.initial_landmarks
     }
-    self._robotPhysics = robotPhysics
+    self._robot_physics = robot_physics
 
     self._create_particles(self.num_particles)
 
   def _create_particles(self, n):
     for i in range(n):
-      self.particles.append(Particle(robotPhysics = self._robotPhysics, particle_id=i, **self._particles_params))
-    self._log('info',"fast slam 2 initial pose",self._robotPhysics.initial_pose)
+      self.particles.append(Particle(robot_physics = self._robot_physics, particle_id=i, **self._particles_params))
+    self._log('info',"fast slam 2 initial pose", self._robot_physics.initial_pose)
 
   def add_control(self, control, time):
     self._update_meas()
@@ -36,7 +35,7 @@ class FastSLAM2():
     self._update_motion(control, time)
     self._meas_ls = []
 
-  def add_measurement(self, meas: MEAS):
+  def add_measurement(self, meas: Meas):
     self._meas_ls.append(meas)
 
   def _log(self, *msg):

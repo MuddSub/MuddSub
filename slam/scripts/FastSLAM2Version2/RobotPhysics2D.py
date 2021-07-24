@@ -4,6 +4,10 @@ from Util import wrapToPi
 from RobotPhysicsBase import RobotPhysicsBase
 
 class RobotPhysics2D(RobotPhysicsBase):
+    '''
+    Describes the physics for a robot in a 2D environment controlled via velocity and angular velocity commands.
+    The robot has a single camera with a max range and a field of view that measures range and bearing to landmarks.
+    '''
     def __init__(self, random, initial_pose, default_pose_cov = None):
         super().__init__(random)
         self.initial_pose = initial_pose
@@ -15,7 +19,7 @@ class RobotPhysics2D(RobotPhysicsBase):
     def compute_meas_model(self, pose, landmark_mean):
         #x,y,theta, vx, vy, omega, theta_p = pose
         x, y, theta = pose
-        lx,ly = landmark_mean
+        lx, ly = landmark_mean
 
         range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
         bearing_est = wrapToPi(np.arctan2((ly - y), (lx - x)) - theta) #TODO make imported
@@ -59,5 +63,29 @@ class RobotPhysics2D(RobotPhysicsBase):
         next_y = y + v/w * ( np.cos(theta) - np.cos(next_theta))
         return np.array([next_x, next_y, next_theta])
     
-    def 
-    
+    def is_landmark_in_range(self, pose, landmark_pos, sensor_constraints):
+        '''
+        Check whether the given landmark position is in range and in the field of view of the robot's camera.
+        '''
+        # Unpack data
+        x, y, theta = pose
+        lx, ly = landmark_pos
+        max_range, fov = sensor_constraints
+
+        # Filter by range
+        diff_x = lx - x
+        diff_y = ly - y
+        sqr_dist = diff_x * diff_x + diff_y * diff_y   # Square of the distance between the robot and the landmark
+        if sqr_dist <= max_range:
+            return False
+        
+        # Filter by field of view
+        dist = sqr_dist ** 0.5  # Distance between the robot and the landmark
+        unit_vec = (np.cos(theta), np.sin(theta))   # Compute the unit vector in the robot's direction
+        dot = (diff_x * unit_vec[0] + diff_y * unit_vec[1]) / dist  # Compute the cosine of the angle between the robot's direction vector and the landmark using the dot product
+        dot_range = np.cos(fov / 2) # This defines the range of cosine values between which the landmark falls in the robot's fov
+        if dot <= dot_range:
+            return False
+
+        # If the landmark is both within range and within the field of view, the robot should be able to see it
+        return True

@@ -43,7 +43,7 @@ class Particle():
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
 
-    if self.num_landmarks > 0 and params['land_means'] != None and len(params['land_means'])>0:
+    if self.num_landmarks > 0 and params['land_means'] != None and len(params['land_means']) > 0:
       for idx, land_mean in params['land_means'].items():
         land_cov = params['land_covs'].get(idx, params['land_default_cov'])
         self.landmarks[idx] = LandmarkEKF(land_mean=land_mean, land_cov=land_cov, random=self.random)

@@ -27,5 +27,5 @@ class RobotPhysicsBase(ABC):
     def is_landmark_in_range(self, pose, landmark_pos, sensor_constraints):
         pass
   
-    def compute_noisy_pose(self, pose, pose_cov):
+    def compute_sample_pose(self, pose, pose_cov):
       return self._random.multivariate_normal(pose, pose_cov)
