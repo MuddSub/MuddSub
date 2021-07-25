@@ -8,10 +8,10 @@ import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 import numpy as np
 # Set up animation
-def plot(n,plot_data,groundtruth_path_data,landmarksGroundtruth,plot_avg=False,save=False):
+def plot_data(n,plot_data,groundtruth_path_data,landmarks_ground_truth,plot_avg=False,save=False):
   fig = plt.figure()
   ax = fig.add_subplot(111)  
-  ax.plot(landmarksGroundtruth[:, 0], landmarksGroundtruth[:, 1], 'cx',label='true landmark')
+  ax.plot(landmarks_ground_truth[:, 0], landmarks_ground_truth[:, 1], 'cx',label='true landmark')
   
   num_steps = len(plot_data)
 
@@ -84,7 +84,7 @@ def plot(n,plot_data,groundtruth_path_data,landmarksGroundtruth,plot_avg=False,s
     anim.save(f, writer=writergif)
     print('Animation Saved!')
 
-def evaluate(plot_data,groundtruth_path_data,landmarksGroundtruth,landmarksNames):
+def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarksNames):
 
   # sqrted differences between the (pose-landmark distance) 
   # for ground truth and estimation 
@@ -99,7 +99,7 @@ def evaluate(plot_data,groundtruth_path_data,landmarksGroundtruth,landmarksNames
         robot_x = groundtruth_path_data[time][0]
         robot_y = groundtruth_path_data[time][1]
         robot_angle = groundtruth_path_data[time][2]  
-        for idx, (landmark_x, landmark_y) in zip(landmarksNames,landmarksGroundtruth):
+        for idx, (landmark_x, landmark_y) in zip(landmarksNames,landmarks_ground_truth):
           if idx in landmark_idxs:
             range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
             ground_truth_pose_landmark_dist.append(range_meas)
