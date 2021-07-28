@@ -21,9 +21,9 @@
     <link name="transdec_link">
         <visual name="transdec_bottom">
             <cast_shadows>false</cast_shadows>
-            <pose>0 0 0 0 0 0</pose>
+            <pose>0 0 -12.19 1.57 0 0</pose>
             <geometry>
-                <mesh><uri>model://transdec/meshes/full_transdec.STL</uri><scale>1 1 1</scale></mesh>
+                <mesh><uri>model://transdec/meshes/full_transdec.STL</uri><scale>0.001 0.001 0.001</scale></mesh>
             </geometry>
             <material>
               <script>
@@ -36,14 +36,13 @@
         <collision name="transdec_bottom">
             <pose>0 0 0 0 0 0</pose>
             <geometry>
-                <mesh><uri>model://transdec/meshes/full_transdec.STL</uri><scale>1 1 1</scale></mesh>
+                <mesh><uri>model://transdec/meshes/full_transdec.STL</uri><scale>0.001 0.001 0.001</scale></mesh>
             </geometry>
         </collision>
-
         <visual name="surface">
-            <pose>0 0 0 0 0 0</pose>
+            <pose>-1.5 1.5 -12.19 1.57 0 0</pose>
             <geometry>
-                <mesh><uri>model://transdec/meshes/WaterSurface.dae</uri><scale>1 1 1</scale></mesh>
+                <mesh><uri>model://transdec/meshes/transdecwater.STL</uri><scale>0.001 0.001 0.001</scale></mesh>
             </geometry>
             <material>
               <script>

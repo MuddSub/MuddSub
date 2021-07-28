@@ -12,23 +12,23 @@ class SimVision:
 
   def __init__(self):
     self._visionPub = rospy.Publisher("vision/detections", DetectionArray, queue_size=5)
-    
+
     self._modelStateSub = rospy.Subscriber("/gazebo/model_states", ModelStates, self._statesCB)
-    
+
     self._obstacles = set()
-    
+
     self._seq = 0
 
     ## TF2 transform broadcaster to update model state in TF
     self._tfBroadcaster = tf2_ros.TransformBroadcaster()
-  
+
     # Configure TF2 listener to get transforms from Gazebo
     self._tfBuffer = tf2_ros.Buffer()
     self._tfListener = tf2_ros.TransformListener(self._tfBuffer)
-  
+
   def _statesCB(self, modelStates):
 
-  
+
     if not rospy.has_param('/robot_name'):
       rospy.logwarn("Unable to get robot name from parameter server.")
       return
@@ -36,15 +36,14 @@ class SimVision:
 
     index = modelStates.name.index(robotName)
 
-
     for name,pose,twist in zip(modelStates.name, modelStates.pose, modelStates.twist):
       if name == robotName:
         continue
 
-      self._updateTransform(name, pose) 
-      self._obstacles.add(name) 
+      self._updateTransform(name, pose)
+      self._obstacles.add(name)
 
-     
+
   def _updateTransform(self, name, pose):
     t = geometry_msgs.msg.TransformStamped()
 
@@ -79,7 +78,7 @@ class SimVision:
       dx = trans.transform.translation.x
       dy = trans.transform.translation.y
       dz = trans.transform.translation.z
-      
+
       range = np.sqrt(dx**2 + dy**2 + dz**2)
       theta = np.arctan2(dx, dy)
       phi = np.arcsin(dz/range)

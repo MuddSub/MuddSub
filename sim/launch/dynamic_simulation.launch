@@ -1,7 +1,7 @@
 <launch>
   <param name="slam_use_ground_truth" value="true" />
 
-  <include file="$(find sim)/scenes/launch/transdec.launch">
+  <include file="$(find sim)/launch/transdec.launch">
     <arg name="paused"       value="true" />
   </include>
 
