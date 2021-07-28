@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(state_machine)
+project(mission)
 
 add_compile_options(-std=c++14)
 
@@ -33,11 +33,16 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(PythonLibs 2.7 REQUIRED)
 
+## Uncomment this if the package has a setup.py. This macro ensures
+## modules and global scripts declared therein get installed
+## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
+catkin_python_setup()
+
 #add_action_files(DIRECTORY action FILES Navigation.action)
 #generate_messages(DEPENDENCIES actionlib_msgs)
 
 catkin_package(
-#  CATKIN_DEPENDS actionlib_msgs 
+#  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
 #	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
 #	DEPENDS system_lib
@@ -46,4 +51,9 @@ catkin_package(
 include_directories(
 	# include
   ${catkin_INCLUDE_DIRS}
+)
+
+catkin_install_python(PROGRAMS
+  scripts/GoToTarget.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
