@@ -18,6 +18,9 @@ class LocateTarget(smach.State):
     self.startTime = time()
     self.lastSearch = self.startTime
     self.slam_subscriber = rospy.Subscriber('/slam/map', Map, self.callback, (userdata))
+    # need to add a publisher that specifies the target and moves into the specific alignment code
+    # self.task_publisher = rospy.Publisher('mechanisms/task', ???, queue_size=10)
+    # will need to have task name to try to find and whether its found
     self.target_confidence = None
 
   def callback(self, data, userdata):
@@ -30,10 +33,6 @@ class LocateTarget(smach.State):
         return self.target_confidence
     self.target_confidence = None # if we don't get entries of data that match our desired target, set the confidence to None
     return self.target_confidence
-
-  def search(self, userdata):
-    # need to decide on what search pattern to do
-    pass
   
   def execute(self, userdata):
     if self.target_confidence is not None and self.target_confidence[0] <= userdata.variance_threshold and self.target_confidence[1] <= userdata.variance_threshold and self.target_confidence[2] <= userdata.variance_threshold:
@@ -43,6 +42,6 @@ class LocateTarget(smach.State):
         return 'abort'
       elif (time() - self.lastSearch) > searchTime:
         self.lastSearch = time()
-        #initiate search pattern
-        self.search(userdata)
+        # initiate search pattern - should probably just publish a message indicating the target and moving to alignment
+        # self.task_publisher.publish(????)
     return 'active'

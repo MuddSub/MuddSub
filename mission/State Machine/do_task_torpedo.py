@@ -1,34 +1,34 @@
 #!/usr/bin/env python
 import rospy
 import smach
+from std_msgs.msg import Bool, Int32
 
 # very arbitrary constant values
 threshold = .8
 alignTime = 10
 timeoutTime = 30
+neutral_pwm = 1500
+launch_pwm = 1200 # will be changing after testing
 
 class DoTaskTorpedo(smach.State):
   def __init__(self):
     smach.State.__init__(self, outcomes=['active', 'success', 'abort'], input_keys = ['target_hole'])
     self.startTime = time()
-    # need to subscribe to some topic that will tell us if we're aligned properly with the torpedo
-    # self.torp_subscriber = rospy.Subscriber('torpedo topic', /robot/torpedo, self.callback, (userdata))
-    self.alignment_confidence = 0
+    # need to subscribe to some topic that will tell us if we're aligned properly with the torpedo, the way we do that can be changed
+    self.torp_subscriber = rospy.Subscriber('/mechanisms/torpedo_alignment', Bool, self.callback, (userdata), queue_size=1)
+    self.torp_publisher = rospy.Publisher('/mechanisms/torpedo_pwm', Int32, queue_size=10)
+    self.aligned = False
     self.lastAlign = self.startTime
 
   def callback(self, data):
-    # should update self.alignment_confidence
-    pass
-
-  def launch(self):
-    # move the servo that will launch the torpedo
-    pass
+    self.alignment_confidence = data
 
   def execute(self, userdata):
-    if self.alignment_confidence >= threshold:
-      self.launch()
-      return 'success'     # don't think that we can actually know if we succeeded, but there aren't torpedo redos as far as I'm aware
+    if self.aligned:
+      self.torp_publisher.publish(launch_pwm)
+      return 'success'
     else:
+      self.torp_publisher.publish(neutral_pwm)
       if (time() - self.startTime) > timeoutTime:
         return 'abort'
       elif (time() - self.lastAlign) > alignTime:
