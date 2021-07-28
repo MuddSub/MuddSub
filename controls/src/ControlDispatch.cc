@@ -47,7 +47,7 @@ void ControlDispatch::plantCallback(const nav_msgs::Odometry& msg)
   plantState_ = state - plantZero_;
 
   controller_->setPlantState(plantState_);
-  std::cout << " Plant State: " << plantState_.format(eigenInLine) << std::endl;
+  std::cout << " PLANT STATE: " << plantState_.format(eigenInLine) << std::endl;
 }
 
 void ControlDispatch::setpointCallback(const controls::State& state)
@@ -105,7 +105,7 @@ void ControlDispatch::setZero(const nav_msgs::Odometry& msg)
 
 void ControlDispatch::setZeroToCurrent()
 {
-  plantZero_ = plantState_;
+  plantZero_ = plantState_ + plantZero_;
 }
 
 }
@@ -113,17 +113,16 @@ void ControlDispatch::setZeroToCurrent()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "ControlsDispatch");
-  ros::NodeHandle nh;
 
   MuddSub::Controls::ControlDispatch controller;
 
   ros::Rate loopRate = 20;
   while(ros::ok())
   {
-    std::cout << "\x1b[2J\x1b[H";
     controller.iterate();
     ros::spinOnce();
     loopRate.sleep();
+    std::cout << "\x1b[2J\x1b[H";
   }
 
 }

@@ -16,7 +16,17 @@ def collectDepth():
 
 if __name__ == '__main__':
 	rospy.init_node('depth_sensor', anonymous=True)
-	ser = serial.Serial('/dev/ttyACM2') # open serial port
+	
+	try:
+		ser = serial.Serial('/dev/ttyACM0') # open serial port
+	except: 
+		rospy.logerr("Couldn't open serial")
+		exit()
+		
+	if not ser.is_open:
+		rospy.logerr("Couldn't open serial")
+		exit()
+
 	dsp = DepthSensorPublisher()
 	rate = rospy.Rate(10)
 	while not rospy.is_shutdown():
@@ -24,4 +34,3 @@ if __name__ == '__main__':
 		if depth is not None:
 			dsp.publishDepth(collectDepth())
 		rate.sleep()
-

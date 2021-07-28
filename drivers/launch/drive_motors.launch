@@ -1,9 +1,9 @@
 <launch>
-	<!-- Convert Kg force to PWM number (1100-1900) -->
-  <node name="force_to_pulse" pkg="drivers" type="kgf_to_pulse.py" output="screen" />
+  <!-- Convert Kg force to PWM number (1100-1900) -->
+  	<node name="force_to_pulse" pkg="drivers" type="kgf_to_pulse.py" output="screen" />
 
   <!-- Sending PWM over serial connection to the teensy -->
-  <node name="pulse_to_teensy" pkg="drivers" type="pulse_to_teensy.py" output="screen" />
+  	<node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
 
   <!-- Transformation between ENU and NED -->
 	<node name="publish_ned_transform" pkg="drivers" type="publish_ned_transform.py" output="screen" />

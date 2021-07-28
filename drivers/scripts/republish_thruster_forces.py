@@ -20,6 +20,6 @@ if __name__ == "__main__":
 
     for i, name in enumerate(thrusterNames):
         publishers.append(rospy.Publisher("/controls/thruster_forces/{}".format(name), Float64, queue_size=1))
-        subscribers.append(rospy.Subscriber("/alfie/thrusters/{}/input".format(i), FloatStamped, publish, (publishers[i], name)))
+        subscribers.append(rospy.Subscriber("/alfie/thrusters/{}/input".format(i), FloatStamped, publish, (publishers[i], name), queue_size=1))
 
     rospy.spin()

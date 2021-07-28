@@ -15,27 +15,31 @@ def kgfToPulse(msg, publisher):
         pulse = 147.464 * kgf + 1528.659
     else:
         pulse = 1500
+    if pulse > 1900:
+        pulse = 1900
+    elif pulse < 1100:
+        pulse = 1100
     pulseWidth(int(pulse), publisher)
 
 if __name__ == '__main__':
     rospy.init_node('force_to_pwm', anonymous=True)
-    vfl_publisher = rospy.Publisher('/robot/pwm/vfl', Int32, queue_size=10)
-    vfr_publisher = rospy.Publisher('/robot/pwm/vfr', Int32, queue_size=10)
-    vbl_publisher = rospy.Publisher('/robot/pwm/vbl', Int32, queue_size=10)
-    vbr_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=10)
-    hfl_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=10)
-    hfr_publisher = rospy.Publisher('/robot/pwm/hfr', Int32, queue_size=10)
-    hbl_publisher = rospy.Publisher('/robot/pwm/hbl', Int32, queue_size=10)
-    hbr_publisher = rospy.Publisher('/robot/pwm/hbr', Int32, queue_size=10)
+    vfl_publisher = rospy.Publisher('/robot/pwm/vfl', Int32, queue_size=1)
+    vfr_publisher = rospy.Publisher('/robot/pwm/vfr', Int32, queue_size=1)
+    vbl_publisher = rospy.Publisher('/robot/pwm/vbl', Int32, queue_size=1)
+    vbr_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=1)
+    hfl_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=1)
+    hfr_publisher = rospy.Publisher('/robot/pwm/hfr', Int32, queue_size=1)
+    hbl_publisher = rospy.Publisher('/robot/pwm/hbl', Int32, queue_size=1)
+    hbr_publisher = rospy.Publisher('/robot/pwm/hbr', Int32, queue_size=1)
 
-    vfl_subscriber = rospy.Subscriber('/controls/thruster_forces/vfl', Float64, kgfToPulse, (vfl_publisher))
-    vfr_subscriber = rospy.Subscriber('/controls/thruster_forces/vfr', Float64, kgfToPulse, (vfr_publisher))
-    vbl_subscriber = rospy.Subscriber('/controls/thruster_forces/vbl', Float64, kgfToPulse, (vbl_publisher))
-    vbr_subscriber = rospy.Subscriber('/controls/thruster_forces/vbr', Float64, kgfToPulse, (vbr_publisher))
-    hfl_subscriber = rospy.Subscriber('/controls/thruster_forces/hfl', Float64, kgfToPulse, (hfl_publisher))
-    hfr_subscriber = rospy.Subscriber('/controls/thruster_forces/hfr', Float64, kgfToPulse, (hfr_publisher))
-    hbl_subscriber = rospy.Subscriber('/controls/thruster_forces/hbl', Float64, kgfToPulse, (hbl_publisher))
-    hbr_subscriber = rospy.Subscriber('/controls/thruster_forces/hbr', Float64, kgfToPulse, (hbr_publisher))
+    vfl_subscriber = rospy.Subscriber('/controls/thruster_forces/vfl', Float64, kgfToPulse, (vfl_publisher), queue_size=1)
+    vfr_subscriber = rospy.Subscriber('/controls/thruster_forces/vfr', Float64, kgfToPulse, (vfr_publisher), queue_size=1)
+    vbl_subscriber = rospy.Subscriber('/controls/thruster_forces/vbl', Float64, kgfToPulse, (vbl_publisher), queue_size=1)
+    vbr_subscriber = rospy.Subscriber('/controls/thruster_forces/vbr', Float64, kgfToPulse, (vbr_publisher), queue_size=1)
+    hfl_subscriber = rospy.Subscriber('/controls/thruster_forces/hfl', Float64, kgfToPulse, (hfl_publisher), queue_size=1)
+    hfr_subscriber = rospy.Subscriber('/controls/thruster_forces/hfr', Float64, kgfToPulse, (hfr_publisher), queue_size=1)
+    hbl_subscriber = rospy.Subscriber('/controls/thruster_forces/hbl', Float64, kgfToPulse, (hbl_publisher), queue_size=1)
+    hbr_subscriber = rospy.Subscriber('/controls/thruster_forces/hbr', Float64, kgfToPulse, (hbr_publisher), queue_size=1)
 
     rospy.spin()
 

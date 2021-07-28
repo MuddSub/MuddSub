@@ -6,5 +6,9 @@
    	<param name="pixel_format" value="yuyv" />
    	<param name="camera_frame_id" value="usb_cam" />
     <param name="io_method" value="mmap"/>
+    <param name="framerate" value="5" />
   </node>
+
+  <node pkg="rosbag" type="record" name="rosbag_record"
+    args="record -o /mnt/front_camera /usb_cam_0/image_compressed" />
 </launch>
