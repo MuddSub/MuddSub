@@ -31,6 +31,7 @@ class Particle():
 
     # Initialize landmarks that are passed in
     for name, landmark in initial_landmarks.items():
+      #TODO No covariance is passed in 
       mean, cov = landmark
       if cov == None:
         cov = np.diag([1e-5, 1e-5])
@@ -85,7 +86,7 @@ class Particle():
     
     # Iteratively update pose mean and pose covariance using each measurement of the same time step
     for meas in meas_ls:
-      # ++++++ If unknown correspondence, perform data association for each landmark
+      # ++++++ If unknown correspondence, perform data association for each landmark 
       if meas.correspondence == None: 
         for land_idx, landmark in list(self.landmarks.items()):
           # +++ New particle pose is computed here

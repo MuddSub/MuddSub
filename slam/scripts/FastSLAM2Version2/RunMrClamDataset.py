@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
 import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
-import argparses
+#import argparses
 from Util import wrapToPi
 from Models import Meas,FastSLAM2Parameters
 from RobotPhysics2D import RobotPhysics2D
-from Validation import plot
+from Validation import plot_data
 
 ROBOT_ID = 0
 START_STEP = 0
@@ -50,7 +50,7 @@ class RunMrClamDataset():
 
 
 
-        self.plot_data = []
+        self.plot_data_list = []
         self.groundtruth_path_data = []
         self.num_particles = 2
         self.default_pose_cov = np.diag([1e-4,1e-4,1e-4])
@@ -58,14 +58,14 @@ class RunMrClamDataset():
         self.params = FastSLAM2Parameters(
             num_particles = self.num_particles,
             is_landmarks_fixed = True, 
-            new_landmark_threshold = .1,
+            #new_landmark_threshold = .1,
             initial_landmarks = {}
         )
         self.random_generator = np.random.default_rng()
         self.algorithm = None
         self.update = None
 
-    def loadData(self, pkl =  '../datasets/Jar/dataset1.pkl'):
+    def loadData(self, pkl =  '../../datasets/Jar/dataset1.pkl'):
         global algorithm
         self.dataloader = pickle.load(open(pkl,'rb'))
         self.robotData = self.dataloader.robots[ROBOT_ID]
@@ -74,11 +74,10 @@ class RunMrClamDataset():
             for idx, landmark in self.dataloader.map.landmarkDict.items():
                 x = landmark['X']
                 y = landmark['Y']
-                self.params.initial_landmarks[idx] = np.array([x, y])
+                self.params.initial_landmarks[idx] = np.array([np.array([x, y]), None])
         
         
 
-        self.runFastSlam2()
 
     def runFastSlam2(self):
         
@@ -95,11 +94,11 @@ class RunMrClamDataset():
             self.groundtruth_path_data.append([self.robotData.getXTruth(t),self.robotData.getYTruth(t)])
             if i==0:
                 self.algorithm.prev_t = t
-                self.algorithm._robotPhysics.initial_pose[2] = wrapToPi(self.robotData.getCompass(t))
+                self.algorithm._robot_physics.initial_pose[2] = wrapToPi(self.robotData.getCompass(t))
             if self.update[0] == "odometry":
                 #theta_meas = wrapToPi(robotData.getCompass(t))
                 self.addControl(t)
-
+                
                 # Hard coding poses
                 if self.hardcode_compass:
                     for j in range(len(self.algorithm.particles)):
@@ -107,7 +106,7 @@ class RunMrClamDataset():
                         y = self.algorithm.particles[j].pose[1]
                         theta = self.robotData.getCompass(t)
                         self.algorithm.particles[j].pose = np.array([x, y, theta])
-            elif(not self.no_measurements):
+            else:
                 print("step", i)
                 self.addMeas()
                 
@@ -123,12 +122,12 @@ class RunMrClamDataset():
                 landmarksGroundtruth.append(np.array([landmark['X'], landmark['Y']]))
         landmarksGroundtruth = np.array(landmarksGroundtruth)
         print("num landmark: ground truth", len(landmarksGroundtruth), " what we got", len(self.algorithm.particles[0].landmarks))
-        plot(self.num_particles, self.plot_data,self.groundtruth_path_data, landmarksGroundtruth)
+        plot_data(self.num_particles, self.plot_data_list,self.groundtruth_path_data, landmarksGroundtruth)
             
     def logData(self,i):
         # Log data
         _, *slam_snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
-        self.plot_data.append([i,*slam_snapshot])
+        self.plot_data_list.append([i,*slam_snapshot])
 
     def addControl(self, t):
         odometry = self.update[1]
@@ -138,32 +137,38 @@ class RunMrClamDataset():
 
         # Update particle poses
         self.algorithm.add_control((velocity, angular_velocity), t)
-        
+
     def addMeas(self):
         measurement = self.update[1]
         time, subject, range_meas, bearing_meas = measurement
         
         # Update EKFs
-        if (LANDMARK_NUM == None and subject > 5) or subject == LANDMARK_NUM: #if subject > 5 :
-            landmark = self.dataloader.map.getLandmarkLocation(subject)
-            landmark_x = landmark['X']
-            landmark_y = landmark['Y']
-
-            # Use groundtruth to provide accurate measurement
-            if self.hardcode_meas:
-                robot_x = self.robotData.getXTruth(time)
-                robot_y = self.robotData.getYTruth(time)
-                robot_angle = self.robotData.getCompass(time)
-                range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
-                bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
-            #print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
-            print( "updated measurement", subject, "with position", [landmark_x, landmark_y])
+        if not self.no_measurements:
             
-            meas = Meas((range_meas, bearing_meas),MEAS_COV,(SENSOR_RANGE, SENSOR_BEARING), subject)         
-            self.algorithm.add_measurement(meas)
+            if (LANDMARK_NUM == None and subject > 5) or subject == LANDMARK_NUM: #if subject > 5 :
+                landmark = self.dataloader.map.getLandmarkLocation(subject)
+                landmark_x = landmark['X']
+                landmark_y = landmark['Y']
+
+                # Use groundtruth to provide accurate measurement
+                if self.hardcode_meas:
+                    robot_x = self.robotData.getXTruth(time)
+                    robot_y = self.robotData.getYTruth(time)
+                    robot_angle = self.robotData.getCompass(time)
+                    range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
+                    bearing_meas = wrapToPi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
+                #print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
+                print( "updated measurement", subject, "with position", [landmark_x, landmark_y])
+                
+                meas = Meas((range_meas, bearing_meas),MEAS_COV,(SENSOR_RANGE, SENSOR_BEARING), subject)         
+                self.algorithm.add_measurement(meas)
 
 
 
+
+clamDataSet = RunMrClamDataset()
+clamDataSet.loadData()
+clamDataSet.runFastSlam2()
 
 
 
