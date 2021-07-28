@@ -1,15 +1,15 @@
 surge:
-  kP: 0
+  kP: 6
   kI: 0
-  kD: 0
+  kD: 10
 sway:
-  kP: 0
+  kP: 6
   kI: 0
-  kD: 0
+  kD: 10
 heave:
-  kP: 0
-  kI: 0
-  kD: 0
+  kP: 10
+  kI: 1
+  kD: 20
 roll:
   kP: 0
   kI: 0
