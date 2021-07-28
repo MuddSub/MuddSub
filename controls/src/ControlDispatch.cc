@@ -94,6 +94,7 @@ void ControlDispatch::iterate()
 
   broadcastStateAsTF(plantState_ + plantZero_, "world_ned", "robot_plant_state");
   broadcastStateAsTF(setpoint_ + plantZero_, "world_ned", "robot_setpoint");
+  broadcastStateAsTF(plantZero_, "world_ned", "plant_zero");
 
   publishControl(control);
 }

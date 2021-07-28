@@ -60,7 +60,7 @@ stateVector_t Controller::getError()
 
   try
   {
-    plantTransformStamped = tfBuffer_.lookupTransform("world_ned", "robot_plant_state",
+    plantTransformStamped = tfBuffer_.lookupTransform("plant_zero", "robot_plant_state",
                              ros::Time(0));
   }
   catch (tf2::TransformException &e)
