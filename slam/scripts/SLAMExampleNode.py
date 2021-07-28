@@ -2,7 +2,7 @@
 
 import rospy
 from std_msgs.msg import Header
-from slam.SLAMPublisher import SLAMPublisher
+from slam.utils.SLAMPublisher import SLAMPublisher
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance
 from geometry_msgs.msg import Pose

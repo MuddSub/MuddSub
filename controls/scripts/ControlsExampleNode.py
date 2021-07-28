@@ -2,7 +2,7 @@
 
 import rospy
 from std_msgs.msg import Header
-from ControlsPublisher import ControlsPublisher
+from controls.utils.ControlsPublisher import ControlsPublisher
 from geometry_msgs.msg import WrenchStamped
 from geometry_msgs.msg import Wrench
 from geometry_msgs.msg import Vector3

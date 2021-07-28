@@ -11,4 +11,3 @@ while(True):
     approve = input("Correct? (y/n): {}".format(st))
     if approve == "y":
         s += st + "\n"
-

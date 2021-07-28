@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from DepthSensorPublisher import DepthSensorPublisher
+from drivers.utils.DepthSensorPublisher import DepthSensorPublisher
 from std_msgs.msg import Header
 from drivers.msg import Depth
 from sensor_msgs.msg import FluidPressure

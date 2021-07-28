@@ -2,7 +2,8 @@
 
 import rospy
 from std_msgs.msg import Header
-from HydrophonesPublisher import *
+# from HydrophonesPublisher import *
+from hydrophones.utils.HydrophonesPublisher import HydrophonesPublisher
 from hydrophones.msg import PingerData
 from sensor_msgs.msg import Range
 from geometry_msgs.msg import Vector3

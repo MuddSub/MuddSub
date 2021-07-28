@@ -1,0 +1,8 @@
+<launch>
+  <arg name="load_config_file" default="$(find slam)/cfg/slam_params.yaml" />
+  <arg name="dump_config_file" default="$(find slam)/cfg/slam_params.yaml" />
+  <arg name="namespace" value="slam_server" />
+  <node name="$(anon dump_params)" pkg="utils" type="DumpParams.py" args="$(arg dump_config_file) $(arg namespace)" />
+  <rosparam file="$(arg load_config_file)" command="load" ns="$(arg namespace)" />
+  <node name="slam_server" pkg="slam" type="SLAMServer.py" />
+</launch>

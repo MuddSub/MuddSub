@@ -14,4 +14,3 @@ if __name__ == "__main__":
     params = rospy.get_param(args.namespace)
     with open(args.output, "w") as file_path:
         yaml.dump(params, file_path)
-
