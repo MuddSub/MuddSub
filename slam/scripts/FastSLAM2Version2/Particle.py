@@ -9,7 +9,7 @@ class Particle():
   '''
   Class representing a particle in FastSLAM2
   '''
-  def __init__(self, robot_physics: RobotPhysics2D, particle_id = None, **kwargs):
+  def __init__(self, robot_physics: RobotPhysics2D, particle_id=None, **kwargs):
     # random=None, map=None, num_landmarks_fixed=False, new_landmark_threshold=0.1, id=None
 
     # Private variables from kwargs
@@ -30,9 +30,10 @@ class Particle():
     initial_landmarks = kwargs.get('initial_landmarks', {})
 
     # Initialize landmarks that are passed in
+    print(initial_landmarks)
     for name, landmark in initial_landmarks.items():
       mean, cov = landmark
-      if cov == None:
+      if cov is None:
         cov = np.diag([1e-5, 1e-5])
       sampled_pose = self._robot_physics.compute_sample_pose(self.pose, self.pose_cov)
       landmark = _EKF(name=name, mean=mean, cov=cov)

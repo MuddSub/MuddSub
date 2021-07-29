@@ -36,14 +36,9 @@ threshold: .3, meas cov: .1, motion cov: 1e-2
 
 plot_data = []
 groundtruth_path_data = []
-num_particles = 2
-default_pose_cov = np.diag([1e-4,1e-4,1e-4])
-
-params = FastSLAM2Parameters(
-  num_particles = num_particles,
-  is_landmarks_fixed = True,
-  initial_landmarks = {}
-)
+num_particles = 1
+default_pose_cov = np.diag([1e-4, 1e-4, 1e-4])
+default_land_cov = np.diag([1e-4, 1e-4])
 
 random_generator = np.random.default_rng()
 algorithm = None
@@ -52,20 +47,26 @@ def runFastSlam2(pkl = '../../datasets/Jar/dataset1.pkl'):
   global algorithm
   dataloader = pickle.load(open(pkl,'rb'))
   robotData = dataloader.robots[ROBOT_ID]
-  
-  if INIT_LANDMARKS:
 
-    params.initial_landmarks = {}
+  # Create the initial map
+  initial_landmarks = {}
+  if INIT_LANDMARKS:
     for idx, landmark in dataloader.map.landmarkDict.items():
-      x = landmark['X']
-      y = landmark['Y']
-      params.initial_landmarks[idx] = np.array([x, y])
+      land_mean = np.array([landmark['X'], landmark['Y']])
+      initial_landmarks[idx] = (land_mean, default_land_cov)
+
+  # Create FastSLAM2Parameters
+  params = FastSLAM2Parameters(
+    num_particles = num_particles,
+    is_landmarks_fixed = True,
+    initial_landmarks = initial_landmarks
+  )
 
   # Create instance of FastSLAM2
   random = np.random.default_rng()
   initial_pose = np.array([robotData.getXTruth(0),robotData.getYTruth(0), robotData.getCompass(0)])
   robot_physics = RobotPhysics2D(random, initial_pose, default_pose_cov)
-  algorithm = FastSLAM2(robot_physics, parameters=params, random = random)
+  algorithm = FastSLAM2(robot_physics, parameters=params, random=random)
 
   # Start loop
   theta = 0
