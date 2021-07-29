@@ -93,9 +93,10 @@ class FastSLAM2():
         landmark_idxs.append(idx)
       return self._prev_t, best_particle_idx, np.array(particle_poses), landmark_idxs, np.array(landmark_means), np.array(landmark_covs)
     
-    def get_landmark_map(self, option='best'):
-      landmark_map = {}
-      if option == 'best':
-        for idx, landmark in best_particle.landmarks.items():
-          landmark_map[idx] = landmark.mean
-      return landmark_map
+  def get_landmark_map(self, option='best'):
+    landmark_map = {}
+    if option == 'best':
+      best_particle = max(self.particles, key=lambda p: p.accumulated_weight)
+      for idx, landmark in best_particle.landmarks.items():
+        landmark_map[idx] = landmark.mean
+    return landmark_map

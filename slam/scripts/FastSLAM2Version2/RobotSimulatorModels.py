@@ -11,8 +11,8 @@ class Sensor():
       self.name = name
       self.update_period = update_period
 class RobotPhysics2DForSim(RobotPhysics2D):
-  def __init__(self, random):
-    super().__init__(random)
+  def __init__(self, random,initial_pose, default_pose_cov):
+    super().__init__(random,initial_pose, default_pose_cov)
 
   def compute_control(self, robot_pose, target, velocity, angular_velocity):
     range_meas, bearing_meas = self.compute_meas_model(robot_pose, target)
@@ -29,8 +29,9 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     return np.random.normal(range_mea,sensor_noise_std['range']),np.random.normal(bearing_mea,sensor_noise_std['bearing'])
 
   def is_close(self, robot_pose,target,acceptable_range, acceptable_bearing):
-    measurement = compute_true_measurement(robot_pose,target)
-    measurement = compute_actual_measurement(measurement,{'range':acceptable_range,'bearing':acceptable_bearing},{'range':0,'bearing':0})
+    print(robot_pose,target,acceptable_range, acceptable_bearing)
+    measurement = self.compute_meas_model(robot_pose,target)
+    measurement = self.compute_actual_measurement(measurement,{'range':acceptable_range,'bearing':acceptable_bearing},{'range':0,'bearing':0})
     if measurement[0]: return True
     return False
 
