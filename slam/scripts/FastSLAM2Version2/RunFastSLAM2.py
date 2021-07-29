@@ -14,10 +14,10 @@ import argparse
 from Util import wrapToPi
 from Models import Meas, FastSLAM2Parameters
 from RobotPhysics2D import RobotPhysics2D
-from Validation import plot
+from Validation import plot_data
 ROBOT_ID = 0
 START_STEP = 0
-NUM_STEPS = 100
+NUM_STEPS = 20000
 MEAS_COV = np.diag([0.01, 0.01])
 SENSOR_RANGE = 1
 SENSOR_BEARING = np.pi
@@ -34,7 +34,7 @@ KNOWN_CORRESPONDENCES = True
 threshold: .3, meas cov: .1, motion cov: 1e-2
 '''
 
-plot_data = []
+plot_data_list = []
 groundtruth_path_data = []
 num_particles = 1
 default_pose_cov = np.diag([1e-4, 1e-4, 1e-4])
@@ -94,11 +94,11 @@ def runFastSlam2(pkl = '../../datasets/Jar/dataset1.pkl'):
 
       # Hard coding poses
       if HARDCODE_COMPASS:
-        for i in range(len(algorithm.particles)):
-          x = algorithm.particles[i].pose[0]
-          y = algorithm.particles[i].pose[1]
+        for j in range(len(algorithm.particles)):
+          x = algorithm.particles[j].pose[0]
+          y = algorithm.particles[j].pose[1]
           theta = robotData.getCompass(t)
-          algorithm.particles[i].pose = np.array([x, y, theta])
+          algorithm.particles[j].pose = np.array([x, y, theta])
     else:
       measurement = update[1]
       time, subject, range_meas, bearing_meas = measurement
@@ -123,7 +123,7 @@ def runFastSlam2(pkl = '../../datasets/Jar/dataset1.pkl'):
     
     # Log data
     _, *slam_snapshot = algorithm.get_pose_and_landmarks_for_plot()
-    plot_data.append([i,*slam_snapshot])
+    plot_data_list.append([i,*slam_snapshot])
 
   # Extract landmark groundtruth from dataloader
   landmarksGroundtruth = []
@@ -134,7 +134,7 @@ def runFastSlam2(pkl = '../../datasets/Jar/dataset1.pkl'):
   
   print("num landmark: ground truth", len(landmarksGroundtruth), " what we got", len(algorithm.particles[0].landmarks))
 
-  plot(num_particles, plot_data,groundtruth_path_data, landmarksGroundtruth)
+  plot_data(num_particles, plot_data_list,groundtruth_path_data, landmarksGroundtruth)
 def error_ellipse(points, cov, nstd=2):
     """
     Source: http://stackoverflow.com/a/12321306/1391441
