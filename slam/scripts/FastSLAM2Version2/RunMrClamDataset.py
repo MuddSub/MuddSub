@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 #import argparses
 from Util import wrapToPi
-from Models import Meas,FastSLAM2Parameters
+from Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from RobotPhysics2D import RobotPhysics2D
 from Validation import plot_data
 
@@ -37,18 +37,14 @@ KNOWN_CORRESPONDENCES = True
 threshold: .3, meas cov: .1, motion cov: 1e-2
 '''
 
-class RunMrClamDataset():
-    def __init__(self, **kwargs):
-
-        
+class RunMRCLAMDataset():
+    def __init__(self, **kwargs):        
         self.hardcode_compass = kwargs.get('hardcode_compass',True)
         self.hardcode_meas = kwargs.get('hardcode_meas', False)
         self.no_measurements = kwargs.get('no_measurements', False)
         self.plot_avg = kwargs.get('plot_avg', True)
         self.init_landmarks = kwargs.get('init_landmarks', False)
         self.known_correspondences = kwargs.get('known_correspondences', True)
-
-
 
         self.plot_data_list = []
         self.groundtruth_path_data = []
@@ -58,9 +54,10 @@ class RunMrClamDataset():
         self.params = FastSLAM2Parameters(
             num_particles = self.num_particles,
             is_landmarks_fixed = True, 
-            #new_landmark_threshold = .1,
-            initial_landmarks = {}
+            initial_landmarks = {},
+            landmark_constants = LandmarkConstants()
         )
+
         self.random_generator = np.random.default_rng()
         self.algorithm = None
         self.update = None
@@ -75,12 +72,8 @@ class RunMrClamDataset():
                 x = landmark['X']
                 y = landmark['Y']
                 self.params.initial_landmarks[idx] = np.array([np.array([x, y]), None])
-        
-        
-
 
     def runFastSlam2(self):
-        
         random = np.random.default_rng()
         initial_pose = np.array([self.robotData.getXTruth(0),self.robotData.getYTruth(0), self.robotData.getCompass(0)])
         robot_physics = RobotPhysics2D(random, initial_pose, self.default_pose_cov)
@@ -89,7 +82,6 @@ class RunMrClamDataset():
         theta = 0
         for i in range(NUM_STEPS):
             self.update = self.robotData.getNext()
-            
             t = self.update[1][0]
             self.groundtruth_path_data.append([self.robotData.getXTruth(t),self.robotData.getYTruth(t)])
             if i==0:
@@ -98,7 +90,6 @@ class RunMrClamDataset():
             if self.update[0] == "odometry":
                 #theta_meas = wrapToPi(robotData.getCompass(t))
                 self.addControl(t)
-                
                 # Hard coding poses
                 if self.hardcode_compass:
                     for j in range(len(self.algorithm.particles)):
@@ -113,8 +104,7 @@ class RunMrClamDataset():
             self.logData(i)
         
         self.getGroundtruth()
-            
-    
+
     def getGroundtruth(self):
         landmarksGroundtruth = []
         for idx, landmark in self.dataloader.map.landmarkDict.items():
@@ -133,8 +123,6 @@ class RunMrClamDataset():
         odometry = self.update[1]
         # Use groundtruth to calculate odometry input
         time, velocity, angular_velocity = odometry
-        # print("step", i, "updated odometry", (vx, vy, theta_imu, omega_imu))
-
         # Update particle poses
         self.algorithm.add_control((velocity, angular_velocity), t)
 
@@ -160,15 +148,9 @@ class RunMrClamDataset():
                 #print("step", i, "updated measurement", subject, "with position", [landmark_x, landmark_y])
                 print( "updated measurement", subject, "with position", [landmark_x, landmark_y])
                 
-                meas = Meas((range_meas, bearing_meas),MEAS_COV,(SENSOR_RANGE, SENSOR_BEARING), subject)         
+                meas = Meas((range_meas, bearing_meas), MEAS_COV, (SENSOR_RANGE, SENSOR_BEARING), subject)         
                 self.algorithm.add_measurement(meas)
 
-
-
-
-clamDataSet = RunMrClamDataset()
+clamDataSet = RunMRCLAMDataset()
 clamDataSet.loadData()
 clamDataSet.runFastSlam2()
-
-
-

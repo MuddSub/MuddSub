@@ -32,19 +32,11 @@ class Particle():
     # Initialize landmarks that are passed in
     print(initial_landmarks)
     for name, landmark in initial_landmarks.items():
-      #TODO No covariance is passed in 
       mean, cov = landmark
       if cov is None:
         cov = np.diag([1e-5, 1e-5])
-      sampled_pose = self._robot_physics.compute_sample_pose(self.pose, self.pose_cov)
-      landmark = _EKF(name=name, mean=mean, cov=cov)
-      landmark.meas_jac_pose, landmark.meas_jac_land = self._robot_physics.compute_meas_jacobians(sampled_pose, landmark.mean)
-      landmark.exist_log = self._landmark_constants.exist_log_inc
-      landmark.pose_mean = self.pose
-      landmark.pose_cov = self.pose_cov
-      landmark.sampled_pose = sampled_pose
-      landmark.particle_weight = self._landmark_constants.new_landmark_threshold
-      self.landmarks[name] = landmark
+      # sampled_pose = self._robot_physics.compute_sample_pose(self.pose, self.pose_cov)
+      self.landmarks[name] = self._init_landmark(str(name), mean, cov)
 
   def set_params(self, **kwargs):
     '''
@@ -88,7 +80,7 @@ class Particle():
     # Iteratively update pose mean and pose covariance using each measurement of the same time step
     for meas in meas_ls:
       # ++++++ If unknown correspondence, perform data association for each landmark 
-      if meas.correspondence == None: 
+      if meas.correspondence is None:
         for land_idx, landmark in list(self.landmarks.items()):
           # +++ New particle pose is computed here
           self._update_dependencies_on_landmark(landmark, pose_mean, pose_cov, meas.meas_data, meas.meas_cov)
@@ -101,10 +93,11 @@ class Particle():
           curr_landmark = max(list(self.landmarks.values()), key = lambda landmark: landmark.association_prob)
       
         # No landmark or not confident: create new landmark 
-        if curr_landmark == None \
+        if curr_landmark is None \
           or (curr_landmark.association_prob < self._landmark_constants.new_landmark_threshold and self._are_landmarks_fixed):
-          curr_landmark = self.landmarks[len(self.landmarks) + 1 ] = \
-            self._init_landmark(self._robot_physics.compute_sample_pose(pose_mean, pose_cov), pose_mean, pose_cov, meas.meas_data, meas.meas_cov)
+          key = len(self.landmarks) + 1
+          curr_landmark = self.landmarks[key] = \
+            self._init_landmark_with_meas(pose_mean, pose_cov, meas.meas_data, meas.meas_cov, name=str(key))
           self._log('meas 4',self.pose)
         else:
           self._update_observed_landmark(curr_landmark, pose_cov, meas.meas_cov)
@@ -121,10 +114,10 @@ class Particle():
           self._log('meas 7',self.pose)
           self._update_observed_landmark(curr_landmark, pose_cov, meas.meas_cov)
           self._log('meas 8',self.pose)
-        else: 
+        else:
           curr_landmark = self.landmarks[meas.correspondence] = \
-            self._init_landmark(self._robot_physics.compute_sample_pose(pose_mean,pose_cov), pose_mean, pose_cov, meas.meas_data, meas.meas_cov, meas.correspondence)
-          self._log('meas 9',self.pose)
+            self._init_landmark_with_meas(pose_mean, pose_cov, meas.meas_data, meas.meas_cov, name=str(meas.correspondence))
+          self._log('meas 9', self.pose)
 
       # ++++++ Penalize landmarks that we expect to see
       if self._are_landmarks_fixed:
@@ -179,27 +172,41 @@ class Particle():
     exponent = -.5* landmark.innovation.T @ L_inv @ landmark.innovation 
     landmark.particle_weight = two_pi_L_inv_sqrt * np.exp(exponent)
 
-  def _init_landmark(self, pose_mean, pose_cov, meas_data, meas_cov, name = None):
+  def _init_landmark(self, name, mean, cov, **kwargs):
+    landmark = _EKF(
+      name = name, 
+      mean = mean, 
+      cov = cov,
+      sampled_pose = kwargs.get('sampled_pose', self._robot_physics.compute_sample_pose(self.pose, self.pose_cov)),
+      pose_mean = kwargs.get('pose_mean', self.pose),
+      pose_cov = kwargs.get('pose_cov', self.pose_cov),
+      association_prob = self._landmark_constants.new_landmark_threshold,
+      exist_log = self._landmark_constants.exist_log_inc,
+      particle_weight = self._landmark_constants.new_landmark_threshold
+    )
+    return landmark
+
+  def _init_landmark_with_meas(self, pose_mean, pose_cov, meas_data, meas_cov, name = None):
+    # Sample the particle's pose
     sampled_pose = self._robot_physics.compute_sample_pose(pose_mean, pose_cov)
-    landmark = _EKF()
-    landmark.name = name
-    landmark.mean = self._robot_physics.compute_inverse_meas_model(sampled_pose, meas_data)
-    landmark.meas_jac_pose, landmark.meas_jac_land = self._robot_physics.compute_meas_jacobians(sampled_pose, landmark.mean)
-    landmark.cov = np.linalg.inv(landmark.meas_jac_land @ np.linalg.inv(meas_cov) @ landmark.meas_jac_land.T)
-    
-    landmark.exist_log = self._landmark_constants.exist_log_inc
-    
-    landmark.pose_mean = pose_mean
-    landmark.pose_cov = pose_cov
-    landmark.sampled_pose = sampled_pose
-    landmark.particle_weight = self._landmark_constants.new_landmark_threshold
+
+    # Use the measurement data to compute the landmark's mean and covariance
+    mean = self._robot_physics.compute_inverse_meas_model(sampled_pose, meas_data)
+    meas_jac_pose, meas_jac_land = self._robot_physics.compute_meas_jacobians(sampled_pose, mean)
+    cov = np.linalg.inv(meas_jac_land @ np.linalg.inv(meas_cov) @ meas_jac_land.T)
+
+    # Initialize and return landmark
+    landmark = self._init_landmark(name, mean, cov, sampled_pose=sampled_pose, pose_mean=pose_mean, pose_cov=pose_cov)
+    landmark.meas_jac_pose = meas_jac_pose
+    landmark.meas_jac_land = meas_jac_land
+    self._log('init', landmark.name, landmark.association_prob)
     return landmark
 
   def _is_unobserved_landmark_kept(self, landmark, sensor_constraints):
     '''
     Update probability of the landmark existing based on whether it should have been measured.
     '''
-    if landmark.sampled_pose == None:
+    if landmark.sampled_pose is None:
       return True
     if self._robot_physics.is_landmark_in_range(landmark.sampled_pose, landmark.mean, sensor_constraints):
       landmark.exist_log -= self._landmark_constants.exist_log_dec

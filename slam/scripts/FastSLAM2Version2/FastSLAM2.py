@@ -2,7 +2,7 @@ import numpy as np
 import copy
 from Particle import *
 from collections import namedtuple
-from Models import Meas, FastSLAM2Parameters
+from Models import Meas, FastSLAM2Parameters, LandmarkConstants
 # meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []
 
 class FastSLAM2():
@@ -15,9 +15,10 @@ class FastSLAM2():
     self._prev_t = 0
     self._random = random
     self._particles_params = {
-      'random': self._random,\
-      'is_landmarks_fixed': parameters.is_landmarks_fixed,\
-      'initial_landmarks': parameters.initial_landmarks
+      'random': self._random,
+      'is_landmarks_fixed': parameters.is_landmarks_fixed,
+      'initial_landmarks': parameters.initial_landmarks,
+      'landmark_constants': parameters.landmark_constants
     }
     self._robot_physics = robot_physics
 
