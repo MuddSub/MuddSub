@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 import numpy as np
+
 # Set up animation
 def plot_data(n,plot_data,groundtruth_path_data,landmarks_ground_truth,plot_avg=False,save=False):
   fig = plt.figure()
@@ -79,10 +80,33 @@ def plot_data(n,plot_data,groundtruth_path_data,landmarks_ground_truth,plot_avg=
   plt.show()
   if save:
     print('Saving animation...')
-    f = r'../animations/FastSLAM2_3.gif'
+    f = r'../../animations/FastSLAM2_3.gif'
     writergif = animation.PillowWriter(fps=30)
     anim.save(f, writer=writergif)
     print('Animation Saved!')
+
+def error_ellipse(points, cov, nstd=2):
+    """
+    Source: http://stackoverflow.com/a/12321306/1391441
+    """
+    def eigsorted(cov):
+      '''
+      Eigenvalues and eigenvectors of the covariance matrix.
+      '''
+      vals, vecs = np.linalg.eigh(cov)
+      order = vals.argsort()[::-1]
+      return vals[order], vecs[:, order]
+
+    vals, vecs = eigsorted(cov)
+    theta = np.degrees(np.arctan2(*vecs[::-1, 0]))
+
+    # Confidence level
+    q = 2 * norm.cdf(nstd) - 1
+    r2 = chi2.ppf(q, 2)
+
+    width, height = 2 * np.sqrt(vals * r2)
+
+    return width, height, theta
 
 def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarksNames):
 

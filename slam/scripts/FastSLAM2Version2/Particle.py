@@ -30,7 +30,6 @@ class Particle():
     initial_landmarks = kwargs.get('initial_landmarks', {})
 
     # Initialize landmarks that are passed in
-    print(initial_landmarks)
     for name, landmark in initial_landmarks.items():
       mean, cov = landmark
       if cov is None:

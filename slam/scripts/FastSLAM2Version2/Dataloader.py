@@ -212,42 +212,13 @@ class Data:
             odometry = self.robotOdometry[i]
             self.robots.append(copy.deepcopy(Robot(groundTruth, measurements, odometry, self.barcodes)))
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Mavenlink Optimization Problem')
     parser.add_argument('directory', type=str, help='Directory with input files')
-
     args = parser.parse_args()
 
-
     data = Data(args.directory)
-
-
     t = np.linspace(start=data.robots[0].groundTruthTimes[0], stop=data.robots[0].groundTruthTimes[-1], num=1000)
     c = [data.robots[0].compassInterp(p) for p in t]
-    plt.plot(data.robots[0].groundTruthTimes, data.robots[0].groundTruthCompass, label="Ground Truth")
-    plt.plot(t, c)
-    # plt.show()
 
     pickle.dump(data, open("../datasets/Jar/dataset1.pkl", "wb"))
-    #
-    # robotData = data.robots[0]
-    #
-    # dict = robotData.dataDict
-    #
-    # range = []
-    # bearing = []
-    # while not robotData.empty():
-    #     data = robotData.getNext()
-    #     measurements = data["Measurements"]
-    #     t = data["Time"]
-    #     if measurements == [] or t < 1248273512.011 or t > 1248273518.329:
-    #         continue
-    #     for m in measurements:
-    #         if m[0] == 11:
-    #             range.append(m[1])
-    #             bearing.append(m[2])
-    # print(range)
-    # print(bearing)
-    # print("Range Var: ", np.var(range))
-    # print("Bearing Var: ", np.var(bearing))
