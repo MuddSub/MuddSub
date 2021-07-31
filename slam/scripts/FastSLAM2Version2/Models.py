@@ -37,7 +37,7 @@ class _EKF: # a landmark class
   # Don't need to be initialized
   inv_pose_cov: np.ndarray = None
   Q: np.ndarray = None
-  inv_Q: np.ndarray = None
+  Q_inv: np.ndarray = None
   innovation: np.ndarray = None
 
 _Meas = namedtuple("Meas", ["meas_data", "meas_cov", "sensor_constraints", "correspondence"])

@@ -16,6 +16,7 @@ class Particle():
     self._id = particle_id
     self._random = kwargs.get('random', np.random.default_rng())
     self._are_landmarks_fixed = kwargs.get('are_landmarks_fixed', False)
+    self._localization_only = kwargs.get('localization_only', False) # Assumes known correspondences at the moment
     self._landmark_constants = kwargs.get('landmark_constants', LandmarkConstants())
 
     # Private required variables
@@ -41,9 +42,7 @@ class Particle():
     '''
     Set particle parameters
     '''
-    # Private variables from kwargs
-    self._random = kwargs.get('random', np.random.default_rng())
-    self._are_landmarks_fixed = kwargs.get('are_landmarks_fixed', False)
+    # Private variables from kwargs that can be changed during runtime
     self._landmark_constants = kwargs.get('landmark_constants', LandmarkConstants())
 
   def _log(self, *msg):
@@ -123,7 +122,7 @@ class Particle():
         self._remove_some_unobserved_landmarks(curr_landmark, meas)
 
       # ++++++ Update particle properties
-      self.weight *= curr_landmark.association_prob
+      self.weight *= curr_landmark.particle_weight
       self.weight = max(self.weight, 1e-50)
       self.pose_mean = np.copy(curr_landmark.pose_mean)
       self._log('meas 10',self.pose)
@@ -138,25 +137,25 @@ class Particle():
 
     landmark.inv_pose_cov = np.linalg.inv(pose_cov) 
     landmark.Q = meas_cov + landmark.meas_jac_land @ landmark.cov @ landmark.meas_jac_land.T
-    landmark.inv_Q = np.linalg.inv(landmark.Q)
+    landmark.Q_inv = np.linalg.inv(landmark.Q)
     
   def _update_pose_distribution(self, landmark, pose_mean, pose_cov):
-    landmark.pose_cov = np.linalg.inv(landmark.meas_jac_pose.T @ landmark.inv_Q @ landmark.meas_jac_pose + landmark.inv_pose_cov)
-    landmark.pose_mean = pose_cov @ landmark.meas_jac_pose.T @ landmark.inv_Q @ landmark.innovation + pose_mean
+    landmark.pose_cov = np.linalg.inv(landmark.meas_jac_pose.T @ landmark.Q_inv @ landmark.meas_jac_pose + landmark.inv_pose_cov)
+    landmark.pose_mean = pose_cov @ landmark.meas_jac_pose.T @ landmark.Q_inv @ landmark.innovation + pose_mean
     landmark.sampled_pose = self._random.multivariate_normal(pose_mean, pose_cov)
 
   def _update_landmark_association_prob(self, meas_data, landmark):
     improved_meas_data = self._robot_physics.compute_meas_model(landmark.sampled_pose, landmark.mean) #range_improved, bearing_improved
     improved_innovation = meas_data - improved_meas_data
     
-    exponent = -.5*(improved_innovation).T @ landmark.inv_Q @ improved_innovation
-    two_pi_inv_Q_sqrt = (np.linalg.det(2*np.pi* landmark.Q)) ** -0.5
-    landmark.association_prob = two_pi_inv_Q_sqrt * np.exp(exponent)
+    exponent = -0.5 * (improved_innovation).T @ landmark.Q_inv @ improved_innovation
+    inv_sqrt_of_two_pi_det_Q = (np.linalg.det(2 * np.pi * landmark.Q)) ** -0.5
+    landmark.association_prob = inv_sqrt_of_two_pi_det_Q * np.exp(exponent)
 
   def _update_observed_landmark(self,landmark, pose_cov, meas_cov):
     landmark.exist_log += self._landmark_constants.exist_log_inc
     # compute joint distribution (Kalman gain)
-    K =  landmark.cov @ landmark.meas_jac_land.T @ landmark.inv_Q 
+    K =  landmark.cov @ landmark.meas_jac_land.T @ landmark.Q_inv 
     I = np.eye(landmark.mean.shape[0])
     # update landmark
     landmark.mean = landmark.mean + K @ landmark.innovation
@@ -167,9 +166,9 @@ class Particle():
          + landmark.meas_jac_land @ prev_landmark_cov @ landmark.meas_jac_land.T \
          + meas_cov 
     L_inv = np.linalg.inv(L)
-    two_pi_L_inv_sqrt = (np.linalg.det(2*np.pi*L)) ** -0.5
-    exponent = -.5* landmark.innovation.T @ L_inv @ landmark.innovation 
-    landmark.particle_weight = two_pi_L_inv_sqrt * np.exp(exponent)
+    inv_sqrt_of_two_pi_det_L = (np.linalg.det(2 * np.pi * L)) ** -0.5
+    exponent = -0.5 * landmark.innovation.T @ L_inv @ landmark.innovation 
+    landmark.particle_weight = inv_sqrt_of_two_pi_det_L * np.exp(exponent)
 
   def _init_landmark(self, name, mean, cov, **kwargs):
     landmark = _EKF(
