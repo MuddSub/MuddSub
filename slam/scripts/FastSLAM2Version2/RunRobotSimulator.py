@@ -5,7 +5,7 @@ import numpy as np
 from Validation import plot_data, evaluate 
 from Util import wrap_to_pi
 from RobotSimulatorModels import RobotSimulator, Sensor
-from Models import Meas,FastSLAM2Parameters
+from Models import Meas,FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
 class RobotSimulatorRunner(ABC):
@@ -23,40 +23,44 @@ class RobotSimulatorRunner(ABC):
     velocity, angular_velocity  = .2,np.pi/10
     robot_motion_std = {'v':velocity*.1, 'w': angular_velocity*.1}
     random = np.random.default_rng()
-
-
     
     noise_start = {'x':.5,'y':.5}
-    estimated_init_landmarks = {key: (\
-        random.normal(x,noise_start['x']),\
-        random.normal(y,noise_start['y']))\
-        for key, (x,y) in list(landmarks.items())}
-
+    estimated_init_landmarks = {key: 
+      (
+        np.array([
+          random.normal(x, noise_start['x']),
+          random.normal(y, noise_start['y'])
+        ]),
+        None
+      )
+      for key, (x,y) in list(landmarks.items())}
+    print(estimated_init_landmarks)
     initial_pose = np.array([0,0,0])
-    default_pose_cov = np.array([.05**2,.05**2,(np.pi/360)**2])
+    default_pose_cov = np.diag([.05**2,.05**2,(np.pi/360)**2])
     
     self.num_particles = 10
+    landmark_constants = LandmarkConstants()
+    landmark_constants.new_landmark_threshold = 1.1
     self.params = FastSLAM2Parameters(
       num_particles = self.num_particles,
       is_landmarks_fixed = True, 
-      new_landmark_threshold = 1.3,
-      initial_pose = initial_pose,
-      default_pose_cov = default_pose_cov,
-      initial_landmarks = estimated_init_landmarks
+      initial_landmarks = estimated_init_landmarks,
+      landmark_constants = landmark_constants
     )
+
     self.sim = RobotSimulator(sensors,landmarks, velocity, angular_velocity,robot_motion_std,random,initial_pose, default_pose_cov )
 
     robot_physics = RobotPhysics2D(random, initial_pose, default_pose_cov)
-    self.slam = FastSLAM2(robot_physics, parameters = params, random = random)
+    self.slam = FastSLAM2(robot_physics, parameters = self.params, random = random)
     
     self.plot_data = []
     self.close_enough_distantce = .5
     self.close_enough_bearing = np.pi/4
 
-  def initial_landmarks(self):
+  def initialize_landmarks(self):
     self.curr_target = str(0)
-    self.final_taret = str(len(self.sim.landmarks)-1)
-    self.self.sim.set_target(self.sim.landmarks[self.curr_target])
+    self.final_target = str(len(self.sim.landmarks)-1)
+    self.sim.set_target(self.sim.landmarks[self.curr_target])
 
     self.slam_robot_pose = None
     self.slam_next_landmark_pose = None
@@ -66,7 +70,7 @@ class RobotSimulatorRunner(ABC):
     print('+ Robot Simulator: ', *msg)
 
   def update_slam_snapshot(self,i):
-    self._log('------')
+    self._log('------------')
     self._log('step',i)
 
     # plotting, and also get current slam state
@@ -83,11 +87,12 @@ class RobotSimulatorRunner(ABC):
     self.plot_data.append(frame)
 
   def is_terminated(self):
-    return self.self.sim.robot.is_close(self.slam_robot_pose, self.landmark_maps[final_taret],self.close_enough_distantce, self.close_enough_bearing)
+
+    return self.sim.robot.is_close(self.slam_robot_pose, self.landmark_maps[self.final_target],self.close_enough_distantce, self.close_enough_bearing)
 
   def update_target(self):
     # move on to new target
-    if self.self.sim.robot.is_close(self.slam_robot_pose, self.slam_next_landmark_pose,self.close_enough_distantce, self.close_enough_bearing):
+    if self.sim.robot.is_close(self.slam_robot_pose, self.slam_next_landmark_pose,self.close_enough_distantce, self.close_enough_bearing):
       self.curr_target = str(int(self.curr_target)+1)
       self.slam_next_landmark_pose = self.landmark_maps[self.curr_target]
 
@@ -112,12 +117,13 @@ class RobotSimulatorRunner(ABC):
     landmark_names =  [idx for idx, (x,y) in list(self.sim.landmarks.items())]
     landmarks_ground_truth = np.array([np.array([x,y]) for idx, (x,y) in list(self.sim.landmarks.items())])
     self._log("end of sim","actual landmarks",self.sim.landmarks, "slam robot pose",self.slam_robot_pose,"actual robot pose", self.sim.robot_pose)
-    plot_data(n,self.plot_data,self.sim.robot_history,landmarks_ground_truth, plot_avg=False)
+    plot_data(self.slam.num_particles,self.plot_data,self.sim.robot_history,landmarks_ground_truth, plot_avg=False)
 
   def run(self):
+    self.initialize_landmarks()
     for i in range(self.num_steps):
       self.update_slam_snapshot(i)
-      if self.update_target_or_is_terminated(): break
+      if self.is_terminated(): break
       self.update_meas()
       self.update_control()
       self.update_target()

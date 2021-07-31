@@ -13,7 +13,8 @@ from Validation import plot_data
 
 class RunMRCLAMDataset():
     def __init__(self, **kwargs):
-        self.hardcode_compass = kwargs.get('hardcode_compass',True)
+        self.hardcode_pose = kwargs.get('hardcode_pose', False)
+        self.hardcode_compass = kwargs.get('hardcode_compass', False)
         self.hardcode_meas = kwargs.get('hardcode_meas', False)
         self.no_measurements = kwargs.get('no_measurements', False)
         self.plot_avg = kwargs.get('plot_avg', True)
@@ -51,7 +52,7 @@ class RunMRCLAMDataset():
             for idx, landmark in self.dataloader.map.landmark_dict.items():
                 x = landmark['X']
                 y = landmark['Y']
-                self.params.initial_landmarks[idx] = np.array([np.array([x, y]), None])
+                self.params.initial_landmarks[idx] = (np.array([x, y]), None)
 
     def run_fast_slam2(self):
         random = np.random.default_rng()
@@ -64,17 +65,21 @@ class RunMRCLAMDataset():
             self.update = self.robot_data.get_next()
             t = self.update[1][0]
             self.groundtruth_path_data.append([self.robot_data.get_x_truth(t),self.robot_data.get_y_truth(t)])
-            if i==0:
+            if i == 0:
                 self.algorithm.prev_t = t
                 self.algorithm._robot_physics.initial_pose[2] = wrap_to_pi(self.robot_data.get_compass(t))
             if self.update[0] == "odometry":
                 #theta_meas = wrapToPi(robotData.getCompass(t))
                 self._add_control(t)
-                # Hard coding poses
-                if self.hardcode_compass:
+                # Hard coding compass or pose
+                if self.hardcode_pose or self.hardcode_compass:
                     for j in range(len(self.algorithm.particles)):
-                        x = self.algorithm.particles[j].pose[0]
-                        y = self.algorithm.particles[j].pose[1]
+                        if self.hardcode_pose:
+                            x = self.robot_data.get_x_truth(t)
+                            y = self.robot_data.get_y_truth(t)
+                        else:
+                            x = self.algorithm.particles[j].pose[0]
+                            y = self.algorithm.particles[j].pose[1]
                         theta = self.robot_data.get_compass(t)
                         self.algorithm.particles[j].pose = np.array([x, y, theta])
             else:
