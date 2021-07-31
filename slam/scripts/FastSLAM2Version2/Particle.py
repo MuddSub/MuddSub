@@ -18,6 +18,7 @@ class Particle():
     self._random = kwargs.get('random', np.random.default_rng())
     self._are_landmarks_fixed = kwargs.get('are_landmarks_fixed', False)
     self._landmark_constants = kwargs.get('landmark_constants', LandmarkConstants())
+    self._verbose = kwargs.get('verbose', 0)
 
     # Private required variables
     self._robot_physics = robot_physics
@@ -46,7 +47,8 @@ class Particle():
     self._landmark_constants = kwargs.get('landmark_constants', LandmarkConstants())
 
   def _log(self, *msg):
-    print('+++ Particle ' + str(self._id) + ':', *msg)
+    if self._verbose >= 2:
+      print('+++ Particle ' + str(self._id) + ':', *msg)
   
   def update_motion(self, control, dt):
     '''

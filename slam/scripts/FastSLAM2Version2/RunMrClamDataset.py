@@ -34,7 +34,7 @@ class RunMRCLAMDataset():
 
         self.params = FastSLAM2Parameters(
             num_particles = self.num_particles,
-            is_landmarks_fixed = True, 
+            are_landmarks_fixed = True, 
             initial_landmarks = {},
             landmark_constants = LandmarkConstants(),
             localization_only = False

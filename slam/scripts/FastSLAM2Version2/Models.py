@@ -11,10 +11,11 @@ class LandmarkConstants:
 @dataclass
 class FastSLAM2Parameters:
   num_particles: int
-  is_landmarks_fixed: bool
+  are_landmarks_fixed: bool
   initial_landmarks: dict
   landmark_constants: LandmarkConstants
   localization_only: bool = False
+  verbose: int = 0 # FastSlam2 -> 1. Particle -> 2. 
 
 @dataclass
 class _EKF: # a landmark class

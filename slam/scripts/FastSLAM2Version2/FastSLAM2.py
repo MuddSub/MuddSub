@@ -16,11 +16,13 @@ class FastSLAM2():
     self._random = random
     self._particles_params = {
       'random': self._random,
-      'is_landmarks_fixed': parameters.is_landmarks_fixed,
+      'are_landmarks_fixed': parameters.are_landmarks_fixed,
       'initial_landmarks': parameters.initial_landmarks,
-      'landmark_constants': parameters.landmark_constants
+      'landmark_constants': parameters.landmark_constants,
+      'verbose': parameters.verbose
     }
     self._localization_only = parameters.localization_only
+    self._verbose = parameters.verbose
     self._robot_physics = robot_physics
 
     self._create_particles(self.num_particles)
@@ -41,7 +43,8 @@ class FastSLAM2():
     self._meas_ls.append(meas)
 
   def _log(self, *msg):
-    print('+ FastSLAM2:', *msg)
+    if self._verbose >= 1:
+      print('++ FastSLAM2:', *msg)
   
   def _update_motion(self, control, time): #propagate motion
     dt = max(time - self._prev_t, 0.000001)
@@ -68,7 +71,7 @@ class FastSLAM2():
     try: # resampling
       new_particle_idx_ls = self._random.choice(list(range(self.num_particles)), size=self.num_particles, replace=True, p=self.weights)
     except:
-      self._log('Waring', 'Particle weights are NaN',self.weights)
+      self._log('Warning', 'Particle weights are NaN',self.weights)
       new_particle_idx_ls = list(range(self.num_particles))
     self._log('particle pose',self.particles[0].pose)
     new_particles = []
