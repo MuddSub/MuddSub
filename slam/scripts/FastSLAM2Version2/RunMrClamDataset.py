@@ -36,7 +36,8 @@ class RunMRCLAMDataset():
             num_particles = self.num_particles,
             is_landmarks_fixed = True, 
             initial_landmarks = {},
-            landmark_constants = LandmarkConstants()
+            landmark_constants = LandmarkConstants(),
+            localization_only = False
         )
 
         self.random_generator = np.random.default_rng()

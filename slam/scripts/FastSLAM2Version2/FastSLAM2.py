@@ -11,7 +11,7 @@ class FastSLAM2():
     self.num_particles = parameters.num_particles
     self.particles = []
 
-    self._meas_ls: list[Meas] = [] 
+    self._meas_ls: list[Meas] = []
     self._prev_t = 0
     self._random = random
     self._particles_params = {
@@ -20,6 +20,7 @@ class FastSLAM2():
       'initial_landmarks': parameters.initial_landmarks,
       'landmark_constants': parameters.landmark_constants
     }
+    self._localization_only = parameters.localization_only
     self._robot_physics = robot_physics
 
     self._create_particles(self.num_particles)
@@ -50,8 +51,11 @@ class FastSLAM2():
     self._prev_t = time
 
   def _update_meas(self):
-    for idx, particle in enumerate(self.particles):
-      particle.update_meas(self._meas_ls)
+    for particle in self.particles:
+      if self._localization_only:
+        particle.update_meas_localization_only(self._meas_ls)
+      else:
+        particle.update_meas(self._meas_ls)
 
   def _resample(self):    #  Collect weight
     self._log('particle pose beforr',self.particles[0].pose)

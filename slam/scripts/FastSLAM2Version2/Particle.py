@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.stats
 from scipy.linalg import sqrtm
 from collections import namedtuple
 from Models import _EKF, Meas, LandmarkConstants
@@ -16,7 +17,6 @@ class Particle():
     self._id = particle_id
     self._random = kwargs.get('random', np.random.default_rng())
     self._are_landmarks_fixed = kwargs.get('are_landmarks_fixed', False)
-    self._localization_only = kwargs.get('localization_only', False) # Assumes known correspondences at the moment
     self._landmark_constants = kwargs.get('landmark_constants', LandmarkConstants())
 
     # Private required variables
@@ -63,7 +63,7 @@ class Particle():
     Compute particle weight
     '''
     # ++++++ Set up: sort meas_ls by range; initialize particle mean, covariance, and weight
-    meas_ls.sort(key = lambda meas: meas.meas_data[0])  # meas_ls should be sorted by range.
+    meas_ls.sort(key = lambda meas: meas.data[0])  # meas_ls should be sorted by range.
     pose_mean, pose_cov = np.copy(self.pose), np.copy(self.pose_cov)
     self.weight = 1.0
 
@@ -73,7 +73,7 @@ class Particle():
       return
 
     # ++++++ Access each measurement 
-    curr_landmark = None
+    observed_landmark = None
     
     # Iteratively update pose mean and pose covariance using each measurement of the same time step
     for meas in meas_ls:
@@ -81,62 +81,85 @@ class Particle():
       if meas.correspondence is None:
         for land_idx, landmark in list(self.landmarks.items()):
           # +++ New particle pose is computed here
-          self._update_dependencies_on_landmark(landmark, pose_mean, pose_cov, meas.meas_data, meas.meas_cov)
+          self._update_dependencies_on_landmark(landmark, pose_mean, pose_cov, meas)
           self._log('meas 1',self.pose)
           self._update_pose_distribution(landmark, pose_mean, pose_cov)
           self._log('meas 2',self.pose)
           self._update_landmark_association_prob(landmark)
           self._log('meas 3',self.pose)
         if len(self.landmarks) > 0: # use maximum likelihood to select landmark
-          curr_landmark = max(list(self.landmarks.values()), key = lambda landmark: landmark.association_prob)
+          observed_landmark = max(list(self.landmarks.values()), key = lambda landmark: landmark.association_prob)
       
         # No landmark or not confident: create new landmark 
-        if curr_landmark is None \
-          or (curr_landmark.association_prob < self._landmark_constants.new_landmark_threshold and self._are_landmarks_fixed):
+        if observed_landmark is None or ( \
+              observed_landmark.association_prob < self._landmark_constants.new_landmark_threshold and \
+              not self._are_landmarks_fixed \
+          ):
           key = len(self.landmarks) + 1
-          curr_landmark = self.landmarks[key] = \
-            self._init_landmark_with_meas(pose_mean, pose_cov, meas.meas_data, meas.meas_cov, name=str(key))
+          observed_landmark = self.landmarks[key] = \
+            self._init_landmark_with_meas(pose_mean, pose_cov, meas, name=str(key))
           self._log('meas 4',self.pose)
         else:
-          self._update_observed_landmark(curr_landmark, pose_cov, meas.meas_cov)
+          self._update_observed_landmark(observed_landmark, pose_cov, meas)
           self._log('meas 5',self.pose)
 
       # ++++++ If known correspondence
       else:
         if meas.correspondence in self.landmarks:
           # +++ New particle pose is computed here
-          curr_landmark = self.landmarks[meas.correspondence]
-          self._update_dependencies_on_landmark(curr_landmark, pose_mean, pose_cov, meas.meas_data, meas.meas_cov)
+          observed_landmark = self.landmarks[meas.correspondence]
+          self._update_dependencies_on_landmark(observed_landmark, pose_mean, pose_cov, meas)
           self._log('meas 6',self.pose)
-          self._update_pose_distribution(curr_landmark, pose_mean, pose_cov)
+          self._update_pose_distribution(observed_landmark, pose_mean, pose_cov)
           self._log('meas 7',self.pose)
-          self._update_observed_landmark(curr_landmark, pose_cov, meas.meas_cov)
+          self._update_observed_landmark(observed_landmark, pose_cov, meas)
           self._log('meas 8',self.pose)
         else:
-          curr_landmark = self.landmarks[meas.correspondence] = \
-            self._init_landmark_with_meas(pose_mean, pose_cov, meas.meas_data, meas.meas_cov, name=str(meas.correspondence))
+          observed_landmark = self.landmarks[meas.correspondence] = \
+            self._init_landmark_with_meas(pose_mean, pose_cov, meas, name=str(meas.correspondence))
           self._log('meas 9', self.pose)
 
       # ++++++ Penalize landmarks that we expect to see
-      if self._are_landmarks_fixed:
-        self._remove_some_unobserved_landmarks(curr_landmark, meas)
+      if not self._are_landmarks_fixed:
+        self._update_unobserved_landmarks(observed_landmark, meas)
 
       # ++++++ Update particle properties
-      self.weight *= curr_landmark.particle_weight
+      self.weight *= observed_landmark.particle_weight
       self.weight = max(self.weight, 1e-50)
-      self.pose_mean = np.copy(curr_landmark.pose_mean)
+      self.pose_mean = np.copy(observed_landmark.pose_mean)
       self._log('meas 10',self.pose)
-      self.pose_cov = np.copy(curr_landmark.pose_cov)
-      self.pose = np.copy(curr_landmark.sampled_pose)
+      self.pose_cov = np.copy(observed_landmark.pose_cov)
+      self.pose = np.copy(observed_landmark.sampled_pose)
       self._log('meas 11',self.pose)
   
-  def _update_dependencies_on_landmark(self, landmark: _EKF,  pose_mean, pose_cov, meas_data, meas_cov):
-    est_meas_data = self._robot_physics.compute_meas_model(pose_mean, landmark.mean) # range_est, bearing_est
+  def update_meas_localization_only(self, meas_ls: List[Meas]):
+    '''
+    A measurement update for particle filter localization only.
+    Currently assumes known correspondences.
+    '''
+    self.weight = 1.0
+
+    # If there are no measurements, sample the pose according to the default pose covariance and the pose mean computed by the motion model
+    if len(meas_ls) == 0:
+      self.pose = self._robot_physics.compute_sample_pose(self.pose, self.pose_cov)
+      return
+    
+    # Compute the particle's weight
+    for meas, in meas_ls:
+      observed_landmark = self.landmarks[meas.correspondence]
+      est_meas_data = self._robot_physics.compute_meas_model(self.pose, observed_landmark.mean)
+      self.weight *= scipy.stats.multivariate_normal.pdf(est_meas_data, mean=meas.data, cov=meas.cov)
+
+    # Bound the weight above a tiny number
+    self.weight = max(self.weight, 1e-50)
+
+  def _update_dependencies_on_landmark(self, landmark: _EKF,  pose_mean, pose_cov, meas):
+    est_meas_data = self._robot_physics.compute_meas_model(pose_mean, landmark.mean)
     landmark.meas_jac_pose, landmark.meas_jac_land = self._robot_physics.compute_meas_jacobians(pose_mean, landmark.mean)
-    landmark.innovation = meas_data - est_meas_data
+    landmark.innovation = meas.data - est_meas_data
 
     landmark.inv_pose_cov = np.linalg.inv(pose_cov) 
-    landmark.Q = meas_cov + landmark.meas_jac_land @ landmark.cov @ landmark.meas_jac_land.T
+    landmark.Q = meas.cov + landmark.meas_jac_land @ landmark.cov @ landmark.meas_jac_land.T
     landmark.Q_inv = np.linalg.inv(landmark.Q)
     
   def _update_pose_distribution(self, landmark, pose_mean, pose_cov):
@@ -144,15 +167,15 @@ class Particle():
     landmark.pose_mean = pose_cov @ landmark.meas_jac_pose.T @ landmark.Q_inv @ landmark.innovation + pose_mean
     landmark.sampled_pose = self._random.multivariate_normal(pose_mean, pose_cov)
 
-  def _update_landmark_association_prob(self, meas_data, landmark):
+  def _update_landmark_association_prob(self, meas, landmark):
     improved_meas_data = self._robot_physics.compute_meas_model(landmark.sampled_pose, landmark.mean) #range_improved, bearing_improved
-    improved_innovation = meas_data - improved_meas_data
+    improved_innovation = meas.data - improved_meas_data
     
     exponent = -0.5 * (improved_innovation).T @ landmark.Q_inv @ improved_innovation
     inv_sqrt_of_two_pi_det_Q = (np.linalg.det(2 * np.pi * landmark.Q)) ** -0.5
     landmark.association_prob = inv_sqrt_of_two_pi_det_Q * np.exp(exponent)
 
-  def _update_observed_landmark(self,landmark, pose_cov, meas_cov):
+  def _update_observed_landmark(self,landmark, pose_cov, meas):
     landmark.exist_log += self._landmark_constants.exist_log_inc
     # compute joint distribution (Kalman gain)
     K =  landmark.cov @ landmark.meas_jac_land.T @ landmark.Q_inv 
@@ -164,7 +187,7 @@ class Particle():
     # Compute particle weight
     L = landmark.meas_jac_pose @ pose_cov @ landmark.meas_jac_pose.T \
          + landmark.meas_jac_land @ prev_landmark_cov @ landmark.meas_jac_land.T \
-         + meas_cov 
+         + meas.cov
     L_inv = np.linalg.inv(L)
     inv_sqrt_of_two_pi_det_L = (np.linalg.det(2 * np.pi * L)) ** -0.5
     exponent = -0.5 * landmark.innovation.T @ L_inv @ landmark.innovation 
@@ -184,14 +207,14 @@ class Particle():
     )
     return landmark
 
-  def _init_landmark_with_meas(self, pose_mean, pose_cov, meas_data, meas_cov, name = None):
+  def _init_landmark_with_meas(self, pose_mean, pose_cov, meas, name = None):
     # Sample the particle's pose
     sampled_pose = self._robot_physics.compute_sample_pose(pose_mean, pose_cov)
 
     # Use the measurement data to compute the landmark's mean and covariance
-    mean = self._robot_physics.compute_inverse_meas_model(sampled_pose, meas_data)
+    mean = self._robot_physics.compute_inverse_meas_model(sampled_pose, meas.data)
     meas_jac_pose, meas_jac_land = self._robot_physics.compute_meas_jacobians(sampled_pose, mean)
-    cov = np.linalg.inv(meas_jac_land @ np.linalg.inv(meas_cov) @ meas_jac_land.T)
+    cov = np.linalg.inv(meas_jac_land @ np.linalg.inv(meas.cov) @ meas_jac_land.T)
 
     # Initialize and return landmark
     landmark = self._init_landmark(name, mean, cov, sampled_pose=sampled_pose, pose_mean=pose_mean, pose_cov=pose_cov)
@@ -210,13 +233,13 @@ class Particle():
       landmark.exist_log -= self._landmark_constants.exist_log_dec
     return landmark.exist_log >= 0 # If the log odds probability falls below 0, we do not keep the landmark
 
-  def _remove_some_unobserved_landmarks(self, curr_landmark, meas):
+  def _update_unobserved_landmarks(self, observed_landmark, meas):
     '''
     Remove landmarks that we are supposed to see but did not see. 
     '''
     landmark_idxs_to_remove = []
     for landmark_idx, landmark in self.landmarks.items():
-      if landmark_idx != curr_landmark.name: # Don't update observed landmark
+      if landmark_idx != observed_landmark.name: # Don't update observed landmark
         if not self._is_unobserved_landmark_kept(landmark, meas.sensor_constraints):
           landmark_idxs_to_remove.append(landmark_idx)
     

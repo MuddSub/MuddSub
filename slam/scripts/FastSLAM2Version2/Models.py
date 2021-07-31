@@ -14,6 +14,7 @@ class FastSLAM2Parameters:
   is_landmarks_fixed: bool
   initial_landmarks: dict
   landmark_constants: LandmarkConstants
+  localization_only: bool = False
 
 @dataclass
 class _EKF: # a landmark class
@@ -40,11 +41,11 @@ class _EKF: # a landmark class
   Q_inv: np.ndarray = None
   innovation: np.ndarray = None
 
-_Meas = namedtuple("Meas", ["meas_data", "meas_cov", "sensor_constraints", "correspondence"])
+_Meas = namedtuple("Meas", ["data", "cov", "sensor_constraints", "correspondence"])
 class Meas(_Meas):
   '''
-  meas_data:            A tuple or namedtuple containing the measurement data, i.e. range and bearing or just bearing depending on the type of data the robot expects to receive.
-  meas_cov:             A square numpy array that is the covariance matrix for the measurement data
+  data:                 A tuple or namedtuple containing the measurement data, i.e. range and bearing or just bearing depending on the type of data the robot expects to receive.
+  cov:                  A square numpy array that is the covariance matrix for the measurement data
   sensor_constraints:   A tuple or namedtuple containing sensor constraints, such as maximum range and viewing angle, or just viewing angle depending on the sensor the data is collected by.
   correspondence:       A hashable to identify an obstacle
   '''

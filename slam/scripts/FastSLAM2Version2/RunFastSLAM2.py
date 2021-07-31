@@ -82,14 +82,11 @@ def run_fast_slam2(pkl = '../../datasets/Jar/dataset1.pkl'):
       algorithm._robot_physics.initial_pose[2] = wrap_to_pi(robot_data.get_compass(t))
     if update[0] == "odometry":
       odometry = update[1]
-      theta_meas = wrap_to_pi(robot_data.get_compass(t))
 
       # Use groundtruth to calculate odometry input
       time, velocity, angular_velocity = odometry
-      # print("step", i, "updated odometry", (vx, vy, theta_imu, omega_imu))
 
       # Update particle poses
-      # algorithm.addControl((vx, vy, theta_imu, omega_imu), t)
       algorithm.add_control((velocity, angular_velocity), t)
 
       # Hard coding poses
