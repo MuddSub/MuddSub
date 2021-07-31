@@ -2,11 +2,11 @@ import copy
 from FastSLAM2 import FastSLAM2
 from RobotPhysics2D import RobotPhysics2D
 import numpy as np
-from Validtion import plot_data, evaluate 
-from Util import wrapToPi
+from Validation import plot_data, evaluate 
+from Util import wrap_to_pi
 
 
-def runSim():
+def run_sim():
   ### helper variables
   plot_data = []
 
@@ -49,7 +49,7 @@ def runSim():
   for i in range(NUM_STEPS):
     print('---\nstep',i)
     # plotting, and also get current slam state
-    frame = t , best_particle_idx, particle_poses, landmark_idxs, landmark_means, landmark_covs = slam.getPoseAndLandmarksForPlot()
+    frame = t , best_particle_idx, particle_poses, landmark_idxs, landmark_means, landmark_covs = slam.get_pose_and_landmarks_for_plot()
 
     slam_robot_pose = particle_poses[best_particle_idx]
     slam_landmark_pose = landmark_maps[curr_target]
@@ -75,18 +75,18 @@ def runSim():
     print("measurements",location_filter(actual_measurements))
     for subject, range_meas, bearing_meas, range_noise, bearing_noise, sensor_range_limit, sensor_bearing_limit,  in actual_measurements:
       meas_cov = np.diag([range_noise, bearing_noise])
-      slam.addMeasurement((range_meas, bearing_meas), meas_cov, sensor_range_limit, sensor_bearing_limit, subject)
+      slam.add_measurement((range_meas, bearing_meas), meas_cov, sensor_range_limit, sensor_bearing_limit, subject)
     
     actual_control = sim.move_robot_and_read_control()
     print("control",actual_control)
-    slam.addControl(actual_control, sim.t)
+    slam.add_control(actual_control, sim.t)
     sim.increment_time()
 
   #plotting 
-  landmarsName =  [idx for idx, (x,y) in list(sim.landmarks.items())]
-  landmarksGroundtruth = np.array([np.array([x,y]) for idx, (x,y) in list(sim.landmarks.items())])
+  landmars_name =  [idx for idx, (x,y) in list(sim.landmarks.items())]
+  landmarks_groundtruth = np.array([np.array([x,y]) for idx, (x,y) in list(sim.landmarks.items())])
   print("end of sim","actual landmarks",sim.landmarks, "slam robot pose",slam_robot_pose,"actual robot pose", sim.robot_pose)
-  plotter.plot(n,plot_data,sim.robot_history,landmarksGroundtruth,landmarsName, NUM_STEPS,KNOWN_CORRESPONDENCES=True,PLOT_AVG=False)
+  plotter.plot(n,plot_data,sim.robot_history,landmarks_groundtruth,landmars_name, NUM_STEPS,KNOWN_CORRESPONDENCES=True,PLOT_AVG=False)
   
-runSim()
+run_sim()
 

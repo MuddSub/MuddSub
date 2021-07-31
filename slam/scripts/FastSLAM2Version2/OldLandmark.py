@@ -42,7 +42,7 @@ w: weight
 
 p_nt: prob_match --> probability of landmark associates with given measurement
 '''
-def wrapToPi(th):
+def wrap_to_pi(th):
   th = np.fmod(th, 2*np.pi)
   if th >= np.pi:
       th -= 2*np.pi
@@ -82,13 +82,13 @@ class LandmarkEKF():
     self.prob_data_association = 0
     
     self.land_exist_log = 0
-    self.land_exist_log_threshold = self.logOdds(0.5)
-    self.land_exist_log_inc = self.logOdds(0.8) # 0.8 works out to around 1.38, rho positive in the FastSLAM 2.0 algorithm
-    self.land_exist_log_dec = self.logOdds(0.8) # 0.8 works out to around 1.38, rho negative in the FastSLAM 2.0 algorithm
+    self.land_exist_log_threshold = self.log_odds(0.5)
+    self.land_exist_log_inc = self.log_odds(0.8) # 0.8 works out to around 1.38, rho positive in the FastSLAM 2.0 algorithm
+    self.land_exist_log_dec = self.log_odds(0.8) # 0.8 works out to around 1.38, rho negative in the FastSLAM 2.0 algorithm
 
     self.label = []
   
-  def logOdds(self, probability):
+  def log_odds(self, probability):
     return np.log(probability / (1 - probability))
 
   def gauss(self, x, mu, std):
@@ -97,17 +97,17 @@ class LandmarkEKF():
     g = a * np.exp(b * (x - mu) ** 2)
     return g
 
-  def computeMeasModel(self, pose):
+  def compute_meas_model(self, pose):
     #x,y,theta, vx, vy, omega, theta_p = pose
     x, y, theta = pose
     lx, ly = self.prev_land_mean
 
     range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
-    bearing_est = wrapToPi(np.arctan2((ly - y), (lx - x)) - theta)
+    bearing_est = wrap_to_pi(np.arctan2((ly - y), (lx - x)) - theta)
 
     return np.array([range_est, bearing_est])
 
-  def computeMeasModelInverse(self, pose):
+  def compute_meas_model_inverse(self, pose):
     #x, y, theta, vx, vy, omega, theta_p = pose
     x, y, theta = pose
     range_meas, bearing_meas = self.meas
@@ -115,7 +115,7 @@ class LandmarkEKF():
     ly = y + range_meas * np.sin(theta + bearing_meas)
     return np.array([lx, ly])
 
-  def computeMeasJacobians(self, pose):
+  def compute_meas_jacobians(self, pose):
     lx, ly = self.prev_land_mean
     x, y, theta, = pose
     
@@ -132,17 +132,17 @@ class LandmarkEKF():
     self.meas_jac_pose = meas_jac_pose
     self.meas_jac_land = -1 * meas_jac_pose[:2, :2]
   
-  def samplePose(self, pose_mean, pose_cov, meas, meas_cov):
+  def sample_pose(self, pose_mean, pose_cov, meas, meas_cov):
     # range_meas, bearing_meas = meas 
     self.meas = meas
     self.meas_cov = meas_cov
-    meas_est = self.computeMeasModel(pose_mean) # range_est, bearing_est
+    meas_est = self.compute_meas_model(pose_mean) # range_est, bearing_est
     
     self.meas_diff = meas - meas_est #np.array([range_meas - range_est, bearing_meas - bearing_est])
 
     pose_cov_inv = np.linalg.inv(pose_cov)
 
-    self.computeMeasJacobians(pose_mean)
+    self.compute_meas_jacobians(pose_mean)
     
     self.Q = self.meas_cov + self.meas_jac_land @ self.prev_land_cov @ self.meas_jac_land.T
     self.Q_inv = np.linalg.inv(self.Q)
@@ -153,7 +153,7 @@ class LandmarkEKF():
 
 
     ### getLandmarkProb
-    meas_improved = self.computeMeasModel(self.sampled_pose) #range_improved, bearing_improved
+    meas_improved = self.compute_meas_model(self.sampled_pose) #range_improved, bearing_improved
     improved_diff = meas - meas_improved 
     exponent = -.5*(improved_diff).T @ self.Q_inv @ (improved_diff)
     
@@ -165,16 +165,16 @@ class LandmarkEKF():
     # print('hiiii',self.prob_data_association, two_pi_Q_inv_sqrt, exponent, np.exp(exponent))
     return self.prob_data_association
 
-  def computeWeightLocalization(self, pose, meas, meas_cov):
+  def compute_weight_localization(self, pose, meas, meas_cov):
     range_meas, bearing_meas = meas
-    range_meas_est, bearing_meas_est = self.computeMeasModel(pose)
+    range_meas_est, bearing_meas_est = self.compute_meas_model(pose)
     range_std = np.sqrt(meas_cov[0, 0])
     bearing_std = np.sqrt(meas_cov[1, 1])
     range_prob = self.gauss(range_meas_est, range_meas, range_std)
     bearing_prob = self.gauss(bearing_meas_est, bearing_meas, bearing_std)
     return range_prob * bearing_prob
 
-  def updateObservedLandmark(self, pose_cov):
+  def update_observed_landmark(self, pose_cov):
     self.land_exist_log += self.land_exist_log_inc
     K =  self.prev_land_cov @ self.meas_jac_land.T @ self.Q_inv 
 
@@ -199,20 +199,20 @@ class LandmarkEKF():
     #print("weight",weight)
     return weight
   # sensor_bearing considers the angle between the left most to the right most field of views
-  def updateUnobservedLandmark(self, sensor_range, sensor_bearing = np.pi):
+  def update_unobserved_landmark(self, sensor_range, sensor_bearing = np.pi):
     # Set current landmark mean and cov to previous mean and cov
     self.land_mean = self.prev_land_mean
     self.land_cov = self.prev_land_cov
 
     # Update probability of the landmark existing based on whether it should have been measured
-    range_meas, bearing_meas = self.computeMeasModel(self.sampled_pose)
+    range_meas, bearing_meas = self.compute_meas_model(self.sampled_pose)
     if range_meas <= sensor_range and bearing_meas <= sensor_bearing/2:
       self.land_exist_log -= self.land_exist_log_dec
 
     # If the log odds probability falls below 0, we do not keep the landmark
     return self.land_exist_log >= 0
 
-  def updateNewLandmark(self, sampled_pose, pose_mean, pose_cov, meas, meas_cov, new_land_threshold):
+  def update_new_landmark(self, sampled_pose, pose_mean, pose_cov, meas, meas_cov, new_land_threshold):
     self.land_exist_log = self.land_exist_log_inc
     self.sampled_pose = sampled_pose
     self.pose_mean = pose_mean
@@ -220,9 +220,9 @@ class LandmarkEKF():
     self.meas = meas
 
     # Initialize landmark mean and covariance, as well as previous mean and covariance
-    self.land_mean = self.computeMeasModelInverse(sampled_pose)
+    self.land_mean = self.compute_meas_model_inverse(sampled_pose)
     self.prev_land_mean = self.land_mean
-    self.computeMeasJacobians(sampled_pose)
+    self.compute_meas_jacobians(sampled_pose)
     self.land_cov = np.linalg.inv(self.meas_jac_land @ np.linalg.inv(meas_cov) @ self.meas_jac_land.T)
     self.prev_land_cov = self.land_cov
     self.weight = new_land_threshold

@@ -10,170 +10,170 @@ import matplotlib.pyplot as plt
 class Map:
     def __init__(self, data):
         self.data = data
-        self.landmarkDict = self.data.set_index('Subject').to_dict('index')
+        self.landmark_dict = self.data.set_index('Subject').to_dict('index')
 
-    def __getitem__(self, subjectID):
-        return self.landmarkDict[subjectID]
+    def __getitem__(self, subject_ID):
+        return self.landmark_dict[subject_ID]
 
-    def getLandmarkLocation(self, subjectID):
-        return self.landmarkDict[subjectID]
+    def get_landmark_location(self, subject_ID):
+        return self.landmark_dict[subject_ID]
 
 class Robot:
     # All arguments are corresponding pandas dataframes
     def __init__(self, groundtruth, measurements, odometry, barcodes):
-        self.groundTruthDF = groundtruth
-        self.measurementsDF = measurements
-        self.odometryDF = odometry
-        self.barcodesDF = barcodes
+        self.ground_truth_DF = groundtruth
+        self.measurements_DF = measurements
+        self.odometry_DF = odometry
+        self.barcodes_DF = barcodes
 
         # List of data in order. Serves as a backup to dataQueue
-        self.dataList = []
+        self.data_list = []
 
         # List of data we will pop from.
-        self.dataQueue = []
+        self.data_queue = []
 
         self.odometry = []
         self.measurements = []
-        self.groundTruthPosition = []
+        self.ground_truth_position = []
 
-        self.robotData = []
+        self.robot_data = []
 
-        self.buildDict()
+        self.build_dict()
 
     # Get next data. May include one or more of ground truth, measurement, and barcode
-    def getNext(self):
-        return self.robotData.pop(0)
+    def get_next(self):
+        return self.robot_data.pop(0)
 
     def empty(self):
-        return len(self.robotData) == 0
+        return len(self.robot_data) == 0
 
     def size(self):
-        return len(self.robotData)
+        return len(self.robot_data)
 
     def reset(self):
-        self.dataQueue = copy.deepcopy(self.robotData)
+        self.data_queue = copy.deepcopy(self.robot_data)
 
-    def getCompass(self, t):
-        if t < self.groundTruthTimes[0]:
-            return self.groundTruthCompass[0]
-        if t > self.groundTruthTimes[-1]:
-            return self.groundTruthCompass[-1]
-        return self.compassInterp(t)
+    def get_compass(self, t):
+        if t < self.ground_truth_times[0]:
+            return self.ground_truth_compass[0]
+        if t > self.ground_truth_times[-1]:
+            return self.ground_truth_compass[-1]
+        return self.compass_interp(t)
 
-    def getXTruth(self, t):
-        if t < self.groundTruthTimes[0]:
-            return self.groundTruthX[0]
-        if t > self.groundTruthTimes[-1]:
-            return self.groundTruthX[-1]
-        return self.xInterp(t)
+    def get_x_truth(self, t):
+        if t < self.ground_truth_times[0]:
+            return self.ground_truth_x[0]
+        if t > self.ground_truth_times[-1]:
+            return self.ground_truth_x[-1]
+        return self.x_interp(t)
 
-    def getYTruth(self, t):
-        if t < self.groundTruthTimes[0]:
-            return self.groundTruthY[0]
-        if t > self.groundTruthTimes[-1]:
-            return self.groundTruthY[-1]
-        return self.yInterp(t)
+    def get_y_truth(self, t):
+        if t < self.ground_truth_times[0]:
+            return self.ground_truth_y[0]
+        if t > self.ground_truth_times[-1]:
+            return self.ground_truth_y[-1]
+        return self.y_interp(t)
 
-    def buildDict(self):
-        self.dataQueue = []
-        self.dataDict = {}
-        self.groundTruthCompass = []
-        self.groundTruthX = []
-        self.groundTruthY = []
-        self.groundTruthTimes = []
-        barcodeDict = {}
+    def build_dict(self):
+        self.data_queue = []
+        self.data_dict = {}
+        self.ground_truth_compass = []
+        self.ground_truth_x = []
+        self.ground_truth_y = []
+        self.ground_truth_times = []
+        barcode_dict = {}
 
-        for row in self.barcodesDF.itertuples():
-            barcodeDict[row.Barcode] = row.Subject
+        for row in self.barcodes_DF.itertuples():
+            barcode_dict[row.Barcode] = row.Subject
 
-        for row in self.groundTruthDF.itertuples():
+        for row in self.ground_truth_DF.itertuples():
             time = row.Time
             x = row.X
             y = row.Y
-            self.groundTruthX.append(x)
-            self.groundTruthY.append(y)
+            self.ground_truth_x.append(x)
+            self.ground_truth_y.append(y)
             heading = row.Heading
-            self.groundTruthCompass.append(heading)
-            self.groundTruthTimes.append(time)
+            self.ground_truth_compass.append(heading)
+            self.ground_truth_times.append(time)
 
-            self.groundTruthPosition.append((time,x,y,heading))
+            self.ground_truth_position.append((time,x,y,heading))
 
         i = 0
-        self.compassInterp = interp.interp1d(self.groundTruthTimes, self.groundTruthCompass, assume_sorted = True)
-        self.xInterp = interp.interp1d(self.groundTruthTimes, self.groundTruthX, assume_sorted=True)
-        self.yInterp = interp.interp1d(self.groundTruthTimes, self.groundTruthY, assume_sorted=True)
+        self.compass_interp = interp.interp1d(self.ground_truth_times, self.ground_truth_compass, assume_sorted = True)
+        self.x_interp = interp.interp1d(self.ground_truth_times, self.ground_truth_x, assume_sorted=True)
+        self.y_interp = interp.interp1d(self.ground_truth_times, self.ground_truth_y, assume_sorted=True)
 
-        for row in self.odometryDF.itertuples():
+        for row in self.odometry_DF.itertuples():
             time = row.Time
 
 
-            if time > self.groundTruthTimes[-1]:
-                compass = self.groundTruthCompass[-1]
+            if time > self.ground_truth_times[-1]:
+                compass = self.ground_truth_compass[-1]
             else:
-                compass = self.compassInterp(time)
+                compass = self.compass_interp(time)
             compass += np.random.normal(0, 0.005)
 
-            self.odometry.append((time, row.Velocity, row.AngularVelocity))
+            self.odometry.append((time, row.Velocity, row.Angular_velocity))
 
 
-        for row in self.measurementsDF.itertuples():
+        for row in self.measurements_DF.itertuples():
             subject = None
             barcode = row.Barcode
-            if barcode not in barcodeDict:
+            if barcode not in barcode_dict:
                 print("Unrecogonized Barcode: {}. Skipping".format(barcode))
                 continue
             else:
-                subject = barcodeDict[barcode]
+                subject = barcode_dict[barcode]
 
             time = row.Time
             self.measurements.append((time, subject, row.Range, row.Bearing))
 
         # Merge measurements and odometry
-        odomPtr = 0
-        measPtr = 0
-        self.robotData = []
-        while odomPtr < len(self.odometry) and measPtr < len(self.measurements):
+        odom_ptr = 0
+        meas_ptr = 0
+        self.robot_data = []
+        while odom_ptr < len(self.odometry) and meas_ptr < len(self.measurements):
 
             # If odometry is earlier (or same)
-            if self.odometry[odomPtr][0] <= self.measurements[measPtr][0]:
-                self.robotData.append(('odometry', self.odometry[odomPtr]))
-                odomPtr += 1
+            if self.odometry[odom_ptr][0] <= self.measurements[meas_ptr][0]:
+                self.robot_data.append(('odometry', self.odometry[odom_ptr]))
+                odom_ptr += 1
             else:
-                self.robotData.append(('measurement', self.measurements[measPtr]))
-                measPtr += 1
+                self.robot_data.append(('measurement', self.measurements[meas_ptr]))
+                meas_ptr += 1
 
-        if odomPtr < len(self.odometry):
-            for i in range(odomPtr, len(self.odometry)):
-                self.robotData.append(('odometry', self.odometry[i]))
-                odomPtr += 1
-        elif measPtr < len(self.measurements):
-            for i in range(measPtr, len(self.measurements)):
-                self.robotData.append(('measurement', self.measurements[i]))
-                measPtr += 1
+        if odom_ptr < len(self.odometry):
+            for i in range(odom_ptr, len(self.odometry)):
+                self.robot_data.append(('odometry', self.odometry[i]))
+                odom_ptr += 1
+        elif meas_ptr < len(self.measurements):
+            for i in range(meas_ptr, len(self.measurements)):
+                self.robot_data.append(('measurement', self.measurements[i]))
+                meas_ptr += 1
 
-        for t in sorted(self.dataDict.keys()):
-            dict = self.dataDict[t]
-            self.dataList.append(dict)
+        for t in sorted(self.data_dict.keys()):
+            dict = self.data_dict[t]
+            self.data_list.append(dict)
 
         self.reset()
 
 class Data:
     def __init__(self, directory):
         self.directory = directory
-        self.loadAllData()
+        self.load_all_data()
         print("=== Data Loaded ===")
 
 
-    def createDfFromFile(self, fname, headers):
+    def create_df_from_file(self, fname, headers):
         return pd.read_table(fname, names=headers, skiprows=4)
 
-    def loadAllData(self):
+    def load_all_data(self):
         files = os.scandir(self.directory)
-        self.numRobots = int((len(list(files))-2)/3)
+        self.num_robots = int((len(list(files))-2)/3)
 
-        self.robotGroundTruth = [None for _ in range(self.numRobots)]
-        self.robotMeasurements = [None for _ in range(self.numRobots)]
-        self.robotOdometry = [None for _ in range(self.numRobots)]
+        self.robot_ground_truth = [None for _ in range(self.num_robots)]
+        self.robot_measurements = [None for _ in range(self.num_robots)]
+        self.robot_odometry = [None for _ in range(self.num_robots)]
 
         i = 0
 
@@ -184,37 +184,37 @@ class Data:
             headers = None
             if(file.path.startswith(self.directory + "Barcodes")):
                 headers = ["Subject", "Barcode"]
-                self.barcodes = self.createDfFromFile(file.path, headers)
+                self.barcodes = self.create_df_from_file(file.path, headers)
             elif(file.path.startswith(self.directory + "Landmark")):
                 headers = ["Subject", "X", "Y", "XStd", "YStd"]
-                self.landmarks = self.createDfFromFile(file.path, headers)
+                self.landmarks = self.create_df_from_file(file.path, headers)
             elif(file.path.endswith("Groundtruth.dat")):
                 headers = ["Time", "X", "Y", "Heading"]
-                robotIndex = int(file.path[len(self.directory)+5])-1
-                self.robotGroundTruth[robotIndex] = self.createDfFromFile(file.path, headers)
+                robot_index = int(file.path[len(self.directory)+5])-1
+                self.robot_ground_truth[robot_index] = self.create_df_from_file(file.path, headers)
             elif(file.path.endswith("Odometry.dat")):
                 headers = ["Time", "Velocity", "AngularVelocity"]
-                robotIndex = int(file.path[len(self.directory)+5])-1
-                self.robotOdometry[robotIndex] = self.createDfFromFile(file.path, headers)
+                robot_index = int(file.path[len(self.directory)+5])-1
+                self.robot_odometry[robot_index] = self.create_df_from_file(file.path, headers)
             elif(file.path.endswith("Measurement.dat")):
                 headers = ["Time", "Barcode", "Range", "Bearing"]
-                robotIndex = int(file.path[len(self.directory)+5])-1
-                self.robotMeasurements[robotIndex] = self.createDfFromFile(file.path, headers)
+                robot_index = int(file.path[len(self.directory)+5])-1
+                self.robot_measurements[robot_index] = self.create_df_from_file(file.path, headers)
             else:
                 raise Exception("File not recognized {}".format(file))
             i += 1
 
         self.map = Map(self.landmarks)
         self.robots = []
-        for i in range(self.numRobots):
-            groundTruth = self.robotGroundTruth[i]
-            measurements = self.robotMeasurements[i]
-            odometry = self.robotOdometry[i]
-            self.robots.append(copy.deepcopy(Robot(groundTruth, measurements, odometry, self.barcodes)))
+        for i in range(self.num_robots):
+            ground_truth = self.robot_ground_truth[i]
+            measurements = self.robot_measurements[i]
+            odometry = self.robot_odometry[i]
+            self.robots.append(copy.deepcopy(Robot(ground_truth, measurements, odometry, self.barcodes)))
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Mavenlink Optimization Problem')
+    parser = argparse.Argument_parser(description='Mavenlink Optimization Problem')
     parser.add_argument('directory', type=str, help='Directory with input files')
 
     args = parser.parse_args()
@@ -223,9 +223,9 @@ if __name__ == '__main__':
     data = Data(args.directory)
 
 
-    t = np.linspace(start=data.robots[0].groundTruthTimes[0], stop=data.robots[0].groundTruthTimes[-1], num=1000)
-    c = [data.robots[0].compassInterp(p) for p in t]
-    plt.plot(data.robots[0].groundTruthTimes, data.robots[0].groundTruthCompass, label="Ground Truth")
+    t = np.linspace(start=data.robots[0].ground_truth_times[0], stop=data.robots[0].ground_truth_times[-1], num=1000)
+    c = [data.robots[0].compass_interp(p) for p in t]
+    plt.plot(data.robots[0].ground_truth_times, data.robots[0].ground_truth_compass, label="Ground Truth")
     plt.plot(t, c)
     # plt.show()
 

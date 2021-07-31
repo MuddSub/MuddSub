@@ -41,7 +41,7 @@ class FastSLAM2():
       theta_sigma: angle variance
     '''
     self.prev_t = 0
-    self.createParticles(self.num_particles)
+    self.create_particles(self.num_particles)
     
     self.meas_ls = []
     self.meas_cov_ls = []
@@ -50,24 +50,24 @@ class FastSLAM2():
     self.correspondences = []
     self.known_correspondences = False
     
-  def createParticles(self, n):
+  def create_particles(self, n):
     for i in range(n):
       self.particles.append(Particle(i, self.params, random=self.random))
     print("fast slam 2 initial pose",self.params['initial_pose'])
 
-  def addControl(self, control, time):
+  def add_control(self, control, time):
     #if len(self.meas_ls) > 0:
     #  print("num meas before update", len(self.meas_ls))
     #print("num landmark for particle 0:", len(self.particles[0].landmarks))
-    self.measurementUpdate()
+    self.measurement_update()
     # only resample if there are more than one particle 
     # have this check bc a particle can have really small weights and ~0/~0 will be Nan
     if len(self.particles) > 1 and len(self.meas_ls) > 0:
       self.resampling()
-    self.motionUpdate(control, time)
+    self.motion_update(control, time)
     self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.sensor_bearing_ls, self.correspondences = [], [], [], [], []
 
-  def addMeasurement(self, meas, meas_cov, sensor_range, sensor_bearing, correspondence = None):
+  def add_measurement(self, meas, meas_cov, sensor_range, sensor_bearing, correspondence = None):
     self.meas_ls.append(meas)
     self.meas_cov_ls.append(meas_cov)
     self.sensor_range_ls.append(sensor_range)
@@ -78,19 +78,19 @@ class FastSLAM2():
     if self.known_correspondences:
       self.correspondences.append(correspondence)
 
-  def motionUpdate(self, control, time):
+  def motion_update(self, control, time):
     # propagate motion
     dt = max(time - self.prev_t, 0.000001)
     if (time - self.prev_t == 0):
       print("fast slam 2 warning: dt is 0")
     for idx, particle in enumerate(self.particles):
-      particle.motionUpdate(control, dt)
+      particle.motion_update(control, dt)
     self.prev_t = time
 
-  def measurementUpdate(self):
+  def measurement_update(self):
     # print("Known correspondences:", self.known_correspondences)
     for idx, particle in enumerate(self.particles):
-      particle.measurementUpdate(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.sensor_bearing_ls, self.known_correspondences, self.correspondences)
+      particle.measurement_update(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.sensor_bearing_ls, self.known_correspondences, self.correspondences)
       # particle.measurementUpdateLocalization(self.meas_ls, self.meas_cov_ls, self.sensor_range_ls, self.known_correspondences, self.correspondences)
 
 

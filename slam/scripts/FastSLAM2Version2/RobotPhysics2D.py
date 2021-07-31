@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from Util import wrapToPi
+from Util import wrap_to_pi
 from RobotPhysicsBase import RobotPhysicsBase
 
 class RobotPhysics2D(RobotPhysicsBase):
@@ -22,7 +22,7 @@ class RobotPhysics2D(RobotPhysicsBase):
         lx, ly = landmark_mean
 
         range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
-        bearing_est = wrapToPi(np.arctan2((ly - y), (lx - x)) - theta) #TODO make imported
+        bearing_est = wrap_to_pi(np.arctan2((ly - y), (lx - x)) - theta) #TODO make imported
 
         return np.array([range_est, bearing_est])
     
@@ -58,7 +58,7 @@ class RobotPhysics2D(RobotPhysicsBase):
             w = 1e-10
 
         x, y, theta = pose
-        next_theta = wrapToPi(theta + w * dt)
+        next_theta = wrap_to_pi(theta + w * dt)
         next_x = x + v/w * (-np.sin(theta) + np.sin(next_theta))
         next_y = y + v/w * ( np.cos(theta) - np.cos(next_theta))
         return np.array([next_x, next_y, next_theta])

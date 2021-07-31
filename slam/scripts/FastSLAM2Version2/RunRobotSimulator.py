@@ -3,7 +3,7 @@ from FastSLAM2 import FastSLAM2
 from RobotPhysics2D import RobotPhysics2D
 import numpy as np
 from Validation import plot_data, evaluate 
-from Util import wrapToPi
+from Util import wrap_to_pi
 from RobotSimulatorModels import RobotSimulator, Sensor
 from Models import Meas,FastSLAM2Parameters
 from abc import ABC, abstractmethod
@@ -105,7 +105,7 @@ class RobotSimulatorRunner(ABC):
   def update_control(self):
     actual_control = self.sim.move_robot_and_read_control()
     self._log("control",actual_control)
-    self.slam.addControl(actual_control, self.sim.t)
+    self.slam.add_control(actual_control, self.sim.t)
     self.sim.increment_time()
 
   def plot(self):

@@ -2,7 +2,7 @@ import numpy as np
 from scipy.linalg import sqrtm
 from Landmark import *
 
-def wrapToPi(th):
+def wrap_to_pi(th):
   th = np.fmod(th, 2*np.pi)
   if th >= np.pi:
       th -= 2*np.pi
@@ -38,7 +38,7 @@ class Particle():
     self.default_pose_cov = np.diag([self.x_sigma, self.y_sigma, self.theta_sigma])
     self.pose_cov = np.copy(self.default_pose_cov)
     self.pose = params['initial_pose']
-    self.addPoseNoise()
+    self.add_pose_noise()
 
     self.num_landmarks = params['num_landmarks']
     self.landmarks = {} # id: EFK
@@ -57,15 +57,15 @@ class Particle():
   # to enable multiple updates. 
 
   
-  def addPoseNoise(self):
+  def add_pose_noise(self):
     """Add noise to existing pose"""
-    noise = self.computePoseNoise()
+    noise = self.compute_pose_noise()
     self.pose = self.pose + noise
 
-  def computePoseNoise(self):
+  def compute_pose_noise(self):
     return self.random.multivariate_normal(np.zeros(3), self.pose_cov)
   
-  def measurementUpdate(self, meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []):
+  def measurement_update(self, meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []):
     '''
     For best results, meas_ls should be sorted by range from closest to furthest.
     1. sample paricle pose per landmark 
@@ -86,7 +86,7 @@ class Particle():
 
     # If there are no measurements, sample the pose according to the default pose covariance and the pose mean computed by the motion model
     if len(meas_ls) == 0:
-      noise = self.computePoseNoise()
+      noise = self.compute_pose_noise()
       self.pose = self.pose_mean + noise
       return
 
@@ -99,7 +99,7 @@ class Particle():
         prob_associate_ls = []
         land_idx_ls = [] # keep a separate list to enable mismatch betwee known and unknown correspondences
         for land_idx, landmark in self.landmarks.items():
-          prob_associate = landmark.samplePose(self.pose_mean, self.pose_cov, meas, meas_cov)
+          prob_associate = landmark.sample_pose(self.pose_mean, self.pose_cov, meas, meas_cov)
           prob_associate_ls.append(prob_associate)
           land_idx_ls.append(land_idx)
 
@@ -117,12 +117,12 @@ class Particle():
           observed_land_idx = len(land_idx_ls) + 1
           observed_landmark = LandmarkEKF(random=self.random) 
           self.landmarks[observed_land_idx] = observed_landmark
-          observed_landmark.updateNewLandmark(self.pose + self.computePoseNoise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
+          observed_landmark.update_new_landmark(self.pose + self.compute_pose_noise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
         else:
           # Update observed landmark
           observed_land_idx = land_idx_ls[ml_idx]
           observed_landmark = self.landmarks[observed_land_idx]
-          observed_landmark.updateObservedLandmark(self.pose_cov)
+          observed_landmark.update_observed_landmark(self.pose_cov)
 
       else:
         # Use the given correspondence
@@ -132,13 +132,13 @@ class Particle():
         if observed_land_idx in self.landmarks:
           # Update observed landmark
           observed_landmark = self.landmarks[observed_land_idx]
-          observed_landmark.samplePose(self.pose_mean, self.pose_cov, meas, meas_cov)
-          observed_landmark.updateObservedLandmark(self.pose_cov)
+          observed_landmark.sample_pose(self.pose_mean, self.pose_cov, meas, meas_cov)
+          observed_landmark.update_observed_landmark(self.pose_cov)
         else:
           # Initialize new landmark
           observed_landmark = LandmarkEKF(random=self.random)
           self.landmarks[observed_land_idx] = observed_landmark
-          observed_landmark.updateNewLandmark(self.pose + self.computePoseNoise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
+          observed_landmark.update_new_landmark(self.pose + self.compute_pose_noise(), self.pose_mean, self.pose_cov, meas, meas_cov, self.new_land_threshold)
         ml_idx = observed_land_idx
       if self.can_change_landmark:
         # Update unobserved landmarks
@@ -146,7 +146,7 @@ class Particle():
         for landmark_idx, landmark in self.landmarks.items():
           # Don't update observed landmark
           if landmark_idx != observed_land_idx:
-            keep = landmark.updateUnobservedLandmark(sensor_range_ls[meas_idx],sensor_bearing_ls[meas_idx])
+            keep = landmark.update_unobserved_landmark(sensor_range_ls[meas_idx],sensor_bearing_ls[meas_idx])
             if not keep:
               landmark_idxs_to_remove.append(landmark_idx)
 
@@ -161,34 +161,34 @@ class Particle():
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
 
-  def measurementUpdateLocalization(self, meas_ls, meas_cov_ls, sensor_range_ls,sensor_bearing_ls, known_correspondences=False, correspondences=[]):
+  def measurement_update_localization(self, meas_ls, meas_cov_ls, sensor_range_ls,sensor_bearing_ls, known_correspondences=False, correspondences=[]):
     self.weight = 1
 
     # If there are no measurements, sample the pose according to the default pose covariance and the pose mean computed by the motion model
     if len(meas_ls) == 0:
-      self.addPoseNoise()
+      self.add_pose_noise()
       return
     
     for meas, meas_cov, idx in zip(meas_ls, meas_cov_ls, correspondences):
       observed_landmark = self.landmarks[idx]
       # print("Observed landmark:", idx, "with mean", observed_landmark.land_mean)
-      self.weight *= observed_landmark.computeWeightLocalization(self.pose, meas, meas_cov)
+      self.weight *= observed_landmark.compute_weight_localization(self.pose, meas, meas_cov)
 
     # print("Weight is", self.weight)
     self.weight = max(self.weight, 1e-50)
 
-  def motionUpdate(self, control, dt):
+  def motion_update(self, control, dt):
     # Pose estimate that is passed to each landmark EKF which uses it to calculate the sampling distribution and 
     # the probability of data assocation
-    self.pose = self.computeMotionModel(self.pose, control, dt)
+    self.pose = self.compute_motion_model(self.pose, control, dt)
 
-  def computeMotionModel(self, prev_pose, control, dt):
+  def compute_motion_model(self, prev_pose, control, dt):
     v, w = control
     if -1e-10 <= w <= 1e-10:
       w = 1e-10
 
     x, y, theta = prev_pose
-    next_theta = wrapToPi(theta + w * dt)
+    next_theta = wrap_to_pi(theta + w * dt)
     next_x = x + v/w * (-np.sin(theta) + np.sin(next_theta))
     next_y = y + v/w * ( np.cos(theta) - np.cos(next_theta))
     return np.array([next_x, next_y, next_theta])

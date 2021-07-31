@@ -2,7 +2,7 @@ import copy
 from FastSLAM2 import FastSLAM2
 from RobotPhysics2D import RobotPhysics2D
 import numpy as np
-from Util import wrapToPi
+from Util import wrap_to_pi
 
 class Sensor():
     def __init__(self, name, update_period, limits = {'range':1,'bearing':np.pi/4}, noise_std = {'range':1, 'bearing': np.pi/36}):
@@ -55,12 +55,12 @@ class RobotSimulator():
 
   def move_robot_and_read_control(self): 
     v, w = self.robot.compute_control(self.robot_pose, self.target,self.velocity, self.angular_velocity)
-    w = wrapToPi(w)
+    w = wrap_to_pi(w)
     computed_control = (v,w) #theoretical input
 
     v += np.random.normal(0, self.robot_motion_std['v']) 
     w += np.random.normal(0, self.robot_motion_std['w']) 
-    w = wrapToPi(w)
+    w = wrap_to_pi(w)
     actual_control = (v,w)
 
     self.robot_history.append(copy.deepcopy(self.robot_pose))

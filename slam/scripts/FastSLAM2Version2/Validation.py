@@ -108,7 +108,7 @@ def error_ellipse(points, cov, nstd=2):
 
     return width, height, theta
 
-def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarksNames):
+def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarks_names):
 
   # sqrted differences between the (pose-landmark distance) 
   # for ground truth and estimation 
@@ -123,7 +123,7 @@ def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarksNam
         robot_x = groundtruth_path_data[time][0]
         robot_y = groundtruth_path_data[time][1]
         robot_angle = groundtruth_path_data[time][2]  
-        for idx, (landmark_x, landmark_y) in zip(landmarksNames,landmarks_ground_truth):
+        for idx, (landmark_x, landmark_y) in zip(landmarks_names,landmarks_ground_truth):
           if idx in landmark_idxs:
             range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
             ground_truth_pose_landmark_dist.append(range_meas)
