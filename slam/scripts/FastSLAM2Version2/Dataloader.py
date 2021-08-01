@@ -221,4 +221,4 @@ if __name__ == '__main__':
     t = np.linspace(start=data.robots[0].ground_truth_times[0], stop=data.robots[0].ground_truth_times[-1], num=1000)
     c = [data.robots[0].compass_interp(p) for p in t]
 
-    pickle.dump(data, open("../datasets/Jar/dataset1.pkl", "wb"))
+    pickle.dump(data, open("../../datasets/Jar/dataset1.pkl", "wb"))

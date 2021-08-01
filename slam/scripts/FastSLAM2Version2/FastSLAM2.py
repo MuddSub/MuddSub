@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import pandas as pd
 from Particle import *
 from collections import namedtuple
 from Models import Meas, FastSLAM2Parameters, LandmarkConstants
@@ -61,8 +62,8 @@ class FastSLAM2():
         particle.update_meas(self._meas_ls)
 
   def _resample(self):    #  Collect weight
-    self._log('particle pose beforr',self.particles[0].pose)
-    self._log('particle pose beforr',self.particles[1].pose)
+    self._log('particle pose before',self.particles[0].pose)
+    self._log('particle pose before',self.particles[1].pose)
     self.weights = np.array([particle.weight for particle in self.particles])
     self.weights = self.weights / np.sum(self.weights)
     for idx, particle in enumerate(self.particles):
@@ -81,24 +82,32 @@ class FastSLAM2():
     self.particles  = new_particles
     self._log('particle pose after',self.particles[0].pose)
 
-  def get_pose_and_landmarks_for_plot(self,option='best'): 
-    if option=='best':
-      best_particle = max(self.particles, key=lambda p: p.accumulated_weight)
-      particle_poses = []
-      landmark_means = []
-      landmark_covs = []
-      landmark_idxs = []
+  def get_pose_and_landmarks_for_plot(self):
+    best_particle = max(self.particles, key=lambda p: p.accumulated_weight)
+    particle_poses = []
+    landmark_means = []
+    landmark_covs = []
+    landmark_names = []
 
-      for particle_idx, particle in enumerate(self.particles):
-        if particle is best_particle:
-          best_particle_idx = particle_idx
-        particle_poses.append(np.copy(particle.pose))
+    for particle_idx, particle in enumerate(self.particles):
+      if particle is best_particle:
+        best_particle_idx = particle_idx
+      particle_poses.append(np.copy(particle.pose))
 
-      for idx, landmark in best_particle.landmarks.items():
-        landmark_means.append(np.copy(landmark.mean))
-        landmark_covs.append(np.copy(landmark.cov))
-        landmark_idxs.append(idx)
-      return self._prev_t, best_particle_idx, np.array(particle_poses), landmark_idxs, np.array(landmark_means), np.array(landmark_covs)
+    for name, landmark in best_particle.landmarks.items():
+      landmark_means.append(np.copy(landmark.mean))
+      landmark_covs.append(np.copy(landmark.cov))
+      landmark_names.append(name)
+
+    snapshot = pd.DataFrame({
+      'timestamp': [self._prev_t],
+      'best_particle_idx': [best_particle_idx],
+      'particle_poses': [np.array(particle_poses)],
+      'landmark_names': [np.array(landmark_names)],
+      'landmark_means': [np.array(landmark_means)],
+      'landmark_covs': [np.array(landmark_covs)]
+    })
+    return snapshot
     
   def get_landmark_map(self, option='best'):
     landmark_map = {}

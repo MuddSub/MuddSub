@@ -11,9 +11,10 @@ class Sensor():
       self.name = name
       self.update_period = update_period
 class RobotPhysics2DForSim(RobotPhysics2D):
-  def __init__(self, random,initial_pose, default_pose_cov, verbose = False):
+  def __init__(self, random,initial_pose, default_pose_cov, bearing_is_close,verbose = False,):
     self._verbose = verbose
     super().__init__(random,initial_pose, default_pose_cov)
+    self.bearing_is_close = bearing_is_close
 
   def _log(self,*msg):
     if self._verbose:
@@ -21,15 +22,15 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     
   def compute_control(self, robot_pose, target, velocity, angular_velocity):
     range_meas, bearing_meas = self.compute_meas_model(robot_pose, target)
-    if abs(bearing_meas)<.1: 
-      return velocity,0
+    if abs(bearing_meas)<self.bearing_is_close: 
+      return velocity/(1+np.exp(-range_meas)),0
     else:
       direction = 1 if 0<=bearing_meas <=np.pi else -1
-      return 0,direction * angular_velocity
+      return 0,direction * angular_velocity*wrap_to_pi(bearing_meas)/(np.pi)
 
   def compute_actual_measurement(self,measurement, sensor_limits, sensor_noise_std):
     range_mea, bearing_mea = measurement
-    self._log('compute_actual_measurement',(range_mea,bearing_mea),sensor_limits, abs(bearing_mea)>sensor_limits['bearing'] or range_mea > sensor_limits['range'])
+    #self._log('compute_actual_measurement',(range_mea,bearing_mea),sensor_limits, abs(bearing_mea)>sensor_limits['bearing'] or range_mea > sensor_limits['range'])
     if sensor_limits['bearing']/2<=bearing_mea%(np.pi*2)<=2*np.pi-sensor_limits['bearing']/2 or range_mea > sensor_limits['range']:
       return None, None
     return np.random.normal(range_mea,sensor_noise_std['range']),np.random.normal(bearing_mea,sensor_noise_std['bearing'])
@@ -38,11 +39,11 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     
     measurement = self.compute_meas_model(robot_pose,target)
     measurement = self.compute_actual_measurement(measurement,{'range':acceptable_range,'bearing':acceptable_bearing},{'range':0,'bearing':0})
-    self._log('is_close',robot_pose,target,acceptable_range, acceptable_bearing, not measurement[0] is None)
+    #self._log('is_close',robot_pose,target,acceptable_range, acceptable_bearing, not measurement[0] is None)
     return not measurement[0] is None
 
 class RobotSimulator():
-  def __init__(self, sensors, landmarks,velocity, angular_velocity , robot_motion_std, random,initial_pose, default_pose_cov, verbose=False):
+  def __init__(self, sensors, landmarks,velocity, angular_velocity , robot_motion_std, random,initial_pose, default_pose_cov, bearing_is_close, verbose=False):
     self.robot_motion_std = robot_motion_std # all in meter and radian
     self.sensors = sensors
     self.dt = 1
@@ -50,7 +51,7 @@ class RobotSimulator():
 
     self.velocity, self.angular_velocity = velocity, angular_velocity 
 
-    self.robot = RobotPhysics2DForSim(random,initial_pose, default_pose_cov, verbose = verbose)
+    self.robot = RobotPhysics2DForSim(random,initial_pose, default_pose_cov, bearing_is_close, verbose = verbose)
     self.robot_pose = [0,0,0]
     self.robot_history = []
     self.landmarks = landmarks
@@ -70,8 +71,12 @@ class RobotSimulator():
     w = wrap_to_pi(w)
     computed_control = (v,w) #theoretical input
 
-    v += np.random.normal(0, self.robot_motion_std['v']) 
-    w += np.random.normal(0, self.robot_motion_std['w']) 
+    v_std = self.robot_motion_std['v'] 
+    w_std = self.robot_motion_std['w']     
+    v_std *= .05 if v==0 else v/self.velocity
+    w_std *= .05 if w==0 else w/self.angular_velocity
+    v = np.random.normal(v, v_std)
+    w = np.random.normal(w, w_std)
     w = wrap_to_pi(w)
     actual_control = (v,w)
 
@@ -87,7 +92,7 @@ class RobotSimulator():
     return computed_control
   
   def read_measurement(self):
-    self._log('============= read measurement')
+    #self._log('============= read measurement')
     true_measurements = {}
     actual_measurements = []
     for key, landmark_pose in list(self.landmarks.items()):
@@ -97,12 +102,12 @@ class RobotSimulator():
     for sensor in self.sensors:
       if self.t % sensor.update_period != 0: continue
       for key, measurement in list(true_measurements.items()):
-        self._log('==== landmark',key)
-        self._log('== measurement',measurement,'true measurement', true_measurements[key])
+        #self._log('==== landmark',key)
+        #self._log('== measurement',measurement,'true measurement', true_measurements[key])
         range_mea, bearing_mea = self.robot.compute_actual_measurement(measurement,sensor.limits, sensor.noise_std)
-        self._log('== range and bearing',range_mea, bearing_mea)
+        #self._log('== range and bearing',range_mea, bearing_mea)
         if range_mea:
           actual_measurements.append((key, range_mea, bearing_mea, sensor.noise_std['range'], sensor.noise_std['bearing'], \
             sensor.limits['range'], sensor.limits['bearing']))
-    self._log('=========>>>> num meas',len(actual_measurements))
+    #self._log('=========>>>> num meas',len(actual_measurements))
     return actual_measurements

@@ -229,7 +229,7 @@ if __name__ == '__main__':
     plt.plot(t, c)
     # plt.show()
 
-    pickle.dump(data, open("../datasets/Jar/dataset1.pkl", "wb"))
+    pickle.dump(data, open("../../datasets/Jar/dataset1.pkl", "wb"))
     #
     # robotData = data.robots[0]
     #
