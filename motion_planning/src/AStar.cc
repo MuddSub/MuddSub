@@ -272,7 +272,11 @@ namespace MuddSub::MotionPlanning
         z_ = z;
         if(end != NULL)
         {
-            h_ = pow((pow((end->x_ - x_),2) + pow((end->y_ - y_),2) + pow((end->z_ - z_),2)),0.5);
+            //using manhattan distance
+            int dx = abs(x_ - x);
+            int dy = abs(y_ - y);
+            int dz = abs(z_ - z);
+            h_ = dx + dy + dz;
         }
     }
 
