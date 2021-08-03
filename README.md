@@ -4,9 +4,9 @@ The code for MuddSub's Alfie AUV
 ## Installation
 
 ### Prerequisites
-This all needs to be in Ubuntu, preferably 18.04. Other linux distributions can in theory be used, but not all packages are guaranteed to be supported. For example, in Arch linux, everything except simulation is supported. These instructions are all written for Ubuntu. If you want to use a different distribution, you'll have to figure out how to install the packages in the distro.
+This all needs to be in Ubuntu, preferably 20.04. Other linux distributions can in theory be used, but not all packages are guaranteed to be supported. For example, in Arch linux, everything except simulation is supported. These instructions are all written for Ubuntu. If you want to use a different distribution, you'll have to figure out how to install the packages in the distro.
 
-Start by following [these instructions](http://wiki.ros.org/melodic/Installation/Ubuntu) to install ros melodic.
+Start by following [these instructions](http://wiki.ros.org/noetic/Installation/Ubuntu) to install ros noetic.
 
 You'll also need to install a few dependencies to get everything working:
 
@@ -22,7 +22,7 @@ sudo apt-get install doxygen
 pip install doxypypy
 ```
 
-The first is optional, and provides the tools we use for simulation. The second is a dependency for a library we use for controls. The third gives an alternate build tool to the one which comes standard with ROS. We build with `catkin build` instead of `catkin_make` because it allows standard CMake projects to be compiled within our workspace. The last two are used to generate documentation.
+The first is a dependency for a library we use for controls. The second gives an alternate build tool to the one which comes standard with ROS. We build with `catkin build` instead of `catkin_make` because it allows standard CMake projects to be compiled within our workspace. The last two are used to generate documentation.
 
 ### Download and Build
 
