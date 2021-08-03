@@ -11,14 +11,13 @@ Start by following [these instructions](http://wiki.ros.org/melodic/Installation
 You'll also need to install a few dependencies to get everything working:
 
 ```
-sudo apt-get install ros-melodic-uwsim
-sudo apt-get install python2.7-dev
-sudo apt-get install python-catkin-tools
-sudo apt-get install ros-melodic-tf
-sudo apt-get install ros-melodic-urdf
+sudo apt-get install python3-dev
+sudo apt-get install python3-catkin-tools
+sudo apt-get install ros-noetic-tf
+sudo apt-get install ros-noetic-urdf
 sudo apt-get install libeigen3-dev
-sudo apt-get install ros-melodic-tf2-geometry-msgs
-sudo apt-get install ros-melodic-vision-msgs
+sudo apt-get install ros-noetic-tf2-geometry-msgs
+sudo apt-get install ros-noetic-vision-msgs
 sudo apt-get install doxygen
 pip install doxypypy
 ```
