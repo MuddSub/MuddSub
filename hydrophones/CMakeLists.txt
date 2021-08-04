@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
 )
 
-<<<<<<< HEAD
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -116,8 +115,6 @@ target_link_libraries(HydrophonesExampleNode ${catkin_LIBRARIES})
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-=======
->>>>>>> baddea25da1bd727854b17130fd4c6dea2e1481a
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES hydrophones
