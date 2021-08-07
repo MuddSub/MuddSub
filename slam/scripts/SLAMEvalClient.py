@@ -2,7 +2,7 @@
 
 import rospy
 import numpy as np
-from SimulatedAnnealing import SimulatedAnnealing
+from slam.SimulatedAnnealing import SimulatedAnnealing
 from slam.srv import *
 
 import pickle 

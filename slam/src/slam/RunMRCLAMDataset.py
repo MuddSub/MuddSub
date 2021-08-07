@@ -46,7 +46,7 @@ class RunMRCLAMDataset():
         self.algorithm = None
         self.update = None
 
-    def load_data(self, pkl='../../datasets/Jar/dataset1.pkl'):
+    def load_data(self, pkl):
         global algorithm
         self.dataloader = pickle.load(open(pkl,'rb'))
         self.robot_data = self.dataloader.robots[self.robot_id]
@@ -147,6 +147,6 @@ class RunMRCLAMDataset():
                 self.algorithm.add_measurement(meas)
 
 clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10000, hardcode_compass = True)
-clam_dataset.load_data()
+clam_dataset.load_data('../../datasets/Jar/dataset1.pkl')
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()

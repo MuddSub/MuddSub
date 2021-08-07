@@ -2,14 +2,14 @@
 
 import rospy
 import numpy as np
-from SimulatedAnnealing import SimulatedAnnealing
+from slam.SimulatedAnnealing import SimulatedAnnealing
 from slam.srv import *
 from SLAMEvalClient import evaluateFastSLAM
-import pickle
+import pickle 
 
 if __name__=="__main__":
     print("start parameter tuning client")
-    # number of times we run fastSlam
+    # number of times we run fastSlam 
     experimentRepetitions = 5
 
     # Setup hyperparameters for simulated annealing algorithm
@@ -63,6 +63,7 @@ if __name__=="__main__":
     sa.run()
     fileObj = open("FastSlamHistory","wb")
     pickle.dump(sa.history,fileObj)
-
+    
 
     print("default: cost", evaluation(default))
+

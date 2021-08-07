@@ -113,7 +113,7 @@ class Robot:
                 compass = self.compass_interp(time)
             compass += np.random.normal(0, 0.005)
 
-            self.odometry.append((time, row.Velocity, row.Angular_velocity))
+            self.odometry.append((time, row.Velocity, row.AngularVelocity))
 
 
         for row in self.measurements_DF.itertuples():
@@ -212,42 +212,14 @@ class Data:
             odometry = self.robot_odometry[i]
             self.robots.append(copy.deepcopy(Robot(ground_truth, measurements, odometry, self.barcodes)))
 
-
 if __name__ == '__main__':
-    parser = argparse.Argument_parser(description='Mavenlink Optimization Problem')
-    parser.add_argument('directory', type=str, help='Directory with input files')
-
+    parser = argparse.ArgumentParser(description='Mavenlink Optimization Problem')
+    parser.add_argument('source', type=str, help='Directory with input files')
+    parser.add_argument('output', type=str, help='Output pickle file path')
     args = parser.parse_args()
 
-
-    data = Data(args.directory)
-
-
+    data = Data(args.source)
     t = np.linspace(start=data.robots[0].ground_truth_times[0], stop=data.robots[0].ground_truth_times[-1], num=1000)
     c = [data.robots[0].compass_interp(p) for p in t]
-    plt.plot(data.robots[0].ground_truth_times, data.robots[0].ground_truth_compass, label="Ground Truth")
-    plt.plot(t, c)
-    # plt.show()
 
-    pickle.dump(data, open("../../datasets/Jar/dataset1.pkl", "wb"))
-    #
-    # robotData = data.robots[0]
-    #
-    # dict = robotData.dataDict
-    #
-    # range = []
-    # bearing = []
-    # while not robotData.empty():
-    #     data = robotData.getNext()
-    #     measurements = data["Measurements"]
-    #     t = data["Time"]
-    #     if measurements == [] or t < 1248273512.011 or t > 1248273518.329:
-    #         continue
-    #     for m in measurements:
-    #         if m[0] == 11:
-    #             range.append(m[1])
-    #             bearing.append(m[2])
-    # print(range)
-    # print(bearing)
-    # print("Range Var: ", np.var(range))
-    # print("Bearing Var: ", np.var(bearing))
+    pickle.dump(data, open(args.output, "wb"))
