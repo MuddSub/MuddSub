@@ -9,7 +9,7 @@ import numpy as np
 from Util import wrap_to_pi
 from Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from RobotPhysics2D import RobotPhysics2D
-from Validation import plot_data
+from Validation import plot_df
 
 class RunMRCLAMDataset():
     def __init__(self, **kwargs):
@@ -26,12 +26,9 @@ class RunMRCLAMDataset():
         self.meas_cov = kwargs.get('meas_cov', np.diag([1e-2, 1e-2]))
         self.sensor_range = kwargs.get('sensor_range', 100)
         self.sensor_fov = kwargs.get('sensor_fov', np.pi)
-        
         self.skipped_meas = kwargs.get('skipped_meas', False)
-        self.max_range_meas = kwargs.get('max_range_meas', 3)
-        self.max_bearing_meas = kwargs.get('max_bearing_meas', 0.3)
 
-        self.plot_data_list = []
+        self.history = []
         self.groundtruth_path_data = []
         self.num_particles = 10
         self.default_pose_cov = np.diag([1e-4,1e-4,1e-4])
@@ -98,11 +95,11 @@ class RunMRCLAMDataset():
             landmarks_groundtruth.append(np.array([landmark['X'], landmark['Y']]))
         landmarks_groundtruth = np.array(landmarks_groundtruth)
         print("num landmark: ground truth", len(landmarks_groundtruth), " what we got", len(self.algorithm.particles[0].landmarks))
-        plot_data(self.num_particles, self.plot_data_list,self.groundtruth_path_data, landmarks_groundtruth)
+        plot_df(self.history, self.groundtruth_path_data, landmarks_groundtruth)
             
     def log_data(self, i):
-        _, *slam_snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
-        self.plot_data_list.append([i, *slam_snapshot])
+        slam_snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
+        self.history.append([i, *slam_snapshot])
 
     def _add_control(self, t):
         odometry = self.update[1]
@@ -135,17 +132,17 @@ class RunMRCLAMDataset():
                 print( "updated measurement", subject, "with position", [landmark_x, landmark_y])
                 
                 if self.skipped_meas:
-                    if range_meas > self.max_range_meas:
+                    if range_meas > self.sensor_range:
                         print("Skipped Measurement")
                         return
-                    if -1* self.max_bearing_meas > bearing_meas or bearing_meas > self.max_bearing_meas:
+                    if -1 * self.sensor_fov > bearing_meas or bearing_meas > self.sensor_fov:
                         print("Skpped Bearing measurement")
                         return
 
                 meas = Meas((range_meas, bearing_meas), self.meas_cov, (self.sensor_range, self.sensor_fov), subject)         
                 self.algorithm.add_measurement(meas)
 
-clam_dataset = RunMRCLAMDataset(init_landmarks=False, num_steps = 10000, hardcode_compass = True, skipped_meas = True)
+clam_dataset = RunMRCLAMDataset(init_landmarks=False, num_steps = 100, hardcode_compass = True, skipped_meas = False)
 clam_dataset.load_data()
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()

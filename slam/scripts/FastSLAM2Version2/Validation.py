@@ -147,7 +147,7 @@ def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarks_na
   plt.plot(sqrt_pose_landmark_dist_error**.5)
   plt.show()
 
-def plot_df(history, groundtruth_path_data,landmarks_groundtruth, save=False, plot_avg = False):
+def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save=False, plot_avg = False):
   print(history)
   fig = plt.figure()
   ax = fig.add_subplot(111)
