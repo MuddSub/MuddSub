@@ -147,8 +147,7 @@ def evaluate(plot_data,groundtruth_path_data,landmarks_ground_truth,landmarks_na
   plt.plot(sqrt_pose_landmark_dist_error**.5)
   plt.show()
 
-def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save=False, plot_avg = False):
-  print(history)
+def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None, plot_avg = False):
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.plot(landmarks_groundtruth[:, 0], landmarks_groundtruth[:, 1], 'cx', label='true landmark')
@@ -170,6 +169,8 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save=False, p
   steps = ax.text(3, 6, "Step = 0 / " + str(num_steps), horizontalalignment="center", verticalalignment="top")
   if "num_measurements" in history:
     num_measurements = ax.text(3, 7, "Num measurements = {}".format(0), horizontalalignment="center", verticalalignment="top")
+  else:
+    num_measurements = None
   ax.legend()
   
   def init():
@@ -202,8 +203,8 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save=False, p
     best_particle_path.set_data(best_particle_path_x, best_particle_path_y)
 
     # Plot groundtruth path
-    groundtruth_path_x.append(groundtruth_path_data[t][0])
-    groundtruth_path_y.append(groundtruth_path_data[t][1])
+    groundtruth_path_x.append(groundtruth_path_data[frame][0])
+    groundtruth_path_y.append(groundtruth_path_data[frame][1])
     groundtruth_path.set_data(groundtruth_path_x, groundtruth_path_y) # can we set them directly> groundtruth_path[:t,0]
     
     # Plot other particles poses
@@ -226,12 +227,12 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save=False, p
     # Return changed artists?
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps, num_measurements
   
-  anim = animation.FuncAnimation(fig, update, frames=range(0, num_steps, max(1,int(num_steps*.001))), init_func = init, blit=False, interval = 33, repeat=False)
+  anim = animation.FuncAnimation(fig, update, frames=range(0, num_steps, max(1, int(num_steps * 0.01))), init_func = init, blit=False, interval = 33, repeat=False)
   fig.tight_layout(rect=[0, 0.03, 1, 0.95])
   plt.show()
-  if save:
-    print('Saving animation...')
-    f = r'../../animations/FastSLAM2_3.gif'
+  if save_to is not None:
+    print('Saving animation to {}...'.format(save_to))
+    f = save_to
     writergif = animation.PillowWriter(fps=30)
     anim.save(f, writer=writergif)
     print('Animation Saved!')

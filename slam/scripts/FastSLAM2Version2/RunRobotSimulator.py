@@ -142,7 +142,7 @@ class RobotSimulatorRunner(ABC):
     landmark_names =  [idx for idx, (x,y) in list(self.sim.landmarks.items())]
     landmarks_ground_truth = np.array([np.array([x,y]) for idx, (x,y) in list(self.sim.landmarks.items())])
     self._log("end of sim","actual landmarks",self.sim.landmarks, "slam robot pose",self.slam_robot_pose,"actual robot pose", self.sim.robot_pose)
-    plot_df(self.plot_data,self.sim.robot_history,landmarks_ground_truth)
+    plot_df(self.plot_data, self.sim.robot_history, landmarks_ground_truth)
 
   def run(self):
     self.initialize_landmarks()

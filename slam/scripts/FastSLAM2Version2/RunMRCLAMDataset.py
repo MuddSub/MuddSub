@@ -3,6 +3,7 @@ warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 warnings.filterwarnings("ignore", category=UserWarning)
 import pickle
+import pandas as pd
 from Dataloader import *
 from FastSLAM2 import FastSLAM2
 import numpy as np
@@ -22,15 +23,15 @@ class RunMRCLAMDataset():
         self.known_correspondences = kwargs.get('known_correspondences', True)
         self.robot_id = kwargs.get('robot_id', 0)
         self.start_step = kwargs.get('start_step', 0)
-        self.num_steps = kwargs.get('num_steps', 5000)
+        self.num_steps = kwargs.get('num_steps', 1000)
         self.meas_cov = kwargs.get('meas_cov', np.diag([1e-2, 1e-2]))
         self.sensor_range = kwargs.get('sensor_range', 100)
         self.sensor_fov = kwargs.get('sensor_fov', np.pi)
         self.skipped_meas = kwargs.get('skipped_meas', False)
 
-        self.history = []
+        self.history = None
         self.groundtruth_path_data = []
-        self.num_particles = 10
+        self.num_particles = kwargs.get('num_particles', 1)
         self.default_pose_cov = np.diag([1e-4,1e-4,1e-4])
 
         self.params = FastSLAM2Parameters(
@@ -98,8 +99,11 @@ class RunMRCLAMDataset():
         plot_df(self.history, self.groundtruth_path_data, landmarks_groundtruth)
             
     def log_data(self, i):
-        slam_snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
-        self.history.append([i, *slam_snapshot])
+        snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
+        if self.history is None:
+            self.history = snapshot
+        else:
+            self.history = pd.concat([self.history, snapshot], ignore_index=True)
 
     def _add_control(self, t):
         odometry = self.update[1]
@@ -142,7 +146,7 @@ class RunMRCLAMDataset():
                 meas = Meas((range_meas, bearing_meas), self.meas_cov, (self.sensor_range, self.sensor_fov), subject)         
                 self.algorithm.add_measurement(meas)
 
-clam_dataset = RunMRCLAMDataset(init_landmarks=False, num_steps = 100, hardcode_compass = True, skipped_meas = False)
+clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10000, hardcode_compass = True)
 clam_dataset.load_data()
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()
