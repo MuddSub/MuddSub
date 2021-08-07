@@ -22,11 +22,19 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     
   def compute_control(self, robot_pose, target, velocity, angular_velocity):
     range_meas, bearing_meas = self.compute_meas_model(robot_pose, target)
+    bearing_meas = wrap_to_pi(bearing_meas)
+    self._log('compute control','slope', np.arctan2((target[1]-robot_pose[1]),(target[0]-robot_pose[0])), 'range',range_meas,'bearing',bearing_meas)
+    assert -1*np.pi<=bearing_meas<=np.pi
     if abs(bearing_meas)<self.bearing_is_close: 
-      return velocity/(1+np.exp(-range_meas)),0
+      displacement = velocity
+      print("range",range_meas,"bearing",bearing_meas, "displacement",displacement)
+      return displacement,0
     else:
       direction = 1 if 0<=bearing_meas <=np.pi else -1
-      return 0,direction * angular_velocity*wrap_to_pi(bearing_meas)/(np.pi)
+      angular_displacement_mag = angular_velocity if abs(bearing_meas)>angular_velocity else abs(bearing_meas)
+      angular_displacement = angular_displacement_mag * direction
+      print("range",range_meas,"bearing",bearing_meas,"anglar displacement",angular_displacement)
+      return 0,angular_displacement
 
   def compute_actual_measurement(self,measurement, sensor_limits, sensor_noise_std):
     range_mea, bearing_mea = measurement
@@ -67,14 +75,15 @@ class RobotSimulator():
     self.t += self.dt
 
   def move_robot_and_read_control(self): 
+    print('compute control!')
     v, w = self.robot.compute_control(self.robot_pose, self.target_location,self.velocity, self.angular_velocity)
     w = wrap_to_pi(w)
     computed_control = (v,w) #theoretical input
 
     v_std = self.robot_motion_std['v'] 
     w_std = self.robot_motion_std['w']     
-    v_std *= .05 if v==0 else v/self.velocity
-    w_std *= .05 if w==0 else w/self.angular_velocity
+    v_std *= .05 if v==0 else abs(v/self.velocity)
+    w_std *= .05 if w==0 else abs(w/self.angular_velocity)
     v = np.random.normal(v, v_std)
     w = np.random.normal(w, w_std)
     w = wrap_to_pi(w)

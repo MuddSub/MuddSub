@@ -17,7 +17,7 @@ class RobotSimulatorRunner(ABC):
     self.hardcode_pose = False
     self.close_enough_distantce = .3
     self.close_enough_bearing = np.pi*2
-    self.close_enough_bearing_for_translation = np.pi/18
+    self.close_enough_bearing_for_translation = np.pi/36
 
     ### environment setups    
     # sensors = [Sensor('sensor0',5,limits = {'range':2,'bearing':np.pi/2},noise_std = {'range':.3**.5, 'bearing': np.pi/36}), 
@@ -31,7 +31,7 @@ class RobotSimulatorRunner(ABC):
                   (5,5),(6,7),(7,8),(8,9)]
     landmarks = {str(idx):landmark for idx,landmark in enumerate(landmarks)}        
     
-    velocity, angular_velocity  = .3,np.pi/10
+    velocity, angular_velocity  = .3,np.pi/9
     robot_motion_std = {'v':velocity*.1, 'w': angular_velocity*.1}
     random = np.random.default_rng()
     
