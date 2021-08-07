@@ -15,7 +15,7 @@ class FastSLAM2Parameters:
   initial_landmarks: dict
   landmark_constants: LandmarkConstants
   localization_only: bool = False
-  verbose: int = 0 # FastSlam2 -> 1. Particle -> 2. 
+  verbose: int = 0 # To make FastSlam2 verbose, use 1. To make Particle.py verbose, use 2. 
 
 @dataclass
 class _EKF: # a landmark class
