@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from Util import wrap_to_pi
-from RobotPhysicsBase import RobotPhysicsBase
+from slam.Util import wrap_to_pi
+from slam.RobotPhysicsBase import RobotPhysicsBase
 
 class RobotPhysics2D(RobotPhysicsBase):
     '''
@@ -17,7 +17,6 @@ class RobotPhysics2D(RobotPhysicsBase):
         self.default_pose_cov = np.array([x_sigma, y_sigma, theta_sigma])
 
     def compute_meas_model(self, pose, landmark_mean):
-        #x,y,theta, vx, vy, omega, theta_p = pose
         x, y, theta = pose
         lx, ly = landmark_mean
 
@@ -45,7 +44,6 @@ class RobotPhysics2D(RobotPhysicsBase):
         return meas_jac_pose, meas_jac_land
         
     def compute_inverse_meas_model(self,pose,meas):
-        #x, y, theta, vx, vy, omega, theta_p = pose
         x, y, theta = pose
         range_meas, bearing_meas = meas
         lx = x + range_meas * np.cos(theta + bearing_meas)

@@ -2,8 +2,8 @@ import numpy as np
 import scipy.stats
 from scipy.linalg import sqrtm
 from collections import namedtuple
-from Models import _EKF, Meas, LandmarkConstants
-from RobotPhysics2D import RobotPhysics2D
+from slam.Models import _EKF, Meas, LandmarkConstants
+from slam.RobotPhysics2D import RobotPhysics2D
 from typing import List
 
 class Particle():
@@ -48,15 +48,13 @@ class Particle():
 
   def _log(self, *msg):
     if self._verbose >= 2:
-      print('+++ Particle ' + str(self._id) + ':', *msg)
+      print('Particle ' + str(self._id) + ':', *msg)
   
   def update_motion(self, control, dt):
     '''
     Update particle pose using motion model
     '''
-    self._log('motion1',self.pose)
     self.pose = self._robot_physics.compute_motion_model(self.pose, control, dt)
-    self._log('motion2',self.pose)
 
   def update_meas(self, meas_ls: List[Meas]):
     '''
@@ -84,11 +82,9 @@ class Particle():
         for land_idx, landmark in list(self.landmarks.items()):
           # +++ New particle pose is computed here
           self._update_dependencies_on_landmark(landmark, pose_mean, pose_cov, meas)
-          self._log('meas 1',self.pose)
           self._update_pose_distribution(landmark, pose_mean, pose_cov)
-          self._log('meas 2',self.pose)
           self._update_landmark_association_prob(landmark)
-          self._log('meas 3',self.pose)
+          
         if len(self.landmarks) > 0: # use maximum likelihood to select landmark
           observed_landmark = max(list(self.landmarks.values()), key = lambda landmark: landmark.association_prob)
       
@@ -100,10 +96,9 @@ class Particle():
           key = len(self.landmarks) + 1
           observed_landmark = self.landmarks[key] = \
             self._init_landmark_with_meas(pose_mean, pose_cov, meas, name=str(key))
-          self._log('meas 4',self.pose)
+
         else:
-          self._update_observed_landmark(observed_landmark, pose_cov, meas)
-          self._log('meas 5',self.pose)
+          self._update_observed_landmark(observed_landmark, pose_cov, meas)  
 
       # ++++++ If known correspondence
       else:
@@ -111,15 +106,11 @@ class Particle():
           # +++ New particle pose is computed here
           observed_landmark = self.landmarks[meas.correspondence]
           self._update_dependencies_on_landmark(observed_landmark, pose_mean, pose_cov, meas)
-          self._log('meas 6',self.pose)
           self._update_pose_distribution(observed_landmark, pose_mean, pose_cov)
-          self._log('meas 7',self.pose)
           self._update_observed_landmark(observed_landmark, pose_cov, meas)
-          self._log('meas 8',self.pose)
         else:
           observed_landmark = self.landmarks[meas.correspondence] = \
             self._init_landmark_with_meas(pose_mean, pose_cov, meas, name=str(meas.correspondence))
-          self._log('meas 9', self.pose)
 
       # ++++++ Penalize landmarks that we expect to see
       if not self._are_landmarks_fixed:
@@ -129,10 +120,8 @@ class Particle():
       self.weight *= observed_landmark.particle_weight
       self.weight = max(self.weight, 1e-50)
       self.pose_mean = np.copy(observed_landmark.pose_mean)
-      self._log('meas 10',self.pose)
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
-      self._log('meas 11',self.pose)
   
   def update_meas_localization_only(self, meas_ls: List[Meas]):
     '''
@@ -222,7 +211,7 @@ class Particle():
     landmark = self._init_landmark(name, mean, cov, sampled_pose=sampled_pose, pose_mean=pose_mean, pose_cov=pose_cov)
     landmark.meas_jac_pose = meas_jac_pose
     landmark.meas_jac_land = meas_jac_land
-    self._log('init', landmark.name, landmark.association_prob)
+    self._log('info: init', landmark.name, landmark.association_prob)
     return landmark
 
   def _is_unobserved_landmark_kept(self, landmark, sensor_constraints):
