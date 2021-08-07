@@ -3,6 +3,7 @@ warnings.filterwarnings("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 warnings.filterwarnings("ignore", category=UserWarning)
 import pickle
+import pandas as pd
 from Dataloader import *
 from FastSLAM2 import FastSLAM2
 import numpy as np
@@ -22,18 +23,14 @@ class RunMRCLAMDataset():
         self.known_correspondences = kwargs.get('known_correspondences', True)
         self.robot_id = kwargs.get('robot_id', 0)
         self.start_step = kwargs.get('start_step', 0)
-        self.num_steps = kwargs.get('num_steps', 5000)
+        self.num_steps = kwargs.get('num_steps', 1000)
         self.meas_cov = kwargs.get('meas_cov', np.diag([1e-2, 1e-2]))
         self.sensor_range = kwargs.get('sensor_range', 100)
         self.sensor_fov = kwargs.get('sensor_fov', np.pi)
-        
-        self.skipped_meas = kwargs.get('skipped_meas', False)
-        self.max_range_meas = kwargs.get('max_range_meas', 3)
-        self.max_bearing_meas = kwargs.get('max_bearing_meas', 0.3)
 
-        self.plot_data_list = []
+        self.history = None
         self.groundtruth_path_data = []
-        self.num_particles = 10
+        self.num_particles = 2
         self.default_pose_cov = np.diag([1e-4,1e-4,1e-4])
 
         self.params = FastSLAM2Parameters(
@@ -98,11 +95,14 @@ class RunMRCLAMDataset():
             landmarks_groundtruth.append(np.array([landmark['X'], landmark['Y']]))
         landmarks_groundtruth = np.array(landmarks_groundtruth)
         print("num landmark: ground truth", len(landmarks_groundtruth), " what we got", len(self.algorithm.particles[0].landmarks))
-        plot_data(self.num_particles, self.plot_data_list,self.groundtruth_path_data, landmarks_groundtruth)
+        plot_data(self.num_particles, self.history, self.groundtruth_path_data, landmarks_groundtruth)
             
     def log_data(self, i):
-        _, *slam_snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
-        self.plot_data_list.append([i, *slam_snapshot])
+        snapshot = self.algorithm.get_pose_and_landmarks()
+        if self.history == None:
+            self.history = snapshot
+        else:
+            self.history = pd.concat([self.history, snapshot], ignore_index=True)
 
     def _add_control(self, t):
         odometry = self.update[1]
@@ -134,18 +134,10 @@ class RunMRCLAMDataset():
                     bearing_meas = wrap_to_pi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
                 print( "updated measurement", subject, "with position", [landmark_x, landmark_y])
                 
-                if self.skipped_meas:
-                    if range_meas > self.max_range_meas:
-                        print("Skipped Measurement")
-                        return
-                    if -1* self.max_bearing_meas > bearing_meas or bearing_meas > self.max_bearing_meas:
-                        print("Skpped Bearing measurement")
-                        return
-
                 meas = Meas((range_meas, bearing_meas), self.meas_cov, (self.sensor_range, self.sensor_fov), subject)         
                 self.algorithm.add_measurement(meas)
 
-clam_dataset = RunMRCLAMDataset(init_landmarks=False, num_steps = 10000, hardcode_compass = True, skipped_meas = True)
+clam_dataset = RunMRCLAMDataset(init_landmarks=True)
 clam_dataset.load_data()
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()
