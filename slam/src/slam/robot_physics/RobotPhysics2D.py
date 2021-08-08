@@ -10,11 +10,8 @@ class RobotPhysics2D(RobotPhysicsBase):
     '''
     def __init__(self, random, initial_pose, default_pose_cov = None):
         super().__init__(random)
-        self.initial_pose = initial_pose
+        self.initial_pose = initial_pose #x, y, theta (angle)
         self.default_pose_cov = default_pose_cov
-
-    def update_default_pose_cov(self, x_sigma, y_sigma, theta_sigma):
-        self.default_pose_cov = np.array([x_sigma, y_sigma, theta_sigma])
 
     def compute_meas_model(self, pose, landmark_mean):
         x, y, theta = pose
