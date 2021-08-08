@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from slam.Util import wrap_to_pi
-from slam.RobotPhysicsBase import RobotPhysicsBase
+from slam.robot_physics.RobotPhysicsBase import RobotPhysicsBase
 
 class RobotPhysics2D(RobotPhysicsBase):
     '''

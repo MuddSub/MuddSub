@@ -8,3 +8,5 @@ hydrophones/data/*
 *.vscode
 docs/*
 slam/datasets/*
+*.pkl
+*.gif

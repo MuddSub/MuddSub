@@ -4,13 +4,12 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 import pickle
 import pandas as pd
-from slam.Dataloader import *
-from slam.FastSLAM2 import FastSLAM2
+from slam.mr_clam.MRCLAMDataloader import *
+from slam.fast_slam2.FastSLAM2 import FastSLAM2
 import numpy as np
-from slam.Util import wrap_to_pi
-from slam.Models import Meas, FastSLAM2Parameters, LandmarkConstants
-from slam.RobotPhysics2D import RobotPhysics2D
-from slam.Validation import plot_df
+from slam.Util import wrap_to_pi,plot_df
+from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
+from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 
 class RunMRCLAMDataset():
     def __init__(self, **kwargs):
@@ -141,6 +140,6 @@ class RunMRCLAMDataset():
                 self.algorithm.add_measurement(meas)
 
 clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10000, hardcode_compass = True)
-clam_dataset.load_data('../datasets/Jar/dataset1.pkl')
+clam_dataset.load_data(os.path.dirname(os.path.realpath(__file__))+'/datasets/Jar/dataset1.pkl')
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()

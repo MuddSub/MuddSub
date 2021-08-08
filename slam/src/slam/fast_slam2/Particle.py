@@ -2,8 +2,8 @@ import numpy as np
 import scipy.stats
 from scipy.linalg import sqrtm
 from collections import namedtuple
-from slam.Models import _EKF, Meas, LandmarkConstants
-from slam.RobotPhysics2D import RobotPhysics2D
+from slam.fast_slam2.Models import _EKF, Meas, LandmarkConstants
+from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 from typing import List
 
 class Particle():

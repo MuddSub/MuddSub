@@ -1,9 +1,9 @@
 import numpy as np
 import copy
 import pandas as pd
-from slam.Particle import *
+from slam.fast_slam2.Particle import *
 from collections import namedtuple
-from slam.Models import Meas, FastSLAM2Parameters, LandmarkConstants
+from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 
 class FastSLAM2():
   def __init__(self, robot_physics, parameters: FastSLAM2Parameters, random=np.random.default_rng()):
