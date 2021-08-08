@@ -1,7 +1,6 @@
 import copy
 from slam.fast_slam2.FastSLAM2 import FastSLAM2
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
-from slam.robot_physics.RobotSimulatorPhysics import RobotPhysics2DForSim
 import numpy as np
 from slam.Util import wrap_to_pi
 
@@ -14,7 +13,7 @@ class Sensor():
       self.update_period = update_period
 
 class RobotSimulator():
-  def __init__(self, sensors, landmarks,velocity , velocity_std, random,initial_pose, default_pose_cov, position_is_close, verbose=False):
+  def __init__(self, robot, sensors, landmarks,velocity , velocity_std, random,initial_pose, default_pose_cov, verbose=False):
     self.velocity_std = velocity_std # all in meter and radian
     self.sensors = sensors
     self.dt = 1
@@ -22,7 +21,7 @@ class RobotSimulator():
 
     self.velocity = velocity
 
-    self.robot = RobotPhysics2DForSim(random,initial_pose, default_pose_cov, position_is_close, verbose = verbose)
+    self.robot = robot
     self.robot_pose = initial_pose
     self.robot_history = []
     self.landmarks = landmarks

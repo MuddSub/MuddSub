@@ -1,6 +1,7 @@
 import copy
 from slam.fast_slam2.FastSLAM2 import FastSLAM2
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
+from slam.robot_physics.RobotSimulatorPhysics import RobotPhysics2DForSim
 import numpy as np
 import pandas as pd
 from slam.Util import wrap_to_pi,plot_df
@@ -9,7 +10,7 @@ from slam.fast_slam2.Models import Meas,FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
 class RobotSimulatorRunner():
-  def __init__(self, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
+  def __init__(self, robot_physics_for_sim, robot_physics_for_slam, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
                 sensors,velocity,velocity_std,
                 landmarks,landmark_initial_noises,landmark_convs,initial_pose,default_pose_cov,num_particles,new_landmark_threshold):
     self.num_steps = num_steps
@@ -19,8 +20,6 @@ class RobotSimulatorRunner():
     self.close_enough_position_for_motion = close_enough_position_for_motion
     
     landmarks = {str(idx):landmark for idx,landmark in enumerate(landmarks)}        
-    
-    random = np.random.default_rng()
     
     estimated_init_landmarks = {key: 
       (
@@ -39,11 +38,9 @@ class RobotSimulatorRunner():
       initial_landmarks = estimated_init_landmarks,
       landmark_constants = landmark_constants
     )
-
-    self.sim = RobotSimulator(sensors,landmarks, velocity, velocity_std,random,initial_pose, default_pose_cov, self.close_enough_position_for_motion, verbose=True )
-
-    robot_physics = RobotPhysics2D(random, initial_pose, default_pose_cov)
-    self.slam = FastSLAM2(robot_physics, parameters = self.params, random = random)
+    self.sim = RobotSimulator(robot_physics_for_sim, sensors,landmarks, velocity, velocity_std,random,initial_pose, default_pose_cov, self.close_enough_position_for_motion)
+    self.slam = FastSLAM2(robot_physics_for_slam, parameters = self.params, random = random)
+ 
     self.meas_hist = []
     self.plot_data = pd.DataFrame()
 
@@ -144,7 +141,11 @@ default_pose_cov = np.diag([.5**2,.5**2,(np.pi/360)**2])
 num_particles = 30
 new_landmark_threshold = 1.1
 
-runner = RobotSimulatorRunner(num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
+random = np.random.default_rng()
+robot_physics_for_sim = RobotPhysics2DForSim(random,initial_pose, default_pose_cov, close_enough_position_for_motion,verbose = True)
+robot_physics_for_slam = RobotPhysics2D(random, initial_pose, default_pose_cov)
+
+runner = RobotSimulatorRunner(robot_physics_for_sim, robot_physics_for_slam, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
                 sensors,velocity,velocity_std,
                 landmarks,landmark_initial_noises,landmark_convs,initial_pose,default_pose_cov,num_particles,new_landmark_threshold)
 runner.run()
