@@ -6,7 +6,7 @@ from slam.fast_slam2.Models import _EKF, Meas, LandmarkConstants
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 from typing import List
 
-class Particle():
+class FastSLAM2Particle():
   '''
   Class representing a particle in FastSLAM2
   '''
@@ -54,14 +54,19 @@ class Particle():
     '''
     Update particle pose using motion model
     '''
+    self._log('Update motion')
+    self._log('before motion - particle pose',self.pose)
     self.pose = self._robot_physics.compute_motion_model(self.pose, control, dt)
-
+    self._log('after motion - particle pose',self.pose)
+    
   def update_meas(self, meas_ls: List[Meas]):
     '''
     Identify current facing landmark
     Correct particle pose using measurements
     Compute particle weight
     '''
+    self._log('Update Measurement')
+    self._log('before measurement - particle pose',self.pose)
     # ++++++ Set up: sort meas_ls by range; initialize particle mean, covariance, and weight
     meas_ls.sort(key = lambda meas: meas.data[0])  # meas_ls should be sorted by range.
     pose_mean, pose_cov = np.copy(self.pose), np.copy(self.pose_cov)
@@ -70,6 +75,7 @@ class Particle():
     # ++++++ No Measurment: sample the pose using motion model
     if len(meas_ls) == 0:
       self.pose = self._robot_physics.compute_sample_pose(pose_mean, pose_cov)
+      self._log('no measurement - particle pose',self.pose)
       return
 
     # ++++++ Access each measurement 
@@ -111,7 +117,6 @@ class Particle():
         else:
           observed_landmark = self.landmarks[meas.correspondence] = \
             self._init_landmark_with_meas(pose_mean, pose_cov, meas, name=str(meas.correspondence))
-
       # ++++++ Penalize landmarks that we expect to see
       if not self._are_landmarks_fixed:
         self._update_unobserved_landmarks(observed_landmark, meas)
@@ -122,6 +127,8 @@ class Particle():
       self.pose_mean = np.copy(observed_landmark.pose_mean)
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
+      self._log('after measurement - particle pose',self.pose)
+    self._log('final after measurement - particle pose',self.pose)
   
   def update_meas_localization_only(self, meas_ls: List[Meas]):
     '''
@@ -136,7 +143,7 @@ class Particle():
       return
     
     # Compute the particle's weight
-    for meas, in meas_ls:
+    for meas in meas_ls:
       observed_landmark = self.landmarks[meas.correspondence]
       est_meas_data = self._robot_physics.compute_meas_model(self.pose, observed_landmark.mean)
       self.weight *= scipy.stats.multivariate_normal.pdf(est_meas_data, mean=meas.data, cov=meas.cov)
@@ -169,11 +176,12 @@ class Particle():
   def _update_observed_landmark(self,landmark, pose_cov, meas):
     landmark.exist_log += self._landmark_constants.exist_log_inc
     # compute joint distribution (Kalman gain)
-    K =  landmark.cov @ landmark.meas_jac_land.T @ landmark.Q_inv 
+    prev_landmark_cov = landmark.cov
+    K =  prev_landmark_cov @ landmark.meas_jac_land.T @ landmark.Q_inv 
     I = np.eye(landmark.mean.shape[0])
     # update landmark
     landmark.mean = landmark.mean + K @ landmark.innovation
-    prev_landmark_cov = landmark.cov
+    
     landmark.cov = ( I - K @ landmark.meas_jac_land) @ prev_landmark_cov
     # Compute particle weight
     L = landmark.meas_jac_pose @ pose_cov @ landmark.meas_jac_pose.T \
@@ -211,7 +219,7 @@ class Particle():
     landmark = self._init_landmark(name, mean, cov, sampled_pose=sampled_pose, pose_mean=pose_mean, pose_cov=pose_cov)
     landmark.meas_jac_pose = meas_jac_pose
     landmark.meas_jac_land = meas_jac_land
-    self._log('info: init', landmark.name, landmark.association_prob)
+    self._log('info: init landmark', landmark.name, landmark.association_prob,'with particle pose',sampled_pose)
     return landmark
 
   def _is_unobserved_landmark_kept(self, landmark, sensor_constraints):

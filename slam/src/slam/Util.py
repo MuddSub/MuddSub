@@ -12,7 +12,8 @@ def wrap_to_pi(th):
   '''Wraps its argument between [-pi, pi] element wise'''
   return ((th + np.pi) % (2 * np.pi)) - np.pi
 
-def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None, plot_avg = False):
+def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None, plot_avg = False, msg = ''):
+  print('msg',msg)
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.plot(landmarks_groundtruth[:, 0], landmarks_groundtruth[:, 1], 'cx', label='true landmark')
@@ -39,7 +40,11 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None,
   ax.legend()
 
   def init():
-    ax.set_title("Num steps: " + str(num_steps) + ", Num particle: " + str(num_particles))
+    nonlocal msg
+    print(msg)
+    if msg!='':
+      msg += '   '
+    ax.set_title(msg+"Num steps: " + str(num_steps) + ", Num particle: " + str(num_particles))
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps, num_measurements
 
   def update(frame):

@@ -28,11 +28,14 @@ class RunMRCLAMDataset():
         self.sensor_range = kwargs.get('sensor_range', 100)
         self.sensor_fov = kwargs.get('sensor_fov', np.pi)
         self.skipped_meas = kwargs.get('skipped_meas', False)
+        self.verbose = kwargs.get('verbose', False)
+        self.fast_slam_version = kwargs.get('fast_slam_version', 2)
+        self.plot_msg = kwargs.get('plot_msg', '')
 
         self.history = None
         self.groundtruth_path_data = []
         self.num_particles = kwargs.get('num_particles', 1)
-        self.initial_pose_cov = np.diag([1e-4, 1e-4, 1e-4])
+        self.initial_pose_cov = np.diag([1e-3, 1e-3, 1e-4])
 
         self.random_generator = np.random.default_rng()
         self.algorithm = None
@@ -59,7 +62,9 @@ class RunMRCLAMDataset():
             initial_pose = initial_pose,
             initial_pose_cov = self.initial_pose_cov,
             landmark_constants = LandmarkConstants(),
-            localization_only = False
+            localization_only = False,
+            verbose = 2 if self.verbose else 0, 
+            fast_slam_version = self.fast_slam_version
         )
         random = np.random.default_rng()
         robot_physics = RobotPhysics2D(random)
@@ -67,6 +72,7 @@ class RunMRCLAMDataset():
 
         theta = 0
         for i in range(self.num_steps):
+            self._log('step',i)
             self.update = self.robot_data.get_next()
             t = self.update[1][0]
             self.groundtruth_path_data.append([self.robot_data.get_x_truth(t), self.robot_data.get_y_truth(t)])
@@ -96,8 +102,10 @@ class RunMRCLAMDataset():
             landmarks_groundtruth.append(np.array([landmark['X'], landmark['Y']]))
         landmarks_groundtruth = np.array(landmarks_groundtruth)
         print("num landmark: ground truth", len(landmarks_groundtruth), " what we got", len(self.algorithm.particles[0].landmarks))
-        plot_df(self.history, self.groundtruth_path_data, landmarks_groundtruth)
-
+        plot_df(self.history, self.groundtruth_path_data, landmarks_groundtruth, msg=self.plot_msg)
+    def _log(self,*msg):
+        if self.verbose:
+            print('Run MR.CLAM',*msg)
     def log_data(self, i):
         snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
         if self.history is None:
@@ -142,7 +150,7 @@ class RunMRCLAMDataset():
                 self.algorithm.add_measurement(meas)
 
 if __name__ == '__main__':
-    clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10000, hardcode_compass = True)
+    clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 1, num_steps = 20000, hardcode_compass = True, verbose = True, plot_msg = 'Fast SLAM 2')
     clam_dataset.load_data(os.path.dirname(os.path.realpath(__file__)) + '/datasets/Jar/dataset1.pkl')
     clam_dataset.run_fast_slam2()
     clam_dataset.plot()

@@ -1,7 +1,8 @@
 import numpy as np
 import copy
 import pandas as pd
-from slam.fast_slam2.Particle import *
+from slam.fast_slam2.FastSLAM1Particle import FastSLAM1Particle
+from slam.fast_slam2.FastSLAM2Particle import FastSLAM2Particle
 from collections import namedtuple
 from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 
@@ -26,18 +27,23 @@ class FastSLAM2():
     self._localization_only = parameters.localization_only
     self._verbose = parameters.verbose
     self._robot_physics = robot_physics
+    self._fast_slam_version = parameters.fast_slam_version
 
     self._create_particles(self.num_particles)
 
   def _create_particles(self, n):
     for i in range(n):
-      self.particles.append(Particle(robot_physics = self._robot_physics, particle_id=i, **self._particles_params))
+      if self._fast_slam_version == 1:
+        self.particles.append(FastSLAM1Particle(robot_physics = self._robot_physics, particle_id=i, **self._particles_params))
+      else:
+        self.particles.append(FastSLAM2Particle(robot_physics = self._robot_physics, particle_id=i, **self._particles_params))
     self._log('info', 'fast slam 2 initial pose', self._particles_params['initial_pose'])
 
   def add_control(self, control, time):
     self._update_meas()
     if len(self.particles) > 1 and len(self._meas_ls) > 0: # only resample if there are more than one particle and observations
       self._resample()
+    self._log('control',control)
     self._update_motion(control, time)
     self._meas_ls = []
 

@@ -214,8 +214,8 @@ class Data:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Mavenlink Optimization Problem')
-    parser.add_argument('source', type=str, help='Directory with input files')
-    parser.add_argument('output', type=str, help='Output pickle file path')
+    parser.add_argument('--source', type=str, help='Directory with input files',default='./src/slam/mrclam/datasets/MRCLAM_Dataset1/')
+    parser.add_argument('--output', type=str, help='Output pickle file path', default='./src/slam/mrclam/datasets/Jar/dataset1.pkl')
     args = parser.parse_args()
 
     data = Data(args.source)

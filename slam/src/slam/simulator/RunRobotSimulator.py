@@ -10,9 +10,14 @@ from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
 class RobotSimulatorRunner():
-  def __init__(self, robot_physics, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
+  def __init__(self, robot_physics, random, 
+                num_steps, hardcode_compass, hardcode_pose, 
+                close_enough_meas_to_update_target, close_enough_position_for_motion,
                 sensors, velocity, velocity_std,
-                landmarks, landmark_initial_noises, landmark_convs, initial_pose, initial_pose_cov, num_particles, new_landmark_threshold):
+                landmarks, landmark_initial_noises, landmark_convs, 
+                initial_pose, initial_pose_cov, num_particles, new_landmark_threshold,
+                verbose = True,
+                fast_slam_version=2, plot_msg = 'Fast SLAM 2'):
     self.num_steps = num_steps
     self.hardcode_compass = hardcode_compass
     self.hardcode_pose = hardcode_pose
@@ -38,13 +43,17 @@ class RobotSimulatorRunner():
       initial_landmarks = estimated_init_landmarks,
       initial_pose = initial_pose,
       initial_pose_cov = initial_pose_cov,
-      landmark_constants = landmark_constants
+      landmark_constants = landmark_constants,
+      verbose = 2 if verbose else 0, 
+      fast_slam_version = fast_slam_version
     )
     self.sim = RobotSimulator(robot_physics, sensors, landmarks, velocity, velocity_std, random, initial_pose, initial_pose_cov, self.close_enough_position_for_motion)
     self.slam = FastSLAM2(robot_physics, parameters = self.params, random = random)
 
     self.meas_hist = []
     self.plot_data = pd.DataFrame()
+
+    self.plot_msg = plot_msg
 
   def initialize(self):
     self.curr_target = str(0)
@@ -107,7 +116,7 @@ class RobotSimulatorRunner():
     landmark_names =  [idx for idx, _ in list(self.sim.landmarks.items())]
     landmarks_ground_truth = np.array([np.array(pos) for idx, pos in list(self.sim.landmarks.items())])
     self._log("end of sim", "actual landmarks", self.sim.landmarks, "slam robot pose", self.slam_robot_pose, "actual robot pose", self.sim.robot_pose)
-    plot_df(self.plot_data, self.sim.robot_history, landmarks_ground_truth)
+    plot_df(self.plot_data, self.sim.robot_history, landmarks_ground_truth, msg = self.plot_msg)
 
   def run(self):
     self.initialize()
@@ -147,7 +156,7 @@ if __name__ == '__main__':
   random = np.random.default_rng()
   robot_physics = RobotPhysics2DForSim(random, close_enough_position_for_motion, verbose = True)
 
-  runner = RobotSimulatorRunner(robot_physics, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
+  runner = RobotSimulatorRunner(robot_physics, random, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
                   sensors, velocity, velocity_std,
-                  landmarks, landmark_initial_noises, landmark_convs, initial_pose, initial_pose_cov, num_particles, new_landmark_threshold)
+                  landmarks, landmark_initial_noises, landmark_convs, initial_pose, initial_pose_cov, num_particles, new_landmark_threshold, verbose = True)
   runner.run()
