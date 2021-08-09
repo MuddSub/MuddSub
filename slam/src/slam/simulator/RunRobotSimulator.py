@@ -10,7 +10,7 @@ from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
 class RobotSimulatorRunner():
-  def __init__(self, robot_physics_for_sim, robot_physics_for_slam, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
+  def __init__(self, robot_physics, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
                 sensors, velocity, velocity_std,
                 landmarks, landmark_initial_noises, landmark_convs, initial_pose, initial_pose_cov, num_particles, new_landmark_threshold):
     self.num_steps = num_steps
@@ -18,31 +18,31 @@ class RobotSimulatorRunner():
     self.hardcode_pose = hardcode_pose
     self.close_enough_meas_to_update_target = close_enough_meas_to_update_target
     self.close_enough_position_for_motion = close_enough_position_for_motion
-    
-    landmarks = {str(idx):landmark for idx, landmark in enumerate(landmarks)}        
-    
-    estimated_init_landmarks = {key: 
+
+    landmarks = {str(idx):landmark for idx, landmark in enumerate(landmarks)}
+
+    estimated_init_landmarks = {key:
       (
         np.array([ random.normal(x, x_noise) for x, x_noise in zip(landmark_pos, landmark_initial_noises) ]),
         np.diag(landmark_convs)
       )
       for key, landmark_pos in list(landmarks.items())}
     self._log("Estimated init landmark", estimated_init_landmarks)
-    
+
     self.num_particles = num_particles
     landmark_constants = LandmarkConstants()
     landmark_constants.new_landmark_threshold = new_landmark_threshold
     self.params = FastSLAM2Parameters(
       num_particles = self.num_particles,
-      are_landmarks_fixed = True, 
+      are_landmarks_fixed = True,
       initial_landmarks = estimated_init_landmarks,
       initial_pose = initial_pose,
       initial_pose_cov = initial_pose_cov,
       landmark_constants = landmark_constants
     )
-    self.sim = RobotSimulator(robot_physics_for_sim, sensors, landmarks, velocity, velocity_std, random, initial_pose, initial_pose_cov, self.close_enough_position_for_motion)
-    self.slam = FastSLAM2(robot_physics_for_slam, parameters = self.params, random = random)
- 
+    self.sim = RobotSimulator(robot_physics, sensors, landmarks, velocity, velocity_std, random, initial_pose, initial_pose_cov, self.close_enough_position_for_motion)
+    self.slam = FastSLAM2(robot_physics, parameters = self.params, random = random)
+
     self.meas_hist = []
     self.plot_data = pd.DataFrame()
 
@@ -80,9 +80,9 @@ class RobotSimulatorRunner():
     # move on to new target
     if self.sim.robot.is_close(self.slam_robot_pose, self.landmark_maps[self.curr_target], self.close_enough_meas_to_update_target):
       self.curr_target = str(int(self.curr_target)+1)
-    
+
     self.sim.set_target_location(self.landmark_maps[self.curr_target])
-    
+
   def update_meas(self):
     actual_measurements = self.sim.read_measurement()
     self.meas_hist.append(len(actual_measurements))
@@ -91,7 +91,7 @@ class RobotSimulatorRunner():
       meas = measurement['meas']
       noise = measurement['noise']
       limit = measurement['limit']
-      meas_cov = np.diag(noise)  
+      meas_cov = np.diag(noise)
       self.slam.add_measurement(Meas(meas, meas_cov, limit, key))
 
   def update_control(self):
@@ -118,7 +118,7 @@ class RobotSimulatorRunner():
       if self.is_terminated():
         break
       self.update_target()
-      
+
     self.plot()
 
 if __name__ == '__main__':
@@ -128,7 +128,7 @@ if __name__ == '__main__':
   close_enough_meas_to_update_target = [.3, np.pi]
   close_enough_position_for_motion = [None, np.pi/36] # constrain when to translate based on angular displacement
 
-  sensors = [Sensor('sensor0', 1, limits = [2, np.pi/2], noise_std = [.3**.5, np.pi/36])] # range and bearing   
+  sensors = [Sensor('sensor0', 1, limits = [2, np.pi/2], noise_std = [.3**.5, np.pi/36])] # range and bearing
   landmarks = [(1, 0), (1, 2), (3, 3), (4, 3),
                     (5, 5), (6, 7), (7, 8), (8, 9)]
 
@@ -140,15 +140,14 @@ if __name__ == '__main__':
 
   initial_pose = np.array([0, 0, 0])
   initial_pose_cov = np.diag([.5**2, .5**2, (np.pi/360)**2])
-      
+
   num_particles = 30
   new_landmark_threshold = 1.1
 
   random = np.random.default_rng()
-  robot_physics_for_sim = RobotPhysics2DForSim(random, close_enough_position_for_motion, verbose = True)
-  robot_physics_for_slam = RobotPhysics2D(random)
+  robot_physics = RobotPhysics2DForSim(random, close_enough_position_for_motion, verbose = True)
 
-  runner = RobotSimulatorRunner(robot_physics_for_sim, robot_physics_for_slam, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
+  runner = RobotSimulatorRunner(robot_physics, num_steps, hardcode_compass, hardcode_pose, close_enough_meas_to_update_target, close_enough_position_for_motion,
                   sensors, velocity, velocity_std,
                   landmarks, landmark_initial_noises, landmark_convs, initial_pose, initial_pose_cov, num_particles, new_landmark_threshold)
   runner.run()

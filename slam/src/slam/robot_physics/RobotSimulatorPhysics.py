@@ -13,14 +13,14 @@ class RobotPhysics2DForSim(RobotPhysics2D):
   def _log(self, *msg):
     if self._verbose:
       print('Sim Physics:', *msg)
-    
+
   def compute_control(self, robot_pose, target, velocity,  verbose=False):
     velocity, angular_velocity = velocity
     range_meas, bearing_meas = self.compute_meas_model(robot_pose, target)
     bearing_meas = wrap_to_pi(bearing_meas)
-    assert -1*np.pi<=bearing_meas<=np.pi
-    
-    if abs(bearing_meas)<self.position_is_close[1]: # bearing 
+    assert -1 * np.pi <= bearing_meas <= np.pi
+
+    if abs(bearing_meas)<self.position_is_close[1]: # bearing
       displacement = velocity
       if verbose: self._log("range", range_meas, "bearing", bearing_meas, "displacement", displacement)
       return displacement, 0

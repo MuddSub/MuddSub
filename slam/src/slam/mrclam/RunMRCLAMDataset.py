@@ -1,7 +1,7 @@
 import warnings
 import os
 warnings.filterwarnings("ignore")
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 import pickle
 import pandas as pd
@@ -54,7 +54,7 @@ class RunMRCLAMDataset():
         initial_pose = np.array([self.robot_data.get_x_truth(0), self.robot_data.get_y_truth(0), wrap_to_pi(self.robot_data.get_compass(0))])
         self.params = FastSLAM2Parameters(
             num_particles = self.num_particles,
-            are_landmarks_fixed = True, 
+            are_landmarks_fixed = True,
             initial_landmarks = {},
             initial_pose = initial_pose,
             initial_pose_cov = self.initial_pose_cov,
@@ -89,7 +89,7 @@ class RunMRCLAMDataset():
             else:
                 self._add_meas()
             self.log_data(i)
-        
+
     def plot(self):
         landmarks_groundtruth = []
         for _, landmark in self.dataloader.map.landmark_dict.items():
@@ -97,7 +97,7 @@ class RunMRCLAMDataset():
         landmarks_groundtruth = np.array(landmarks_groundtruth)
         print("num landmark: ground truth", len(landmarks_groundtruth), " what we got", len(self.algorithm.particles[0].landmarks))
         plot_df(self.history, self.groundtruth_path_data, landmarks_groundtruth)
-            
+
     def log_data(self, i):
         snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
         if self.history is None:
@@ -110,17 +110,17 @@ class RunMRCLAMDataset():
 
         # Use groundtruth to calculate odometry input
         time, velocity, angular_velocity = odometry
-        
+
         # Update particle poses
         self.algorithm.add_control((velocity, angular_velocity), t)
 
     def _add_meas(self):
         measurement = self.update[1]
         time, subject, range_meas, bearing_meas = measurement
-        
+
         # Update EKFs
         if not self.no_measurements:
-            
+
             if subject > 5:
                 landmark = self.dataloader.map.get_landmark_location(subject)
                 landmark_x = landmark['X']
@@ -133,12 +133,12 @@ class RunMRCLAMDataset():
                     robot_angle = self.robot_data.get_compass(time)
                     range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
                     bearing_meas = wrap_to_pi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
-                
+
                 if self.skipped_meas:
                     if range_meas > self.sensor_range or abs(bearing_meas) > self.sensor_fov:
                         return
 
-                meas = Meas((range_meas, bearing_meas), self.meas_cov, (self.sensor_range, self.sensor_fov), subject)         
+                meas = Meas((range_meas, bearing_meas), self.meas_cov, (self.sensor_range, self.sensor_fov), subject)
                 self.algorithm.add_measurement(meas)
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
-warnings.filterwarnings("ignore", category=DeprecationWarning) 
-warnings.filterwarnings("ignore", category=UserWarning) 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
@@ -10,23 +10,23 @@ import pandas as pd
 
 def wrap_to_pi(th):
   '''Wraps its argument between [-pi, pi] element wise'''
-  return np.fmod(th + np.pi, 2 * np.pi) - np.pi
+  return ((th + np.pi) % (2 * np.pi)) - np.pi
 
 def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None, plot_avg = False):
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.plot(landmarks_groundtruth[:, 0], landmarks_groundtruth[:, 1], 'cx', label='true landmark')
-  
+
   num_particles = len(history['particle_poses'][0])
   num_steps = len(history)
 
   particles, = ax.plot([], [], linestyle='None', marker='o', color='gold', label='est motion')
   best_particle_landmarks, = ax.plot([], [], 'mo', label='est landmark')
-  
+
   groundtruth_path_x = []
   groundtruth_path_y = []
   groundtruth_path, = ax.plot([], [], 'bo', label='true path')
-  
+
   best_particle_path_x = []
   best_particle_path_y = []
   best_particle_path, = ax.plot([], [], 'r-', label='est path')
@@ -37,7 +37,7 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None,
   else:
     num_measurements = None
   ax.legend()
-  
+
   def init():
     ax.set_title("Num steps: " + str(num_steps) + ", Num particle: " + str(num_particles))
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps, num_measurements
@@ -71,7 +71,7 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None,
     groundtruth_path_x.append(groundtruth_path_data[frame][0])
     groundtruth_path_y.append(groundtruth_path_data[frame][1])
     groundtruth_path.set_data(groundtruth_path_x, groundtruth_path_y) # can we set them directly> groundtruth_path[:t,0]
-    
+
     # Plot other particles poses
     particles.set_data(particle_poses[:, 0], particle_poses[:, 1])
 
@@ -91,7 +91,7 @@ def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None,
 
     # Return changed artists?
     return best_particle_path, groundtruth_path, particles, best_particle_landmarks, steps, num_measurements
-  
+
   anim = animation.FuncAnimation(fig, update, frames=range(0, num_steps, max(1, int(num_steps * 0.01))), init_func = init, blit=False, interval = 33, repeat=False)
   fig.tight_layout(rect=[0, 0.03, 1, 0.95])
   plt.show()

@@ -32,11 +32,11 @@ class FastSLAM2():
   def _create_particles(self, n):
     for i in range(n):
       self.particles.append(Particle(robot_physics = self._robot_physics, particle_id=i, **self._particles_params))
-    self._log('info', 'fast slam 2 initial pose', self._particles_params.initial_pose)
+    self._log('info', 'fast slam 2 initial pose', self._particles_params['initial_pose'])
 
   def add_control(self, control, time):
     self._update_meas()
-    if len(self.particles) > 1 and len(self._meas_ls) > 0: # only resample if there are more than one particle and observations 
+    if len(self.particles) > 1 and len(self._meas_ls) > 0: # only resample if there are more than one particle and observations
       self._resample()
     self._update_motion(control, time)
     self._meas_ls = []
@@ -47,7 +47,7 @@ class FastSLAM2():
   def _log(self, *msg):
     if self._verbose >= 1:
       print('FastSLAM2:', *msg)
-  
+
   def _update_motion(self, control, time): #propagate motion
     dt = max(time - self._prev_t, 0.000001)
     if (time - self._prev_t == 0): self._log("warning:","dt is 0")
@@ -107,7 +107,7 @@ class FastSLAM2():
       'landmark_covs': [np.array(landmark_covs)]
     })
     return snapshot
-    
+
   def get_landmark_map(self, option='best'):
     landmark_map = {}
     if option == 'best':
