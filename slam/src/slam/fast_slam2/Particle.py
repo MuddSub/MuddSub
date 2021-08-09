@@ -26,8 +26,8 @@ class Particle():
     # Public variables
     self.weight = 0
     self.accumulated_weight = 0
-    self.pose = np.copy(robot_physics.initial_pose)
-    self.pose_cov = np.copy(robot_physics.default_pose_cov)
+    self.pose = np.copy(kwargs['initial_pose'])
+    self.pose_cov = np.copy(kwargs['initial_pose_cov'])
     self.landmarks = {}
     initial_landmarks = kwargs.get('initial_landmarks', {})
 

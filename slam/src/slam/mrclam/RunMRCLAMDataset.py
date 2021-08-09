@@ -7,7 +7,7 @@ import pandas as pd
 from slam.mr_clam.MRCLAMDataloader import *
 from slam.fast_slam2.FastSLAM2 import FastSLAM2
 import numpy as np
-from slam.Util import wrap_to_pi,plot_df
+from slam.Util import wrap_to_pi, plot_df
 from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 
@@ -31,15 +31,7 @@ class RunMRCLAMDataset():
         self.history = None
         self.groundtruth_path_data = []
         self.num_particles = kwargs.get('num_particles', 1)
-        self.default_pose_cov = np.diag([1e-4,1e-4,1e-4])
-
-        self.params = FastSLAM2Parameters(
-            num_particles = self.num_particles,
-            are_landmarks_fixed = True, 
-            initial_landmarks = {},
-            landmark_constants = LandmarkConstants(),
-            localization_only = False
-        )
+        self.initial_pose_cov = np.diag([1e-4, 1e-4, 1e-4])
 
         self.random_generator = np.random.default_rng()
         self.algorithm = None
@@ -47,7 +39,7 @@ class RunMRCLAMDataset():
 
     def load_data(self, pkl):
         global algorithm
-        self.dataloader = pickle.load(open(pkl,'rb'))
+        self.dataloader = pickle.load(open(pkl, 'rb'))
         self.robot_data = self.dataloader.robots[self.robot_id]
         if self.init_landmarks:
             self.params.initial_landmarks = {}
@@ -57,19 +49,28 @@ class RunMRCLAMDataset():
                 self.params.initial_landmarks[idx] = (np.array([x, y]), None)
 
     def run_fast_slam2(self):
+        # Set up parameters needed to initialize the FastSLAM2 algorithm
+        initial_pose = np.array([self.robot_data.get_x_truth(0), self.robot_data.get_y_truth(0), wrap_to_pi(self.robot_data.get_compass(0))])
+        self.params = FastSLAM2Parameters(
+            num_particles = self.num_particles,
+            are_landmarks_fixed = True, 
+            initial_landmarks = {},
+            initial_pose = initial_pose,
+            initial_pose_cov = self.initial_pose_cov,
+            landmark_constants = LandmarkConstants(),
+            localization_only = False
+        )
         random = np.random.default_rng()
-        initial_pose = np.array([self.robot_data.get_x_truth(0),self.robot_data.get_y_truth(0), self.robot_data.get_compass(0)])
-        robot_physics = RobotPhysics2D(random, initial_pose, self.default_pose_cov)
+        robot_physics = RobotPhysics2D(random)
         self.algorithm = FastSLAM2(robot_physics, parameters = self.params, random = random)
 
         theta = 0
         for i in range(self.num_steps):
             self.update = self.robot_data.get_next()
             t = self.update[1][0]
-            self.groundtruth_path_data.append([self.robot_data.get_x_truth(t),self.robot_data.get_y_truth(t)])
+            self.groundtruth_path_data.append([self.robot_data.get_x_truth(t), self.robot_data.get_y_truth(t)])
             if i == 0:
                 self.algorithm.prev_t = t
-                self.algorithm._robot_physics.initial_pose[2] = wrap_to_pi(self.robot_data.get_compass(t))
             if self.update[0] == "odometry":
                 #theta_meas = wrapToPi(robotData.getCompass(t))
                 self._add_control(t)
@@ -140,6 +141,6 @@ class RunMRCLAMDataset():
                 self.algorithm.add_measurement(meas)
 
 clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10000, hardcode_compass = True)
-clam_dataset.load_data(os.path.dirname(os.path.realpath(__file__))+'/datasets/Jar/dataset1.pkl')
+clam_dataset.load_data(os.path.dirname(os.path.realpath(__file__)) + '/datasets/Jar/dataset1.pkl')
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()

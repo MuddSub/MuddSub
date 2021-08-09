@@ -5,7 +5,7 @@ class RobotPhysicsBase(ABC):
     Provides Robot Physics Computatons 
     '''
     def __init__(self, random):
-        self._random = random 
+        self._random = random
 
     @abstractmethod
     def compute_meas_model(self):

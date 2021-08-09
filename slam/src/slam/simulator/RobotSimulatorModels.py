@@ -13,7 +13,7 @@ class Sensor():
       self.update_period = update_period
 
 class RobotSimulator():
-  def __init__(self, robot, sensors, landmarks,velocity , velocity_std, random,initial_pose, default_pose_cov, verbose=False):
+  def __init__(self, robot, sensors, landmarks,velocity , velocity_std, random, initial_pose, initial_pose_cov, verbose=False):
     self.velocity_std = velocity_std # all in meter and radian
     self.sensors = sensors
     self.dt = 1

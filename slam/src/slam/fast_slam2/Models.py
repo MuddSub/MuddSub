@@ -13,6 +13,8 @@ class FastSLAM2Parameters:
   num_particles: int
   are_landmarks_fixed: bool
   initial_landmarks: dict
+  initial_pose: np.ndarray
+  initial_pose_cov: np.ndarray
   landmark_constants: LandmarkConstants
   localization_only: bool = False
   verbose: int = 0 # To make FastSlam2 verbose, use 1. To make Particle.py verbose, use 2. 

@@ -8,10 +8,8 @@ class RobotPhysics2D(RobotPhysicsBase):
     Describes the physics for a robot in a 2D environment controlled via velocity and angular velocity commands.
     The robot has a single camera with a max range and a field of view that measures range and bearing to landmarks.
     '''
-    def __init__(self, random, initial_pose, default_pose_cov = None):
+    def __init__(self, random):
         super().__init__(random)
-        self.initial_pose = initial_pose #x, y, theta (angle)
-        self.default_pose_cov = default_pose_cov
 
     def compute_meas_model(self, pose, landmark_mean):
         x, y, theta = pose

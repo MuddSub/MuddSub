@@ -5,12 +5,12 @@ import numpy as np
 from slam.Util import wrap_to_pi
 
 class RobotPhysics2DForSim(RobotPhysics2D):
-  def __init__(self, random,initial_pose, default_pose_cov, position_is_close,verbose = False,):
+  def __init__(self, random, position_is_close, verbose=False):
+    super().__init__(random)
     self._verbose = verbose
-    super().__init__(random,initial_pose, default_pose_cov)
     self.position_is_close = position_is_close
 
-  def _log(self,*msg):
+  def _log(self, *msg):
     if self._verbose:
       print('Sim Physics:', *msg)
     
@@ -22,14 +22,14 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     
     if abs(bearing_meas)<self.position_is_close[1]: # bearing 
       displacement = velocity
-      if verbose: self._log("range",range_meas,"bearing",bearing_meas, "displacement",displacement)
-      return displacement,0
+      if verbose: self._log("range", range_meas, "bearing", bearing_meas, "displacement", displacement)
+      return displacement, 0
     else:
       direction = 1 if 0<=bearing_meas <=np.pi else -1
       angular_displacement_mag = angular_velocity if abs(bearing_meas)>angular_velocity else abs(bearing_meas)
       angular_displacement = angular_displacement_mag * direction
-      if verbose: self._log("range",range_meas,"bearing",bearing_meas,"anglar displacement",angular_displacement)
-      return 0,angular_displacement
+      if verbose: self._log("range", range_meas, "bearing", bearing_meas, "anglar displacement", angular_displacement)
+      return 0, angular_displacement
 
   def compute_actual_control(self, control, velocity, velocity_std):
     v, w = control
@@ -40,21 +40,21 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     v = np.random.normal(v, v_std)
     w = np.random.normal(w, w_std)
     w = wrap_to_pi(w)
-    actual_control = (v,w)
+    actual_control = (v, w)
     return actual_control
 
-  def compute_actual_measurement(self,measurement, sensor_limits, sensor_noise_std):
+  def compute_actual_measurement(self, measurement, sensor_limits, sensor_noise_std):
     range_mea, bearing_mea = measurement
     if sensor_limits[1]/2<=bearing_mea%(np.pi*2)<=2*np.pi-sensor_limits[1]/2 or range_mea > sensor_limits[0]:
       return None, None
-    return np.random.normal(range_mea,sensor_noise_std[0]),np.random.normal(bearing_mea,sensor_noise_std[1])
+    return np.random.normal(range_mea, sensor_noise_std[0]), np.random.normal(bearing_mea, sensor_noise_std[1])
 
-  def is_close(self, robot_pose,target,acceptable_measurements):
-    measurement = self.compute_meas_model(robot_pose,target)
-    measurement = self.compute_actual_measurement(measurement,acceptable_measurements,[0,0])
+  def is_close(self, robot_pose, target, acceptable_measurements):
+    measurement = self.compute_meas_model(robot_pose, target)
+    measurement = self.compute_actual_measurement(measurement, acceptable_measurements, [0, 0])
     return not measurement[0] is None
 
-  def modify_particile_pose(self,particles, ground_truth_pose, hardcode_pose, hardcode_compass):
+  def modify_particile_pose(self, particles, ground_truth_pose, hardcode_pose, hardcode_compass):
     if hardcode_pose or hardcode_compass:
       for j in range(len(particles)):
           if hardcode_pose:

@@ -18,6 +18,8 @@ class FastSLAM2():
       'random': self._random,
       'are_landmarks_fixed': parameters.are_landmarks_fixed,
       'initial_landmarks': parameters.initial_landmarks,
+      'initial_pose': parameters.initial_pose,
+      'initial_pose_cov': parameters.initial_pose_cov,
       'landmark_constants': parameters.landmark_constants,
       'verbose': parameters.verbose
     }
@@ -30,7 +32,7 @@ class FastSLAM2():
   def _create_particles(self, n):
     for i in range(n):
       self.particles.append(Particle(robot_physics = self._robot_physics, particle_id=i, **self._particles_params))
-    self._log('info',"fast slam 2 initial pose", self._robot_physics.initial_pose)
+    self._log('info', 'fast slam 2 initial pose', self._particles_params.initial_pose)
 
   def add_control(self, control, time):
     self._update_meas()

@@ -9,12 +9,8 @@ import numpy as np
 import pandas as pd
 
 def wrap_to_pi(th):
-    th = np.fmod(th, 2*np.pi)
-    if th >= np.pi:
-        th -= 2*np.pi
-    if th <= -np.pi:
-        th += 2*np.pi
-    return th
+  '''Wraps its argument between [-pi, pi] element wise'''
+  return np.fmod(th + np.pi, 2 * np.pi) - np.pi
 
 def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None, plot_avg = False):
   fig = plt.figure()
