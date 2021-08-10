@@ -13,8 +13,8 @@ LQRController<stateDim, controlDim>::LQRController(const double& qCoefficient,
                                                    const double& rCoefficient)
 {
   // Q_ and R_ start as identity, scale as desired
-  Q_ *= qCoefficient;
   R_ *= rCoefficient;
+  Q_ *= qCoefficient;
 }
 
 template<size_t stateDim, size_t controlDim>

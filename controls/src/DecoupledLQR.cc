@@ -5,7 +5,8 @@ namespace MuddSub::Controls
 {
 
 //Compute the error
-DecoupledLQR::stateVector_t DecoupledLQR::computeError(const stateVector_t& state) const
+DecoupledLQR::stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
+                                                  const stateVector_t& setpoint) const
 {
 
 
@@ -13,29 +14,27 @@ DecoupledLQR::stateVector_t DecoupledLQR::computeError(const stateVector_t& stat
   Eigen::Matrix<double, 1, 3> position, attitude;
 
   // The error in position is just difference of front of state and setpoint vectors
-  position = state.segment<3>(0) - setpoint_.segment<3>(0);
+  position = state.segment<3>(0) - setpoint.segment<3>(0);
 
   // Similar for linear velocity and angular velocities
   Eigen::Matrix<double, 1, 6> velocity;
-  velocity = state.segment<6>(6) - setpoint_.segment<6>(6);
+  velocity = state.segment<6>(6) - setpoint.segment<6>(6);
 
-  // For angular position
+  // For angular position (verbose for clarity...)
   auto err = [](const double& stateElement, const double& setpointElement)
   {
     // Make both from 0-360
     double stateNorm = fmod(stateElement, 2*M_PI);
-    if(stateNorm < 0)
-      stateNorm += 360;
+    if(stateNorm < 0) stateNorm += 360;
 
     double setpointNorm = fmod(setpointElement, 2*M_PI);
-    if(setpointNorm < 0)
-      setpointNorm += 360;
+    if(setpointNorm < 0) setpointNorm += 360;
 
     return stateNorm - setpointNorm;
   };
 
   for(auto i = 0; i < 3; ++i)
-    attitude[i] = err(state[i+3], setpoint_[i+3]);
+    attitude[i] = err(state[i+3], setpoint[i+3]);
 
   // pack 'em up and send 'em off
   Eigen::Matrix<double, 1, stateDim> result;
@@ -56,7 +55,8 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
   Eigen::Matrix<double, stateDim, stateDim> A = linearizer.getDerivativeState(state,u,t);
   Eigen::Matrix<double, stateDim, controlDim> B = linearizer.getDerivativeControl(state,u,t);
 
-  auto err = computeError(state);
+  auto err = computeError(state, setpoint_);
+  // std::cerr << "Error: " << err << std::endl;
 
   // Now that we've linearized about the entire state (which needs roll/pitch info)
   //     we actually only keep x,y,z,yaw and those velocities

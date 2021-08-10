@@ -58,7 +58,7 @@ public:
   /// @param B: Linearized matrix specifying how state derivative depends on input
   /// @returns controlAction: Optimal control action.
   controlVector_t computeControl(const AMatrix_t& A, const BMatrix_t& B,
-                                 const stateVector_t& controlAction);
+                                  const stateVector_t& controlAction);
 
 
 private:

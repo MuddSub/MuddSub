@@ -14,12 +14,13 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   ct_core
   ct_optcon
-  tf2_geometry_msgs
 )
 
 add_message_files(
   FILES
   State.msg
+  ThrusterForceArray.msg
+  ThrusterPWMArray.msg
 )
 
 generate_messages(
@@ -31,6 +32,11 @@ catkin_package(
 	INCLUDE_DIRS include
 	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs ct_core ct_optcon message_runtime
 	DEPENDS system_lib
+)
+
+catkin_install_python(PROGRAMS
+  scripts/ControlsExampleNode.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 ###########
@@ -68,10 +74,16 @@ target_link_libraries(test_dynamics
   ${catkin_LIBRARIES}
 )
 
-
 add_executable(state_publisher
               src/StatePublisher.cc)
 add_dependencies(state_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(state_publisher
   ${catkin_LIBRARIES}
 )
+
+add_executable(ControlsExampleNode
+	src/ControlsExampleNode.cc
+  src/ControlsPublisher.cc
+)
+add_dependencies(ControlsExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(ControlsExampleNode ${catkin_LIBRARIES})
