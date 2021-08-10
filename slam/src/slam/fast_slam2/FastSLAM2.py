@@ -29,6 +29,7 @@ class FastSLAM2():
     self._robot_physics = robot_physics
     self._fast_slam_version = parameters.fast_slam_version
 
+    self._log(parameters)
     self._create_particles(self.num_particles)
 
   def _create_particles(self, n):

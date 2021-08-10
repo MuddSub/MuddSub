@@ -24,7 +24,7 @@ class RunMRCLAMDataset():
         self.robot_id = kwargs.get('robot_id', 0)
         self.start_step = kwargs.get('start_step', 0)
         self.num_steps = kwargs.get('num_steps', 1000)
-        self.meas_cov = kwargs.get('meas_cov', np.diag([1e-2, 1e-2]))
+        self.meas_cov = kwargs.get('meas_cov', np.diag([.075,.025]))
         self.sensor_range = kwargs.get('sensor_range', 100)
         self.sensor_fov = kwargs.get('sensor_fov', np.pi)
         self.skipped_meas = kwargs.get('skipped_meas', False)
@@ -35,7 +35,7 @@ class RunMRCLAMDataset():
         self.history = None
         self.groundtruth_path_data = []
         self.num_particles = kwargs.get('num_particles', 1)
-        self.initial_pose_cov = np.diag([1e-3, 1e-3, 1e-4])
+        self.initial_pose_cov = kwargs.get('initial_pose_cov', np.diag([1e-3, 1e-3, 1e-4]))
 
         self.random_generator = np.random.default_rng()
         self.algorithm = None
@@ -150,7 +150,7 @@ class RunMRCLAMDataset():
                 self.algorithm.add_measurement(meas)
 
 if __name__ == '__main__':
-    clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 1, num_steps = 20000, hardcode_compass = True, verbose = True, plot_msg = 'Fast SLAM 2')
+    clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10, hardcode_compass = True, verbose = True, plot_msg = 'Fast SLAM 2')
     clam_dataset.load_data(os.path.dirname(os.path.realpath(__file__)) + '/datasets/Jar/dataset1.pkl')
     clam_dataset.run_fast_slam2()
     clam_dataset.plot()
