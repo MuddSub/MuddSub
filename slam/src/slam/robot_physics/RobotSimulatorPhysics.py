@@ -2,7 +2,7 @@ import copy
 from slam.fast_slam2.FastSLAM2 import FastSLAM2
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 import numpy as np
-from slam.Util import wrap_to_pi
+from slam.Utils import wrap_to_pi
 
 class RobotPhysics2DForSim(RobotPhysics2D):
   def __init__(self, random, position_is_close, verbose=False):

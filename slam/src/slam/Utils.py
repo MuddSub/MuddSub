@@ -7,13 +7,13 @@ import matplotlib.animation as animation
 from matplotlib.patches import Ellipse
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass
 
 def wrap_to_pi(th):
   '''Wraps its argument between [-pi, pi] element wise'''
   return ((th + np.pi) % (2 * np.pi)) - np.pi
 
 def plot_df(history, groundtruth_path_data, landmarks_groundtruth, save_to=None, plot_avg = False, msg = ''):
-  print('msg',msg)
   fig = plt.figure()
   ax = fig.add_subplot(111)
   ax.plot(landmarks_groundtruth[:, 0], landmarks_groundtruth[:, 1], 'cx', label='true landmark')

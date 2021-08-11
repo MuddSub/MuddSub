@@ -4,8 +4,8 @@ from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 from slam.robot_physics.RobotSimulatorPhysics import RobotPhysics2DForSim
 import numpy as np
 import pandas as pd
-from slam.Util import wrap_to_pi, plot_df
-from slam.simulator.RobotSimulatorModels import RobotSimulator, Sensor
+from slam.Utils import wrap_to_pi, plot_df
+from slam.simulator.RobotSimulatorModels import RobotSimulator, SimSensor
 from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
@@ -45,7 +45,7 @@ class RobotSimulatorRunner():
       initial_pose_cov = initial_pose_cov,
       landmark_constants = landmark_constants,
       verbose = 2 if verbose else 0, 
-      fast_slam_version = fast_slam_version
+      fast_slam_version = fast_slam_version,
     )
     self.sim = RobotSimulator(robot_physics, sensors, landmarks, velocity, velocity_std, random, initial_pose, initial_pose_cov, self.close_enough_position_for_motion)
     self.slam = FastSLAM2(robot_physics, parameters = self.params, random = random)
@@ -82,7 +82,6 @@ class RobotSimulatorRunner():
     self.sim.set_target_location(self.landmark_maps[self.curr_target])
 
   def is_terminated(self):
-
     return self.sim.robot.is_close(self.slam_robot_pose, self.landmark_maps[self.final_target], self.close_enough_meas_to_update_target)
 
   def update_target(self):
@@ -137,7 +136,7 @@ if __name__ == '__main__':
   close_enough_meas_to_update_target = [.3, np.pi]
   close_enough_position_for_motion = [None, np.pi/36] # constrain when to translate based on angular displacement
 
-  sensors = [Sensor('sensor0', 1, limits = [2, np.pi/2], noise_std = [.3**.5, np.pi/36])] # range and bearing
+  sensors = [SimSensor('sensor0', 1, limit = [2, np.pi/2], noise_std = [.3**.5, np.pi/36])] # range and bearing
   landmarks = [(1, 0), (1, 2), (3, 3), (4, 3),
                     (5, 5), (6, 7), (7, 8), (8, 9)]
 

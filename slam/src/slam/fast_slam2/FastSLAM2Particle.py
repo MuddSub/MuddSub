@@ -4,7 +4,7 @@ from scipy.linalg import sqrtm
 from collections import namedtuple
 from slam.fast_slam2.Models import _EKF, Meas, LandmarkConstants
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
-from typing import List
+from typing import List 
 
 class FastSLAM2Particle():
   '''
@@ -80,6 +80,8 @@ class FastSLAM2Particle():
 
     # ++++++ Access each measurement 
     observed_landmark = None
+    observed_landmark_names = []
+    meas_limits = []
     
     # Iteratively update pose mean and pose covariance using each measurement of the same time step
     for meas in meas_ls:
@@ -117,9 +119,6 @@ class FastSLAM2Particle():
         else:
           observed_landmark = self.landmarks[meas.correspondence] = \
             self._init_landmark_with_meas(pose_mean, pose_cov, meas, name=str(meas.correspondence))
-      # ++++++ Penalize landmarks that we expect to see
-      if not self._are_landmarks_fixed:
-        self._update_unobserved_landmarks(observed_landmark, meas)
 
       # ++++++ Update particle properties
       self.weight *= observed_landmark.particle_weight
@@ -127,7 +126,16 @@ class FastSLAM2Particle():
       self.pose_mean = np.copy(observed_landmark.pose_mean)
       self.pose_cov = np.copy(observed_landmark.pose_cov)
       self.pose = np.copy(observed_landmark.sampled_pose)
+      observed_landmark_names.append(observed_landmark.name)
+      meas_limits.append(meas.sensor_constraints)
       self._log('after measurement - particle pose',self.pose)
+    
+    # ++++++ Penalize landmarks that we expect to see
+    if not self._are_landmarks_fixed:
+      # +++ We will check all landmarks excepted observed_landmark 
+      # +++ against a measurement's limits in ranges and bearings
+      # +++ and penalize a landmark that is not seen.  
+      self._update_unobserved_landmarks(observed_landmark_names, meas_limits)
     self._log('final after measurement - particle pose',self.pose)
   
   def update_meas_localization_only(self, meas_ls: List[Meas]):
@@ -222,24 +230,24 @@ class FastSLAM2Particle():
     self._log('info: init landmark', landmark.name, landmark.association_prob,'with particle pose',sampled_pose)
     return landmark
 
-  def _is_unobserved_landmark_kept(self, landmark, sensor_constraints):
+  def _is_unobserved_landmark_kept(self, landmark):
     '''
     Update probability of the landmark existing based on whether it should have been measured.
     '''
     if landmark.sampled_pose is None:
       return True
-    if self._robot_physics.is_landmark_in_range(landmark.sampled_pose, landmark.mean, sensor_constraints):
+    if self._robot_physics.is_landmark_in_range(landmark.sampled_pose, landmark.mean, meas_limits):
       landmark.exist_log -= self._landmark_constants.exist_log_dec
     return landmark.exist_log >= 0 # If the log odds probability falls below 0, we do not keep the landmark
 
-  def _update_unobserved_landmarks(self, observed_landmark, meas):
+  def _update_unobserved_landmarks(self, observed_landmark_names,meas_limits):
     '''
     Remove landmarks that we are supposed to see but did not see. 
     '''
     landmark_idxs_to_remove = []
     for landmark_idx, landmark in self.landmarks.items():
-      if landmark_idx != observed_landmark.name: # Don't update observed landmark
-        if not self._is_unobserved_landmark_kept(landmark, meas.sensor_constraints):
+      if landmark_idx != observed_landmarks_names: # Don't update observed landmark
+        if not self._is_unobserved_landmark_kept(landmark, meas_limits):
           landmark_idxs_to_remove.append(landmark_idx)
     
     for idx in landmark_idxs_to_remove: # Remove unobserved landmarks

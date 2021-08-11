@@ -15,6 +15,11 @@ class FastSLAM2():
     self._meas_ls: list[Meas] = []
     self._prev_t = 0
     self._random = random
+    self._localization_only = parameters.localization_only
+    self._verbose = parameters.verbose
+    self._robot_physics = robot_physics
+    self._fast_slam_version = parameters.fast_slam_version
+
     self._particles_params = {
       'random': self._random,
       'are_landmarks_fixed': parameters.are_landmarks_fixed,
@@ -24,10 +29,6 @@ class FastSLAM2():
       'landmark_constants': parameters.landmark_constants,
       'verbose': parameters.verbose
     }
-    self._localization_only = parameters.localization_only
-    self._verbose = parameters.verbose
-    self._robot_physics = robot_physics
-    self._fast_slam_version = parameters.fast_slam_version
 
     self._log(parameters)
     self._create_particles(self.num_particles)
