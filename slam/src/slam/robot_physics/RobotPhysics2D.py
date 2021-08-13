@@ -67,16 +67,15 @@ class RobotPhysics2D(RobotPhysicsBase):
     # Filter by range
     diff_x = lx - x
     diff_y = ly - y
-    sqr_dist = diff_x * diff_x + diff_y * diff_y   # Square of the distance between the robot and the landmark
+    dist = (diff_x * diff_x + diff_y * diff_y)**.5   # Distance between the robot and the landmark
     
     # Filter by field of view
-    dist = sqr_dist ** 0.5  # Distance between the robot and the landmark
     unit_vec = (np.cos(theta), np.sin(theta))   # Compute the unit vector in the robot's direction
     dot = (diff_x * unit_vec[0] + diff_y * unit_vec[1]) / dist  # Compute the cosine of the angle between the robot's direction vector and the landmark using the dot product
 
     for sensor_limit in sensor_limits:
       max_range, fov = sensor_limit
       dot_range = np.cos(fov / 2) # This defines the range of cosine values between which the landmark falls in the robot's fov
-      if sqr_dist <= max_range**2 and dot <= dot_range:
+      if dist <= max_range and dot <= dot_range:
         return True
     return False

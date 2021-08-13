@@ -4,6 +4,10 @@ from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 import numpy as np
 from slam.Utils import wrap_to_pi
 
+'''
+This file contains different models/classes for RobotSimulator. They are physics-agonistic. 
+'''
+
 class SimSensor():
     def __init__(self, name, update_period, limit = [2,np.pi/3], noise_std = [1, np.pi/36]): 
       # velocity, angular velocity, additional dimensions for limits and noise_std

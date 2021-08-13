@@ -7,6 +7,10 @@ import pickle
 import scipy.interpolate as interp
 import matplotlib.pyplot as plt
 
+'''
+This file is used to load Mr.Clam dataset. 
+Mr.Clam dataset is a 2D, mutli-robot dataset. More details: http://asrl.utias.utoronto.ca/datasets/mrclam/index.html
+'''
 class Map:
     def __init__(self, data):
         self.data = data

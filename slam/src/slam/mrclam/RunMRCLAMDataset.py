@@ -13,6 +13,10 @@ from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 
 class RunMRCLAMDataset():
+  '''
+  Mr.Clam dataset is a 2D, mutli-robot dataset. More details: http://asrl.utias.utoronto.ca/datasets/mrclam/index.html
+  This is a runner for using Mr.Clam with FastSLAM. It can take in different FastSLAm version and robot physics. 
+  '''
   def __init__(self, **kwargs):
     self.hardcode_pose = kwargs.get('hardcode_pose', False)
     self.hardcode_compass = kwargs.get('hardcode_compass', False)

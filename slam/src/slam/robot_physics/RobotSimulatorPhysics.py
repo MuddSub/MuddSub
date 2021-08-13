@@ -5,6 +5,9 @@ import numpy as np
 from slam.Utils import wrap_to_pi
 
 class RobotPhysics2DForSim(RobotPhysics2D):
+  '''
+  This is an extension of RobotPhysics2D for the simulator. 
+  '''
   def __init__(self, random, position_is_close, verbose=False):
     super().__init__(random)
     self._verbose = verbose

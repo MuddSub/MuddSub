@@ -10,6 +10,14 @@ from slam.fast_slam2.Models import Meas, FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
 class RobotSimulatorRunner():
+  '''
+  This is a runner for robot simulator. Robot simulator simulates the interaction between FastSLAM, 
+  dummy perception, and dummy control (it uses very simple physics plus noise). 
+  The robot takes in a target, and moves toward the target.
+  It will perform either translation or rotation at every time step in order to approach this target. 
+  It will only perform translation if it is close enough in terms of angular displacement.   
+  This class is FastSLAM version agonistic and physics-agonistic. 
+  '''
   def __init__(self, robot_physics, random, 
                 num_steps, hardcode_compass, hardcode_pose, 
                 close_enough_meas_to_update_target, close_enough_position_for_motion,
