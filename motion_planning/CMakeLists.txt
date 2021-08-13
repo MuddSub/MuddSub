@@ -72,7 +72,7 @@ add_executable(
   astar
   src/main.cpp
   src/AStar.cc
-)
+		src/AStarMission.cc
 
 target_link_libraries(
 	astar
