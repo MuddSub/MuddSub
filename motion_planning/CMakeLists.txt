@@ -70,9 +70,10 @@ add_dependencies(
 
 add_executable(
   astar
-  src/main.cpp
+	src/AStarMission.cc
   src/AStar.cc
-		src/AStarMission.cc
+  src/main.cpp
+)
 
 target_link_libraries(
 	astar

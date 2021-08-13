@@ -1,12 +1,7 @@
 
-
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <queue>
 #include "motion_planning/AStar.hh"
-#include <unordered_set>
+
+
 
 namespace MuddSub::MotionPlanning
 {
@@ -348,7 +343,7 @@ namespace MuddSub::MotionPlanning
         return;
     }
 
-    void AStar::addSinTraversal(int amp, int freq, int period) { //TODO: Do we need period?, We can make these floats
+    void AStar::addSinTraversal(int amp, int freq, int period) { 
         //path_[0][3] path_[0][4], path_[0][5] (what you would change for rotational)
         int h, x = path_[0][0];
         int k, y = path_[0][1];
@@ -421,7 +416,7 @@ namespace MuddSub::MotionPlanning
         }
     }
 
-    void AStar::addTime(int factor) //TODO: we take velocity as a instance varaible
+    void AStar::addTime(int factor) 
     {
         for (int i = 0; i <= path_.size(); i++){
             int time_stamp = factor*i/velocity_;

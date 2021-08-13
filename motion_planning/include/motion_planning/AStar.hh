@@ -1,9 +1,15 @@
 
 #pragma once
-//#include <src/AStar.cc>
 #include <limits>
 #include <math.h>
 #include <ros/ros.h>
+#include <iostream>
+#include <vector>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <queue>
+#include <unordered_set>
 
 namespace MuddSub::MotionPlanning 
 {
@@ -29,8 +35,7 @@ namespace MuddSub::MotionPlanning
         void printGrid() const;
         void addObstacles(std::vector<std::vector<double>> obstacle);
         void addMotion(rotationalMotion_ motion, std::string data);
-        void addTime(int factor); // TODO: Decide between velocity and start time, is
-                                    // factor needed?
+        void addTime(int factor); 
 
         static std::vector<std::string> splitData(std::string data);
 

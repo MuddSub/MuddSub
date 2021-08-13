@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <unordered_set>
 #include "motion_planning/AStar.hh"
 #include "motion_planning/AStarMission.hh"

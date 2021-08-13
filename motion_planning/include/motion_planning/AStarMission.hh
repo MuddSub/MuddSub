@@ -1,4 +1,9 @@
 #pragma once
+#include "motion_planning/AStar.hh"
+#include <iostream>
+#include <vector>
+
+using MuddSub::MotionPlanning::AStar;
 
 
 namespace MuddSub::MotionPlanning

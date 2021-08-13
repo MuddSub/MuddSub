@@ -1,4 +1,6 @@
 #include "motion_planning/AStarMission.hh"
+
+
 namespace MuddSub::MotionPlanning
 {
     /*
@@ -8,7 +10,7 @@ namespace MuddSub::MotionPlanning
      */
     AStarMission::AStarMission(std::vector<std::vector<std::string>> &goals, double velocity, int width, int height, int depth):
             goals_(goals),
-            pastObstacles_(NULL),
+            pastObstacles_(),
             velocity_(velocity),
             current_(nullptr),
             width_(width),
