@@ -126,6 +126,9 @@ class RobotSimulatorRunner():
     plot_df(self.plot_data, self.sim.robot_history, landmarks_ground_truth, msg = self.plot_msg)
 
   def run(self):
+    '''
+    This is the main function with a control loop that calls all of the other functions.
+    '''
     self.initialize()
     for i in range(self.num_steps):
       self.update_slam_snapshot(i)

@@ -78,14 +78,17 @@ class FastSLAM2():
 
     try: # resampling
       new_particle_idx_ls = self._random.choice(list(range(self.num_particles)), size=self.num_particles, replace=True, p=self.weights)
-    except:
+    except ValueError:
       self._log('warning', 'Particle weights are NaN',self.weights)
       new_particle_idx_ls = list(range(self.num_particles))
+    
     self._log('particle pose',self.particles[0].pose)
     new_particles = []
+
     for idx in new_particle_idx_ls:
       new_particles.append(copy.deepcopy(self.particles[idx]))
       new_particles[-1]._random = self._random
+
     self.particles  = new_particles
     self._log('particle pose after',self.particles[0].pose)
 

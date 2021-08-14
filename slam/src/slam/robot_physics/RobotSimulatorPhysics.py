@@ -18,6 +18,11 @@ class RobotPhysics2DForSim(RobotPhysics2D):
       print('Sim Physics:', *msg)
 
   def compute_control(self, robot_pose, target, velocity,  verbose=False):
+    '''
+    This function computes the control a robot wants to use. 
+    If the robot is not close enough to the target in terms of bearing, the robot will 
+    rotate. Otherwise, it will move straight. 
+    '''
     velocity, angular_velocity = velocity
     range_meas, bearing_meas = self.compute_meas_model(robot_pose, target)
     bearing_meas = wrap_to_pi(bearing_meas)
@@ -35,6 +40,9 @@ class RobotPhysics2DForSim(RobotPhysics2D):
       return 0, angular_displacement
 
   def compute_actual_control(self, control, velocity, velocity_std):
+    '''
+    This function simulates control the robot performs has by adding noise to the target control. 
+    '''
     v, w = control
     w = wrap_to_pi(w)
     v_std, w_std = velocity_std
@@ -47,6 +55,10 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     return actual_control
 
   def compute_actual_measurement(self, measurement, sensor_limits, sensor_noise_std):
+    '''
+    This function computes measurement with noise if the measurement is in range, and None, None if 
+    the measurement is out of range. 
+    '''
     range_mea, bearing_mea = measurement
     if sensor_limits[1]/2<=bearing_mea%(np.pi*2)<=2*np.pi-sensor_limits[1]/2 or range_mea > sensor_limits[0]:
       return None, None
@@ -58,6 +70,9 @@ class RobotPhysics2DForSim(RobotPhysics2D):
     return not measurement[0] is None
 
   def modify_particile_pose(self, particles, ground_truth_pose, hardcode_pose, hardcode_compass):
+    '''
+    This function hardcodes pose or compass. This is for debugging. 
+    '''
     if hardcode_pose or hardcode_compass:
       for j in range(len(particles)):
           if hardcode_pose:

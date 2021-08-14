@@ -12,6 +12,9 @@ class RobotPhysics2D(RobotPhysicsBase):
     super().__init__(random)
 
   def compute_meas_model(self, pose, landmark_mean):
+    '''
+    Compute the measurement for a landmark given robot pose and landmark mean. 
+    '''
     x, y, theta = pose
     lx, ly = landmark_mean
 
@@ -21,6 +24,10 @@ class RobotPhysics2D(RobotPhysicsBase):
     return np.array([range_est, bearing_est])
   
   def compute_meas_jacobians(self, pose, landmark_mean):
+    '''
+    Compute a measurement Jacobian with respect to pose, and 
+    a measurement Jacobian with respect to landmark
+    '''
     lx, ly = landmark_mean
     x, y, theta, = pose
     
@@ -39,6 +46,9 @@ class RobotPhysics2D(RobotPhysicsBase):
     return meas_jac_pose, meas_jac_land
     
   def compute_inverse_meas_model(self,pose,meas):
+    '''
+    Compute a landmark position given robot pose and measurement. 
+    '''
     x, y, theta = pose
     range_meas, bearing_meas = meas
     lx = x + range_meas * np.cos(theta + bearing_meas)
@@ -46,6 +56,9 @@ class RobotPhysics2D(RobotPhysicsBase):
     return np.array([lx, ly])
   
   def compute_motion_model(self, pose, control, dt):
+    '''
+    Compue robot's new pose given current pose, control, and time. 
+    '''
     v, w = control
     if -1e-10 <= w <= 1e-10:
       w = 1e-10
@@ -58,7 +71,8 @@ class RobotPhysics2D(RobotPhysicsBase):
   
   def is_landmark_in_range(self, pose, landmark_pos, sensor_limits):
     '''
-    Check whether the given landmark position is in range and in the field of view of the robot's camera.
+    Check whether the given landmark position is in range and in the field of view of the robot's camera 
+    given a list of sensor limits. 
     '''
     # Unpack data
     x, y, theta = pose

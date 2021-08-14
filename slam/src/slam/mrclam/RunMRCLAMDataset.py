@@ -57,6 +57,9 @@ class RunMRCLAMDataset():
         self.params.initial_landmarks[idx] = (np.array([x, y]), None)
 
   def run_fast_slam2(self):
+    '''
+    This is the main function with a control loop that calls all of the other functions.
+    '''
     # Set up parameters needed to initialize the FastSLAM2 algorithm
     initial_pose = np.array([self.robot_data.get_x_truth(0), self.robot_data.get_y_truth(0), wrap_to_pi(self.robot_data.get_compass(0))])    
     self.params = FastSLAM2Parameters(
