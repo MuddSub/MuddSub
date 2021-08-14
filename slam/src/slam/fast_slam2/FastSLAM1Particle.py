@@ -21,7 +21,7 @@ class FastSLAM1Particle(FastSLAM2Particle):
     landmark.innovation = meas.data - est_meas_data
 
     landmark.Q = meas.cov + landmark.meas_jac_land @ landmark.cov @ landmark.meas_jac_land.T
-    landmark.Q_inv = np.linalg.inv(landmark.Q)
+    landmark.Q_inv = safe_inverse(landmark.Q, log=self._log, msg = 'Q is singular')
   def _update_pose_distribution(self, landmark, pose_mean, pose_cov):
     landmark.pose_cov = self.pose_cov
     landmark.pose_mean = self.pose

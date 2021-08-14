@@ -5,6 +5,7 @@ from collections import namedtuple
 from slam.fast_slam2.Models import _EKF, Meas, LandmarkConstants
 from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 from typing import List 
+from slam.Utils import safe_inverse
 
 class FastSLAM2Particle():
   '''
@@ -161,13 +162,12 @@ class FastSLAM2Particle():
     est_meas_data = self._robot_physics.compute_meas_model(pose_mean, landmark.mean)
     landmark.meas_jac_pose, landmark.meas_jac_land = self._robot_physics.compute_meas_jacobians(pose_mean, landmark.mean)
     landmark.innovation = meas.data - est_meas_data
-
-    landmark.inv_pose_cov = np.linalg.inv(pose_cov) 
+    landmark.inv_pose_cov = safe_inverse(pose_cov, log=self._log, msg='Landmark pose cov is singular.')
     landmark.Q = meas.cov + landmark.meas_jac_land @ landmark.cov @ landmark.meas_jac_land.T
-    landmark.Q_inv = np.linalg.inv(landmark.Q)
+    landmark.Q_inv = safe_inverse(landmark.Q, log=self._log, msg='Q is singular.')
     
   def _update_pose_distribution(self, landmark, pose_mean, pose_cov):
-    landmark.pose_cov = np.linalg.inv(landmark.meas_jac_pose.T @ landmark.Q_inv @ landmark.meas_jac_pose + landmark.inv_pose_cov)
+    landmark.pose_cov = safe_inverse(landmark.meas_jac_pose.T @ landmark.Q_inv @ landmark.meas_jac_pose + landmark.inv_pose_cov, log=self._log, msg='Matrix used to compute pose is singular.')
     landmark.pose_mean = pose_cov @ landmark.meas_jac_pose.T @ landmark.Q_inv @ landmark.innovation + pose_mean
     landmark.sampled_pose = self._random.multivariate_normal(pose_mean, pose_cov)
 
@@ -193,7 +193,7 @@ class FastSLAM2Particle():
     L = landmark.meas_jac_pose @ pose_cov @ landmark.meas_jac_pose.T \
          + landmark.meas_jac_land @ prev_landmark_cov @ landmark.meas_jac_land.T \
          + meas.cov
-    L_inv = np.linalg.inv(L)
+    L_inv = safe_inverse(L, log=self._log, msg='L is singular.')
     inv_sqrt_of_two_pi_det_L = (np.linalg.det(2 * np.pi * L)) ** -0.5
     exponent = -0.5 * landmark.innovation.T @ L_inv @ landmark.innovation 
     landmark.particle_weight = inv_sqrt_of_two_pi_det_L * np.exp(exponent)
@@ -219,7 +219,7 @@ class FastSLAM2Particle():
     # Use the measurement data to compute the landmark's mean and covariance
     mean = self._robot_physics.compute_inverse_meas_model(sampled_pose, meas.data)
     meas_jac_pose, meas_jac_land = self._robot_physics.compute_meas_jacobians(sampled_pose, mean)
-    cov = np.linalg.inv(meas_jac_land @ np.linalg.inv(meas.cov) @ meas_jac_land.T)
+    cov = safe_inverse(meas_jac_land @ safe_inverse(meas.cov, log=self._log, msg='Measurement covariance is singular.') @ meas_jac_land.T, log=self._log, msg='Measurement jacobian with respect to the landmark is singular.')
 
     # Initialize and return landmark
     landmark = self._init_landmark(name, mean, cov, sampled_pose=sampled_pose, pose_mean=pose_mean, pose_cov=pose_cov)

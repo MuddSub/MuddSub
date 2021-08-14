@@ -9,6 +9,13 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 
+def safe_inverse(matrix, log = print, msg = 'Matrix was singular, using pseudo inverse'):
+  try: 
+    return np.linalg.inv(matrix)
+  except np.linalg.LinAlgError:
+    log(msg)
+    return np.linalg.pinv(matrix)
+
 def wrap_to_pi(th):
   '''Wraps its argument between [-pi, pi] element wise'''
   return ((th + np.pi) % (2 * np.pi)) - np.pi
