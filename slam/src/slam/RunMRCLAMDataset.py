@@ -4,13 +4,13 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 import pickle
 import pandas as pd
-from slam.Dataloader import *
-from slam.FastSLAM2 import FastSLAM2
+from Dataloader import *
+from FastSLAM2 import FastSLAM2
 import numpy as np
-from slam.Util import wrap_to_pi
-from slam.Models import Meas, FastSLAM2Parameters, LandmarkConstants
-from slam.RobotPhysics2D import RobotPhysics2D
-from slam.Validation import plot_df
+from Util import wrap_to_pi
+from Models import Meas, FastSLAM2Parameters, LandmarkConstants
+from RobotPhysics2D import RobotPhysics2D
+from Validation import plot_df
 
 class RunMRCLAMDataset():
     def __init__(self, **kwargs):
@@ -86,6 +86,7 @@ class RunMRCLAMDataset():
                         theta = self.robot_data.get_compass(t)
                         self.algorithm.particles[j].pose = np.array([x, y, theta])
             else:
+                print("step", i)
                 self._add_meas()
             self.log_data(i)
         
@@ -132,15 +133,20 @@ class RunMRCLAMDataset():
                     robot_angle = self.robot_data.get_compass(time)
                     range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
                     bearing_meas = wrap_to_pi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
+                print( "updated measurement", subject, "with position", [landmark_x, landmark_y])
                 
                 if self.skipped_meas:
-                    if range_meas > self.sensor_range or abs(bearing_meas) > self.sensor_fov:
+                    if range_meas > self.sensor_range:
+                        print("Skipped Measurement")
+                        return
+                    if -1 * self.sensor_fov > bearing_meas or bearing_meas > self.sensor_fov:
+                        print("Skpped Bearing measurement")
                         return
 
                 meas = Meas((range_meas, bearing_meas), self.meas_cov, (self.sensor_range, self.sensor_fov), subject)         
                 self.algorithm.add_measurement(meas)
 
 clam_dataset = RunMRCLAMDataset(init_landmarks = False, num_particles = 2, num_steps = 10000, hardcode_compass = True)
-clam_dataset.load_data('../datasets/Jar/dataset1.pkl')
+clam_dataset.load_data('../../datasets/Jar/dataset1.pkl')
 clam_dataset.run_fast_slam2()
 clam_dataset.plot()

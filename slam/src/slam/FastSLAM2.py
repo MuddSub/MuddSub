@@ -1,9 +1,10 @@
 import numpy as np
 import copy
 import pandas as pd
-from slam.Particle import *
+from Particle import *
 from collections import namedtuple
-from slam.Models import Meas, FastSLAM2Parameters, LandmarkConstants
+from Models import Meas, FastSLAM2Parameters, LandmarkConstants
+# meas_ls, meas_cov_ls, sensor_range_ls, sensor_bearing_ls, known_correspondences = False, correspondences = []
 
 class FastSLAM2():
   def __init__(self, robot_physics, parameters: FastSLAM2Parameters, random=np.random.default_rng()):
@@ -44,7 +45,7 @@ class FastSLAM2():
 
   def _log(self, *msg):
     if self._verbose >= 1:
-      print('FastSLAM2:', *msg)
+      print('++ FastSLAM2:', *msg)
   
   def _update_motion(self, control, time): #propagate motion
     dt = max(time - self._prev_t, 0.000001)
@@ -61,6 +62,8 @@ class FastSLAM2():
         particle.update_meas(self._meas_ls)
 
   def _resample(self):    #  Collect weight
+    self._log('particle pose before',self.particles[0].pose)
+    self._log('particle pose before',self.particles[1].pose)
     self.weights = np.array([particle.weight for particle in self.particles])
     self.weights = self.weights / np.sum(self.weights)
     for idx, particle in enumerate(self.particles):
@@ -69,7 +72,7 @@ class FastSLAM2():
     try: # resampling
       new_particle_idx_ls = self._random.choice(list(range(self.num_particles)), size=self.num_particles, replace=True, p=self.weights)
     except:
-      self._log('warning', 'Particle weights are NaN',self.weights)
+      self._log('Warning', 'Particle weights are NaN',self.weights)
       new_particle_idx_ls = list(range(self.num_particles))
     self._log('particle pose',self.particles[0].pose)
     new_particles = []

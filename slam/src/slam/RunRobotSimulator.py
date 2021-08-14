@@ -1,12 +1,12 @@
 import copy
-from slam.FastSLAM2 import FastSLAM2
-from slam.RobotPhysics2D import RobotPhysics2D
+from FastSLAM2 import FastSLAM2
+from RobotPhysics2D import RobotPhysics2D
 import numpy as np
 import pandas as pd
-from slam.Validation import plot_df
-from slam.Util import wrap_to_pi
-from slam.RobotSimulatorModels import RobotSimulator, Sensor
-from slam.Models import Meas,FastSLAM2Parameters, LandmarkConstants
+from Validation import plot_data, evaluate, plot_df
+from Util import wrap_to_pi
+from RobotSimulatorModels import RobotSimulator, Sensor
+from Models import Meas,FastSLAM2Parameters, LandmarkConstants
 from abc import ABC, abstractmethod
 
 class RobotSimulatorRunner(ABC):
@@ -20,13 +20,18 @@ class RobotSimulatorRunner(ABC):
     self.close_enough_bearing_for_translation = np.pi/18
 
     ### environment setups    
+    # sensors = [Sensor('sensor0',5,limits = {'range':2,'bearing':np.pi/2},noise_std = {'range':.3**.5, 'bearing': np.pi/36}), 
+    #     Sensor('sensor1', 2,limits = {'range':2,'bearing':np.pi/2}, noise_std = {'range':.5**.5, 'bearing': np.pi/36}),
+    #     Sensor('sensor2', 10,limits = {'range':4,'bearing':np.pi/1.2}, noise_std = {'range':1, 'bearing': np.pi/18})]
     sensors = [Sensor('sensor0',1,limits = {'range':2,'bearing':  np.pi/2},noise_std = {'range':.3**.5, 'bearing': np.pi/36}),] 
+        #Sensor('sensor1', 1,limits = {'range':2,'bearing': 2 * np.pi}, noise_std = {'range':.5**.5, 'bearing': np.pi/36}),
+        #Sensor('sensor2', 10,limits = {'range':4,'bearing': 2 * np.pi}, noise_std = {'range':1, 'bearing': np.pi/18})]
 
-    landmarks = [(1,0),(1,2),(3,3),(4,3),
+    landmarks = [(1,0),(2,2),(3,3),(4,3),
                   (5,5),(6,7),(7,8),(8,9)]
     landmarks = {str(idx):landmark for idx,landmark in enumerate(landmarks)}        
     
-    velocity, angular_velocity  = .3,np.pi/4
+    velocity, angular_velocity  = .3,np.pi/10
     robot_motion_std = {'v':velocity*.1, 'w': angular_velocity*.1}
     random = np.random.default_rng()
     
@@ -43,7 +48,7 @@ class RobotSimulatorRunner(ABC):
         ])
       )
       for key, (x,y) in list(landmarks.items())}
-    self._log("Estimated init landmark",estimated_init_landmarks)
+    self._log("estimated init landmark",estimated_init_landmarks)
     initial_pose = np.array([0,0,0])
     default_pose_cov = np.diag([.5**2,.5**2,(np.pi/360)**2])
     
@@ -64,7 +69,8 @@ class RobotSimulatorRunner(ABC):
     self.meas_hist = []
     self.plot_data = pd.DataFrame()
 
-  def initialize(self):
+
+  def initialize_landmarks(self):
     self.curr_target = str(0)
     self.final_target = str(len(self.sim.landmarks)-1)
     self.sim.set_target_location(self.sim.landmarks[self.curr_target])
@@ -73,10 +79,10 @@ class RobotSimulatorRunner(ABC):
     self.landmark_maps = None
 
   def _log(self, *msg):
-    print('Simulator: ', *msg)
+    print('+ Run Simulator: ', *msg)
 
   def update_slam_snapshot(self,i):
-    self._log('Step',i)
+    self._log('###############','step',i,'')
 
     # plotting, and also get current slam state
     snapshot = self.slam.get_pose_and_landmarks_for_plot()
@@ -84,8 +90,9 @@ class RobotSimulatorRunner(ABC):
 
     self.slam_robot_pose = snapshot['particle_poses'][0][snapshot['best_particle_idx'][0]]
 
-    self._log('Slam robot pose',self.slam_robot_pose,"actual robot pose", self.sim.robot_pose)
-    self._log('Target',self.curr_target, 'slam map location',self.sim.target_location, 'actual location', self.sim.landmarks[self.curr_target])
+    self._log('### slam robot pose',self.slam_robot_pose,"actual robot pose", self.sim.robot_pose)
+    #self._log('slam landmarks',landmark_means)
+    self._log('### target',self.curr_target, self.sim.target_location)
 
     self.plot_data = pd.concat([self.plot_data, snapshot], ignore_index=True)
     self.sim.set_target_location(self.landmark_maps[self.curr_target])
@@ -98,6 +105,7 @@ class RobotSimulatorRunner(ABC):
     # move on to new target
     if self.sim.robot.is_close(self.slam_robot_pose, self.landmark_maps[self.curr_target],self.close_enough_distantce, self.close_enough_bearing):
       self.curr_target = str(int(self.curr_target)+1)
+      #self._log(self.landmark_maps)
     
     self.sim.set_target_location(self.landmark_maps[self.curr_target])
     
@@ -105,6 +113,7 @@ class RobotSimulatorRunner(ABC):
     actual_measurements = self.sim.read_measurement()
     self.meas_hist.append(len(actual_measurements))
     location_filter = lambda x: [ item[:3] for item in x]
+    #self._log("measurements",location_filter(actual_measurements))
     for subject, range_meas, bearing_meas, range_noise, bearing_noise, sensor_range_limit, sensor_bearing_limit,  in actual_measurements:
       meas_cov = np.diag([range_noise, bearing_noise])
       meas = Meas((range_meas, bearing_meas),meas_cov,(sensor_range_limit, sensor_bearing_limit), subject)         
@@ -112,6 +121,7 @@ class RobotSimulatorRunner(ABC):
 
   def update_control(self):
     actual_control = self.sim.move_robot_and_read_control()
+    #self._log("control",actual_control)
     self.slam.add_control(actual_control, self.sim.t)
 
     if self.hardcode_pose or self.hardcode_compass:
@@ -135,7 +145,7 @@ class RobotSimulatorRunner(ABC):
     plot_df(self.plot_data, self.sim.robot_history, landmarks_ground_truth)
 
   def run(self):
-    self.initialize()
+    self.initialize_landmarks()
     for i in range(self.num_steps):
       self.update_slam_snapshot(i)
       self.update_meas()

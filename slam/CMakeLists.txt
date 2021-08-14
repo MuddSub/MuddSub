@@ -43,6 +43,3 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/../thirdparty
   ${catkin_INCLUDE_DIRS}
 )
-
-catkin_install_python(PROGRAMS scripts/Run.py
-                      DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
