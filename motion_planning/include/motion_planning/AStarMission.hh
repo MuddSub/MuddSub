@@ -2,6 +2,11 @@
 #include "motion_planning/AStar.hh"
 #include <iostream>
 #include <vector>
+#include "ros/ros.h"
+#include <math.h>
+#include "geometry_msgs/PoseStamped.h"
+
+
 
 using MuddSub::MotionPlanning::AStar;
 
@@ -22,9 +27,18 @@ namespace MuddSub::MotionPlanning
 
             std::vector<double> getPose(std::string poseString);
             void addMotion();
+
+            std::vector<double> getVector(geometry_msgs::PoseStamped poseStamped);
+            geometry_msgs::PoseStamped getPoseStamped(std::vector<double> v);
+
         public:
+
+            static std::vector<double> eulerToQuaternion (std::vector<double> e);
+            static std::vector<double> quaternionToEuler (std::vector<double> q);
+
             std::map<std::string, std::vector<double>> targets_;
             std::vector<std::vector<double>> path_;
+            std::vector<geometry_msgs::PoseStamped> finalPath_;
             std::vector<std::vector<double>> obstacles_;
 
 

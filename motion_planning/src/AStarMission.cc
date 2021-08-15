@@ -65,6 +65,112 @@ namespace MuddSub::MotionPlanning
         return pose;
     }
 
+    std::vector<double> AStarMission::getVector(geometry_msgs::PoseStamped poseStamped)
+    {
+        std::vector<double> v;
+        
+        std::vector<double> q;
+        q.push_back(poseStamped.pose.orientation.x);
+        q.push_back(poseStamped.pose.orientation.y);
+        q.push_back(poseStamped.pose.orientation.z);
+        q.push_back(poseStamped.pose.orientation.w);
+
+        std::vector<double> e = MuddSub::MotionPlanning::AStarMission::quaternionToEuler(q);
+        v.push_back(poseStamped.pose.position.x);
+        v.push_back(poseStamped.pose.position.y);
+        v.push_back(poseStamped.pose.position.z);
+
+        v.push_back(e[0]);
+        v.push_back(e[1]);
+        v.push_back(e[2]);
+
+        v.push_back(poseStamped.header.stamp.toSec());
+
+        return v; 
+    }
+
+    geometry_msgs::PoseStamped AStarMission::getPoseStamped(std::vector<double> v)
+    {
+        geometry_msgs::PoseStamped poseStamped;
+        ros::Time time(v[6]);
+        poseStamped.header.stamp = time;
+        poseStamped.pose.position.x = v[0];
+        poseStamped.pose.position.y = v[1];
+        poseStamped.pose.position.z = v[2];
+
+        std::vector<double> e;
+        e.push_back(v[3]);
+        e.push_back(v[4]);
+        e.push_back(v[5]);
+        std::vector<double> q = MuddSub::MotionPlanning::AStarMission::eulerToQuaternion(e);
+
+        poseStamped.header.stamp = time;
+        poseStamped.pose.orientation.x = q[0];
+        poseStamped.pose.orientation.y = q[1];
+        poseStamped.pose.orientation.z = q[2];
+        poseStamped.pose.orientation.w = q[3];
+
+    }
+
+
+    std::vector<double> AStarMission::eulerToQuaternion (std::vector<double> e)
+    {
+        std::vector<double> q;
+        double yaw = e[0];
+        double pitch = e[1];
+        double roll = e[2];
+        
+        double qx = sin(roll/2) * cos(pitch/2) * cos(yaw/2) - cos(roll/2) * sin(pitch/2) * sin(yaw/2);
+        double qy = cos(roll/2) * sin(pitch/2) * cos(yaw/2) + sin(roll/2) * cos(pitch/2) * sin(yaw/2);
+        double qz = cos(roll/2) * cos(pitch/2) * sin(yaw/2) - sin(roll/2) * sin(pitch/2) * cos(yaw/2);
+        double qw = cos(roll/2) * cos(pitch/2) * cos(yaw/2) + sin(roll/2) * sin(pitch/2) * sin(yaw/2);
+        
+        q.push_back(qx);
+        q.push_back(qy);
+        q.push_back(qz);
+        q.push_back(qw);
+        
+        
+        return q;
+
+    }
+    
+    
+    
+    std::vector<double> AStarMission::quaternionToEuler (std::vector<double> q)
+    {
+        double x = q[0];
+        double y = q[1];
+        double z = q[2];
+        double w = q[3];
+
+        std::vector<double> e;
+
+        double t0 = +2.0 * (w * x + y * z);
+        double t1 = +1.0 - 2.0 * (x * x + y * y);
+        double roll = atan2(t0, t1);
+        double t2 = +2.0 * (w * y - z * x);
+        if(t2 > +1.0)
+        {
+            t2 = +1.0;
+        }
+
+        if(t2 < -1.0)
+        {
+            t2 = -1.0;
+        }
+        double pitch = asin(t2);
+        double t3 = +2.0 * (w * z + x * y);
+        double t4 = +1.0 - 2.0 * (y * y + z * z);
+        double yaw = atan2(t3, t4);
+        
+        e.push_back(yaw);
+        e.push_back(pitch);
+        e.push_back(roll);
+
+        return e;
+    }
+
     void AStarMission::addMotion()
     {
         if(goals_[0][2] == "None")
