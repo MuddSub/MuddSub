@@ -35,7 +35,7 @@ namespace MuddSub::MotionPlanning
         void printGrid() const;
         void addObstacles(std::vector<std::vector<double>> obstacle);
         void addMotion(rotationalMotion_ motion, std::string data);
-        void addTime(int factor); 
+        void addTime(); 
 
         static std::vector<std::string> splitData(std::string data);
 

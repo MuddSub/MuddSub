@@ -5,6 +5,9 @@
 #include "ros/ros.h"
 #include <math.h>
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/Point.h"
+
+
 
 
 
@@ -17,7 +20,7 @@ namespace MuddSub::MotionPlanning
     {
         private:
             std::vector<std::vector<std::string>> goals_;
-            std::vector<std::vector<double>> pastObstacles_;
+            std::vector<geometry_msgs::Point> pastObstacles_;
             double velocity_;
             std::vector<double> pose_;
             AStar* current_;
@@ -26,20 +29,28 @@ namespace MuddSub::MotionPlanning
             int depth_;
 
             std::vector<double> getPose(std::string poseString);
-            void addMotion();
 
-            std::vector<double> getVector(geometry_msgs::PoseStamped poseStamped);
-            geometry_msgs::PoseStamped getPoseStamped(std::vector<double> v);
+
+            std::vector<std::vector<double>> path_;
+
+            void addMotion();
+            void convertPath();
+            std::vector<std::vector<double>> convertPoints(std::vector<geometry_msgs::Point> points);
+
 
         public:
+            static geometry_msgs::PoseStamped getPoseStamped(std::vector<double> v);
+            static std::vector<double> getPoseVector(geometry_msgs::PoseStamped poseStamped);
+
+            static geometry_msgs::Point getPoint(std::vector<double> v);
+            static std::vector<double> getPointVector(geometry_msgs::Point point);
 
             static std::vector<double> eulerToQuaternion (std::vector<double> e);
             static std::vector<double> quaternionToEuler (std::vector<double> q);
 
             std::map<std::string, std::vector<double>> targets_;
-            std::vector<std::vector<double>> path_;
             std::vector<geometry_msgs::PoseStamped> finalPath_;
-            std::vector<std::vector<double>> obstacles_;
+            std::vector<geometry_msgs::Point> obstacles_;
 
 
             AStarMission(std::vector<std::vector<std::string>> &goals, double velocity, int width, int height, int depth);
@@ -47,7 +58,7 @@ namespace MuddSub::MotionPlanning
             void addGoals(std::vector<std::vector<std::string>> goals);
 
             void isSucessful(bool success);
-            void recurse(std::vector<double> pose, double time);
+            void recurse(geometry_msgs::PoseStamped poseStamped);
             void printPath();
 
 

@@ -65,7 +65,7 @@ namespace MuddSub::MotionPlanning
         return pose;
     }
 
-    std::vector<double> AStarMission::getVector(geometry_msgs::PoseStamped poseStamped)
+    std::vector<double> AStarMission::getPoseVector(geometry_msgs::PoseStamped poseStamped)
     {
         std::vector<double> v;
         
@@ -112,6 +112,34 @@ namespace MuddSub::MotionPlanning
 
     }
 
+    geometry_msgs::Point AStarMission::getPoint(std::vector<double> v)
+    {
+        geometry_msgs::Point p;
+        p.x = v[0];
+        p.y = v[1];
+        p.z = v[2];
+        return p;
+    }
+    std::vector<double> AStarMission::getPointVector(geometry_msgs::Point point)
+    {
+        std::vector<double> v;
+        v.push_back(point.x);
+        v.push_back(point.y);
+        v.push_back(point.z);
+        return v;
+    }
+
+    std::vector<std::vector<double>> AStarMission::convertPoints(std::vector<geometry_msgs::Point> points)
+    {
+        std::vector<std::vector<double>> converted;
+        
+        for(int i = 0; i < points.size(); i++)
+        {
+            converted.push_back(AStarMission::getPointVector(points[i]));
+        }
+
+        return converted;
+    }
 
     std::vector<double> AStarMission::eulerToQuaternion (std::vector<double> e)
     {
@@ -187,6 +215,7 @@ namespace MuddSub::MotionPlanning
 
     void AStarMission::printPath()
     {
+        std::cout<<"Printing Path"<<std::endl;
         for(int i = 0; i < path_.size(); i++)
         {
             for(int j = 0; j < path_[i].size(); j++)
@@ -197,9 +226,19 @@ namespace MuddSub::MotionPlanning
         }
     }
 
-
-    void AStarMission::recurse(std::vector<double> pose, double time)
+    void AStarMission::convertPath()
     {
+        for(int i = 0; i < path_.size(); i++)
+        {
+            finalPath_.push_back(MuddSub::MotionPlanning::AStarMission::getPoseStamped(path_[i]));
+        }
+    }
+
+
+    void AStarMission::recurse(geometry_msgs::PoseStamped poseStamped)
+    {
+        std::vector<double> pose = MuddSub::MotionPlanning::AStarMission::getPoseVector(poseStamped);       
+        double time = pose[6];
         //If an AStar object is created with the specific goal
         std::cout<<"recurse, time: "<<time<<std::endl;
         if(current_)
@@ -207,7 +246,7 @@ namespace MuddSub::MotionPlanning
             if(pastObstacles_ != obstacles_)
             {
                 pastObstacles_ = obstacles_;
-                current_->addObstacles(obstacles_);
+                current_->addObstacles(convertPoints(obstacles_));
                 current_->printGrid();
                 current_->updatePose(pose[0], pose[1], pose[2]);
                 current_->solveGrid();
@@ -219,7 +258,7 @@ namespace MuddSub::MotionPlanning
                 current_->printGrid();
             }
             addMotion();
-            //current_->addTime(1);
+            //current_->addTime();
             path_ = current_->path_;
         }else
         {
@@ -230,16 +269,18 @@ namespace MuddSub::MotionPlanning
             }
             std::string goalString = goals_[0][0];
             std::vector<double> goal = getPose(goalString);
-            current_ = new AStar(obstacles_, width_, height_, depth_, pose[0], pose[1], pose[2], goal[0], goal[1], goal[2], "", time, velocity_);
+            current_ = new AStar(convertPoints(obstacles_), width_, height_, depth_, pose[0], pose[1], pose[2], goal[0], goal[1], goal[2], "", time, velocity_);
             current_->printGrid();
             pastObstacles_ = obstacles_;
             current_->solveGrid();
             current_->printGrid();
             addMotion();
             std::cout<<"Added motion"<<std::endl;
-            //current_->addTime(1);
+            //current_->addTime();
             path_ = current_->path_;
         }
+
+        convertPath();
     }
 
     AStarMission::AStarMission() :

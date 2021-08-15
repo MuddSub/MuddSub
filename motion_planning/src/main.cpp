@@ -5,6 +5,7 @@
 #include "motion_planning/AStarMission.hh"
 #include "ros/ros.h"
 #include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/Point.h"
 #include <math.h>
 using MuddSub::MotionPlanning::AStar;
 using MuddSub::MotionPlanning::AStarMission;
@@ -44,28 +45,38 @@ int main()
     
     AStarMission* mission = new AStarMission(goals, 5, 1, 10,10);
 
-    std::vector<double> obstacle1 = {0, 5, 5, 0.1, 0.1, 0};
-    std::vector<double> obstacle2 = {0, 1, 1, 0, 0, 0};
-    std::vector<std::vector<double>> obstacles;
-    obstacles.push_back(obstacle1);
-    obstacles.push_back(obstacle2);
+    std::vector<double> obstacle1 = {0, 5, 5};
+    std::vector<double> obstacle2 = {0, 1, 1};
+
+    geometry_msgs::Point p1 = AStarMission::getPoint(obstacle1);
+    geometry_msgs::Point p2 = AStarMission::getPoint(obstacle2);
+
+
+
+    std::vector<geometry_msgs::Point> obstacles = {p1, p2};
+    //obstacles.push_back(AStarMission::getPoint(obstacle1));
+    //obstacles.push_back(AStarMission::getPoint(obstacle2));
 
     mission->obstacles_ = obstacles;
 
-    std::vector<double> currentPose = {0, 0, 0, 0, 0, 0};
-    mission->recurse(currentPose, 0);
+    std::vector<double> currentPose = {0, 0, 0, 0, 0, 0, 0};
+    geometry_msgs::PoseStamped currentPoseStamped = AStarMission::getPoseStamped(currentPose);
+
+    mission->recurse(currentPoseStamped);
     mission->printPath();
 
     std::vector<double> obstacle3 = {0,0,2};
-    obstacles.push_back(obstacle3);
+    geometry_msgs::Point p3 = AStarMission::getPoint(obstacle3);
+    obstacles.push_back(p3);
+
     mission->obstacles_ = obstacles;
-    mission->recurse(currentPose, 0.5);
+    mission->recurse(currentPoseStamped);
     mission->printPath();
 
     mission->isSucessful(true);
     currentPose[2] = 3;
 
-    mission->recurse(currentPose, 1);
+    mission->recurse(currentPoseStamped);
     mission->printPath();
 
 
@@ -78,7 +89,7 @@ int main()
     }*/
 
     //Testing Pose Stamped
-    geometry_msgs::PoseStamped poseStamped;
+    /*geometry_msgs::PoseStamped poseStamped;
     ros::Time time(5);
     poseStamped.header.stamp = time;
     poseStamped.pose.position.x = 5;
@@ -86,12 +97,12 @@ int main()
     poseStamped.pose.position.y = y_pos;
 
     std::cout<<poseStamped.pose.position.y<<std::endl;
-    std::cout<<cos(0)<<std::endl;
+    std::cout<<cos(0)<<std::endl;*/
 
 
 
     //testing q -> e, and e -> q
-    std::vector<double> euler;
+    /*std::vector<double> euler;
     euler.push_back(0.3);
     euler.push_back(0.4);
     euler.push_back(0.5);
@@ -99,7 +110,7 @@ int main()
     std::vector<double> q = AStarMission::eulerToQuaternion(euler);
     std::vector<double> e2 = AStarMission::quaternionToEuler(q);
 
-    std::cout<<e2[0]<<e2[1]<<e2[2]<<std::endl;
+    std::cout<<e2[0]<<e2[1]<<e2[2]<<std::endl;*/
 
 
 

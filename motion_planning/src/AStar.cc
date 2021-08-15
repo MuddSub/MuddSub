@@ -248,6 +248,7 @@ namespace MuddSub::MotionPlanning
         current.push_back(0);
         current.push_back(0);
         current.push_back(0);
+        current.push_back(0);
 
         path_.push_back(current);
         if (node->parent_ == NULL) return;
@@ -416,12 +417,13 @@ namespace MuddSub::MotionPlanning
         }
     }
 
-    void AStar::addTime(int factor) 
+    void AStar::addTime() 
     {
-        for (int i = 0; i <= path_.size(); i++){
-            int time_stamp = factor*i/velocity_;
-            path_[i].push_back(time_stamp);
-        }
+        std::cout<<"Entered Adding time"<<std::endl;
+        /*for (int i = 0; i <= path_.size(); i++){
+            //double time_stamp = i/velocity_;
+            path_[i].push_back(5);
+        }*/
     }
 
     void AStar::updatePose(int startx, int starty, int startz)
