@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(motion_planning)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -57,6 +57,8 @@ add_executable(path_server
 	src/PathServer.cc
   src/PathServerNode.cc
 )
+
+
 target_link_libraries(
 	path_server
   ${catkin_LIBRARIES}
@@ -65,3 +67,21 @@ add_dependencies(
   path_server
   ${motion_planning_EXPORTED_TARGETS}
 )
+
+add_executable(
+  astar
+	src/AStarMission.cc
+  src/AStar.cc
+  src/main.cpp
+)
+
+target_link_libraries(
+	astar
+  ${catkin_LIBRARIES}
+)
+add_dependencies(
+  astar
+  ${motion_planning_EXPORTED_TARGETS}
+)
+
+
