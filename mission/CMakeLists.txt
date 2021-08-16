@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
   )
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake)
@@ -39,12 +40,17 @@ find_package(PythonLibs 2.7 REQUIRED)
 catkin_python_setup()
 
 #add_action_files(DIRECTORY action FILES Navigation.action)
-#generate_messages(DEPENDENCIES actionlib_msgs)
+add_message_files (
+  FILES
+  RotationalMovement.msg
+  SinTraversalPath.msg
+)
+generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 
 catkin_package(
 #  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
-#	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
+ CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime
 #	DEPENDS system_lib
 )
 
