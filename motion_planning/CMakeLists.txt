@@ -14,7 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
 	actionlib
-
+  message_generation
+  actionlib_msgs
+  mission
+  slam
 )
 
 find_package(Boost REQUIRED COMPONENTS system)
@@ -25,13 +28,23 @@ add_action_files(
 	DIRECTORY action
   FILES
   CreatePath.action
+  CreateTrajectory.action
+)
+
+add_message_files (
+  FILES
+  Trajectory.msg
 )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
-  nav_msgs#   std_msgs
+  nav_msgs
+  std_msgs
 	actionlib_msgs
+  geometry_msgs
+  mission
+  slam
 )
 
 
