@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import rospy
 from std_msgs.msg import Header
-from slam.SLAMPublisher import SLAMPublisher
+from SLAMPublisher import SLAMPublisher
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovariance
 from geometry_msgs.msg import Pose
@@ -13,7 +13,6 @@ from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Vector3
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from slam.msg import Map
-from slam.msg import Obstacle
 
 def slamExampleNode():
     rospy.init_node('slam_example_node', anonymous=True)
@@ -36,22 +35,10 @@ def slamExampleNode():
         state = Odometry(header, '', pose, twist)
 
         # Create Map message
-        #landmarkHeader = Header()
-        #landmarkHeader.stamp = rospy.Time.now()
-        #landmarkHeader.frame_id = 'gate'
-        #map = Map(header, [PoseWithCovarianceStamped(landmarkHeader, pose)])
-
-        obstacle1name = "obastcle1"
-        obstacle1pos = Point(1.0, 1.0, 1.0)
-        obstacle1covariance = [0.24,0.25,0.85,0.95,0.1,0.7,0.2,0.3,0.4]
-        obstacle1 = Obstacle(header, obstacle1name, obstacle1pos, obstacle1covariance)
-
-        obstacle2name = "obastcle2"
-        obstacle2pos = Point(2.0, 12.0, 11.0)
-        obstacle2covariance = [0.24121,0.225,0.4385,0.95,0.1,0.7,0.2,0.3,0.4]
-        obstacle2 = Obstacle(header, obstacle2name, obstacle2pos, obstacle2covariance)
-
-        map = Map(header, [obstacle1, obstacle2])
+        landmarkHeader = Header()
+        landmarkHeader.stamp = rospy.Time.now()
+        landmarkHeader.frame_id = 'gate'
+        map = Map(header, [PoseWithCovarianceStamped(landmarkHeader, pose)])
 
         # Publish messages
         slamPublisher.publishState(state)

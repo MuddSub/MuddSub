@@ -1,2 +1,2 @@
 Header header
-Obstacle[] map
+geometry_msgs/PoseWithCovarianceStamped[] obstacle_poses
