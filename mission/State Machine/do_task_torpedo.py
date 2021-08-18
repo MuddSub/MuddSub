@@ -5,23 +5,23 @@ from std_msgs.msg import Bool, Int32
 
 # very arbitrary constant values
 threshold = .8
-alignTime = 10
 timeoutTime = 30
-neutral_pwm = 1500
-launch_pwm = 1200 # will be changing after testing
+
+# pwm values will be changing after testing
+neutral_pwm = 1675
+launch_pwm = 1225 
 
 class DoTaskTorpedo(smach.State):
   def __init__(self):
     smach.State.__init__(self, outcomes=['active', 'success', 'abort'], input_keys = ['target_hole'])
     self.startTime = time()
     # need to subscribe to some topic that will tell us if we're aligned properly with the torpedo, the way we do that can be changed
-    self.torp_subscriber = rospy.Subscriber('/mechanisms/torpedo_alignment', Bool, self.callback, (userdata), queue_size=1)
-    self.torp_publisher = rospy.Publisher('/mechanisms/torpedo_pwm', Int32, queue_size=10)
+    self.torp_subscriber = rospy.Subscriber('/mechanisms/torpedo/alignment', Bool, self.callback, (userdata), queue_size=1)
+    self.torp_publisher = rospy.Publisher('/mechanisms/torpedo/pwm', Int32, queue_size=10)
     self.aligned = False
-    self.lastAlign = self.startTime
 
   def callback(self, data):
-    self.alignment_confidence = data
+    self.aligned = data
 
   def execute(self, userdata):
     if self.aligned:
@@ -31,7 +31,6 @@ class DoTaskTorpedo(smach.State):
       self.torp_publisher.publish(neutral_pwm)
       if (time() - self.startTime) > timeoutTime:
         return 'abort'
-      elif (time() - self.lastAlign) > alignTime:
-        self.lastAlign = time()
+      else:
         # do the alignment
     return 'active'
