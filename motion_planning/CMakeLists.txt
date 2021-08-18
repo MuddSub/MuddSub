@@ -71,13 +71,25 @@ add_executable(path_server
   src/PathServerNode.cc
 )
 
-
 target_link_libraries(
 	path_server
   ${catkin_LIBRARIES}
 )
 add_dependencies(
   path_server
+  ${motion_planning_EXPORTED_TARGETS}
+)
+
+add_executable(trajectory_server
+  src/TrajectoryServer.cpp
+)
+
+target_link_libraries(
+  trajectory_server
+)
+
+add_dependencies(
+  trajectory_server
   ${motion_planning_EXPORTED_TARGETS}
 )
 
