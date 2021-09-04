@@ -12,10 +12,6 @@ using MuddSub::MotionPlanning::AStarMission;
 
 int main()
 {
-    std::cout<<"hello"<<std::endl;
-    std::unordered_set<int> hello;
-    hello.insert(0);
-
     AStar* pStar = new AStar(1,15,15);
     pStar->solveGrid();
     pStar->solveGridDFS();
@@ -98,21 +94,6 @@ int main()
 
     std::cout<<poseStamped.pose.position.y<<std::endl;
     std::cout<<cos(0)<<std::endl;*/
-
-
-
-    //testing q -> e, and e -> q
-    /*std::vector<double> euler;
-    euler.push_back(0.3);
-    euler.push_back(0.4);
-    euler.push_back(0.5);
-
-    std::vector<double> q = AStarMission::eulerToQuaternion(euler);
-    std::vector<double> e2 = AStarMission::quaternionToEuler(q);
-
-    std::cout<<e2[0]<<e2[1]<<e2[2]<<std::endl;*/
-
-
-
+    
 }
 
