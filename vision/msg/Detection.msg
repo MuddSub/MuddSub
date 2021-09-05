@@ -1,4 +1,5 @@
 Header header
+string name
 float64 range
 float64 theta
 float64 phi

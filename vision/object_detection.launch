@@ -1,0 +1,4 @@
+<launch>
+    <param name="names" textfile="$(find vision)/scripts/class-names.txt" />
+    <node name="vision_subscriber" pkg="vision" type="VisionSubscriber.py" />
+</launch>
