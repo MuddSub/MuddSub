@@ -3,7 +3,7 @@ import numpy as np
 from slam.Utils import wrap_to_pi
 from slam.robot_physics.RobotPhysicsBase import RobotPhysicsBase
 
-class RobotPhysics2D(RobotPhysicsBase):
+class RobotPhysics2DFA(RobotPhysicsBase):
   '''
   Describes the physics for a robot in a 2D environment controlled via velocity and angular velocity commands.
   The robot has a single camera with a max range and a field of view that measures range and bearing to landmarks.
@@ -13,13 +13,13 @@ class RobotPhysics2D(RobotPhysicsBase):
 
   def compute_meas_model(self, pose, landmark_mean):
     '''
-    Compute the measurement for a landmark given robot pose and landmark mean. 
+    Compute the measurement for a landmark given robot pose and landmark mean.
     '''
     x, y, theta = pose
     lx, ly = landmark_mean
 
     range_est = ((lx - x) ** 2 + (ly - y) ** 2) ** 0.5
-    bearing_est = wrap_to_pi(np.arctan2((ly - y), (lx - x)) - theta) #TODO make imported
+    bearing_est = wrap_to_pi(np.arctan2((ly - y), (lx - x)) - theta)
 
     return np.array([range_est, bearing_est])
   
@@ -65,8 +65,8 @@ class RobotPhysics2D(RobotPhysicsBase):
 
     x, y, theta = pose
     next_theta = wrap_to_pi(theta + w * dt)
-    next_x = x + v/w * (-np.sin(theta) + np.sin(next_theta))
-    next_y = y + v/w * ( np.cos(theta) - np.cos(next_theta))
+    next_x = x + v * dt
+    next_y = y * v * dt
     return np.array([next_x, next_y, next_theta])
   
   def is_landmark_in_range(self, pose, landmark_pos, sensor_limits):
