@@ -14,17 +14,40 @@ from slam.robot_physics.RobotPhysics2D import RobotPhysics2D
 
 class RunMRCLAMDataset():
   '''
-  Mr.Clam dataset is a 2D, mutli-robot dataset. More details: http://asrl.utias.utoronto.ca/datasets/mrclam/index.html
-  This is a runner for using Mr.Clam with FastSLAM. It can take in different FastSLAm version and robot physics. 
+  Runs FastSLAM on the MRCLAM Dataset.
+
+  The MRCLAM dataset is a 2D, mutli-robot dataset. More details: http://asrl.utias.utoronto.ca/datasets/mrclam/index.html
+  This is a runner for using MRCLAM with FastSLAM. It can take in different FastSLAM versions and different robot physics.  
   '''
   def __init__(self, **kwargs):
+    '''
+    Initializes the runner.
+
+    Kwargs:
+      hardcode_pose:          If True, the gorundtruth pose will be passed to the algorithm. Defaults to False.
+      hardcode_compass:       If True, the groundtruth orientation (but not position) will be passed to the algorithm. Defaults to False.
+      hardcode_meas:          If True, the groundtruth measurements will be passed to the algorithm. Defaults to False
+      no_measurements:        If True, no measurements will be passed to the algorithm. Defaults to False.
+      init_landmarks:         If True, the groundtruth map will initially be passed to the algorithm. Defaults to False
+      robot_id:               Takes values between 0 and 4 for the 5 robot datasets. Defaults to 0.
+      start_step:             The time step in the dataset to start at. Defaults to 0.
+      num_steps:              The number of time steps of the dataset to run. Defaults to 1000.
+      meas_cov:               The measurement covariance. Defaults to np.diag([0.075, 0.025]).
+      sensor_range:           The range of the robot's sensor. Defaults to 100 which is greater than necessary since the physical sensor was a camera.
+      sensor_fov:             The FOV of the robot's sensor. Defaults to pi.
+      skipped_meas:           If True, any measurement that doesn't fall in the range and FOV is skipped. This can be used to simulate different sensor contraints. Defaults to False.
+      known_correspondences:  If True, the obstacle's identity is provided to the algorithm as part of the measurement.
+      verbose:                If True, messages will be printed by the algorithm. Defaults to False.
+      fast_slam_version:      Takes the value 1 or 2, for FastSLAM1 or FastSLAM2 respectively. Defaults to 2.
+      plot_msg:               The message to go with the plot. Defaults to ''.
+      num_particles:          The number of particles to initialize the algorithm with. Defaults to 1.
+      initial_pose_cov:       The initial pose covariance. Defaults to np.diag([1e-3, 1e-3, 1e-4]).
+    '''
     self.hardcode_pose = kwargs.get('hardcode_pose', False)
     self.hardcode_compass = kwargs.get('hardcode_compass', False)
     self.hardcode_meas = kwargs.get('hardcode_meas', False)
     self.no_measurements = kwargs.get('no_measurements', False)
-    self.plot_avg = kwargs.get('plot_avg', True)
     self.init_landmarks = kwargs.get('init_landmarks', False)
-    self.known_correspondences = kwargs.get('known_correspondences', True)
     self.robot_id = kwargs.get('robot_id', 0)
     self.start_step = kwargs.get('start_step', 0)
     self.num_steps = kwargs.get('num_steps', 1000)
@@ -32,20 +55,26 @@ class RunMRCLAMDataset():
     self.sensor_range = kwargs.get('sensor_range', 100)
     self.sensor_fov = kwargs.get('sensor_fov', np.pi)
     self.skipped_meas = kwargs.get('skipped_meas', False)
+    self.known_correspondences = kwargs.get('known_correspondences', True)
     self.verbose = kwargs.get('verbose', False)
     self.fast_slam_version = kwargs.get('fast_slam_version', 2)
     self.plot_msg = kwargs.get('plot_msg', '')
-
-    self.history = None
-    self.groundtruth_path_data = []
     self.num_particles = kwargs.get('num_particles', 1)
     self.initial_pose_cov = kwargs.get('initial_pose_cov', np.diag([1e-3, 1e-3, 1e-4]))
 
+    self.history = None
+    self.groundtruth_path_data = []
     self.random_generator = np.random.default_rng()
     self.algorithm = None
     self.update = None
 
   def load_data(self, pkl):
+    '''
+    Loads the dataset from a pickle file.
+
+    Args:
+      pkl:  The path to the pickle file.
+    '''
     global algorithm
     self.dataloader = pickle.load(open(pkl, 'rb'))
     self.robot_data = self.dataloader.robots[self.robot_id]
@@ -77,17 +106,21 @@ class RunMRCLAMDataset():
     robot_physics = RobotPhysics2D(random)
     self.algorithm = FastSLAM2(robot_physics, parameters = self.params, random = random)
 
+    # Main loop through the dataset
     theta = 0
     for i in range(self.num_steps):
-      self._log('step',i)
+      # Retrieve data from the dataset
+      self._log('step', i)
       self.update = self.robot_data.get_next()
       t = self.update[1][0]
       self.groundtruth_path_data.append([self.robot_data.get_x_truth(t), self.robot_data.get_y_truth(t)])
+
+      # Perform update based on the type of the data
       if i == 0:
         self.algorithm.prev_t = t
       if self.update[0] == "odometry":
-        #theta_meas = wrapToPi(robotData.getCompass(t))
         self._add_control(t)
+
         # Hard coding compass or pose
         if self.hardcode_pose or self.hardcode_compass:
           for j in range(len(self.algorithm.particles)):
@@ -101,19 +134,33 @@ class RunMRCLAMDataset():
             self.algorithm.particles[j].pose = np.array([x, y, theta])
       else:
         self._add_meas()
-      self.log_data(i)
+      self.log_data()
 
   def plot(self):
+    '''
+    Plots the algorithm's history after its run.
+    '''
     landmarks_groundtruth = []
     for _, landmark in self.dataloader.map.landmark_dict.items():
       landmarks_groundtruth.append(np.array([landmark['X'], landmark['Y']]))
     landmarks_groundtruth = np.array(landmarks_groundtruth)
     print("num landmark: ground truth", len(landmarks_groundtruth), " what we got", len(self.algorithm.particles[0].landmarks))
     plot_df(self.history, self.groundtruth_path_data, landmarks_groundtruth, msg=self.plot_msg)
-  def _log(self,*msg):
+  
+  def _log(self, *msg):
+    '''
+    Logs some messages.
+
+    Args:
+      *msg:   The list of messages to print.
+    '''
     if self.verbose:
-      print('Run MR.CLAM',*msg)
-  def log_data(self, i):
+      print('Run MR.CLAM', *msg)
+  
+  def log_data(self):
+    '''
+    Add the current timestep's information to the history.
+    '''
     snapshot = self.algorithm.get_pose_and_landmarks_for_plot()
     if self.history is None:
       self.history = snapshot
@@ -121,6 +168,9 @@ class RunMRCLAMDataset():
       self.history = pd.concat([self.history, snapshot], ignore_index=True)
 
   def _add_control(self, t):
+    '''
+    Pass the current control to the algorithm.
+    '''
     odometry = self.update[1]
 
     # Use groundtruth to calculate odometry input
@@ -130,12 +180,14 @@ class RunMRCLAMDataset():
     self.algorithm.add_control((velocity, angular_velocity), t)
 
   def _add_meas(self):
+    '''
+    Pass the current measurement to the algorithm.
+    '''
     measurement = self.update[1]
     time, subject, range_meas, bearing_meas = measurement
 
     # Update EKFs
     if not self.no_measurements:
-
       if subject > 5:
         landmark = self.dataloader.map.get_landmark_location(subject)
         landmark_x = landmark['X']
@@ -149,9 +201,14 @@ class RunMRCLAMDataset():
           range_meas = ((robot_x - landmark_x) ** 2 + (robot_y - landmark_y) ** 2) ** 0.5
           bearing_meas = wrap_to_pi(np.arctan2(landmark_y - robot_y, landmark_x - robot_x) - robot_angle)
 
+        # Check to see if the measurement should be skipped if its out of range
         if self.skipped_meas:
           if range_meas > self.sensor_range or abs(bearing_meas) > self.sensor_fov:
             return
+
+        # Remove subject if correspondences are unknown
+        if not self.known_correspondences:
+          subject = None
 
         meas = Meas((range_meas, bearing_meas), self.meas_cov,  np.array([self.sensor_range, self.sensor_fov]), subject)
         self.algorithm.add_measurement(meas)
