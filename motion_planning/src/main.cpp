@@ -94,6 +94,6 @@ int main()
 
     std::cout<<poseStamped.pose.position.y<<std::endl;
     std::cout<<cos(0)<<std::endl;*/
-    
+
 }
 
