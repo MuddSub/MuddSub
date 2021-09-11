@@ -6,8 +6,8 @@ images, save copies of the images with the detections shown, etc.
 import os
 import torch
 import cv2
-#from util import unique, c1c2_iou_mat
-#from datamanager.datamanager import DataManager
+from vision.YOLO.util import unique, c1c2_iou_mat
+from vision.YOLO.datamanager.datamanager import DataManager
 
 
 class Detector(object):

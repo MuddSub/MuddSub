@@ -1,4 +1,6 @@
 <launch>
     <param name="names" textfile="$(find vision)/scripts/class-names.txt" />
+    <arg name="model_path" default="$(find vision)/imports/vision/YOLO/TESTING-yv3m-256.pt" />
+    <param name="model_path" value="$(arg model_path)"/>
     <node name="vision_subscriber" pkg="vision" type="VisionSubscriber.py" />
 </launch>

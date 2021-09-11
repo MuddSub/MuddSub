@@ -11,8 +11,16 @@ import cv2
 from tqdm import tqdm
 from .bbox_util import bb_xywh_to_cs
 from .aug_funcs import AUG_FUNCS
-from .parse_data import mkdir
 
+
+# +++ function to make directories
+def mkdir(*paths):
+    # function to make directories and sub directories
+    path = os.path.join(*paths)
+    path = os.path.realpath(path)
+    if not os.path.isdir(path):
+        os.mkdir(path)
+    return path
 
 # +++ STATIC GLOBAL VARIABLES
 _CUDA_DEVICE = 'cuda:0'

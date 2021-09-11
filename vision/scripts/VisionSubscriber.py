@@ -28,7 +28,7 @@ def callback(image):
     input_img = input_img.permute(2,0,1)
     print(input_img.size())
 
-    det = Detector("~/catkin_ws/src/MuddSub/vision/scripts/TESTING-yv3m-256.pt")
+    det = Detector(model_path)
     transform = transforms.Compose([transforms.Resize((256,256)),
                                 transforms.ToTensor(),
                                 transforms.Normalize(0.5,0.5)])
@@ -67,7 +67,8 @@ if __name__ == '__main__':
     visionPublisher = VisionPublisher("test_camera")
     # with open("~/catkin_ws/src/MuddSub/vision/scripts/class-names.txt") as f:
     #     names = f.read().split("\n")
-    print(names)
+    names = rospy.get_param("names")
+    model_path = rospy.get_param("model_path")
     rospy.Subscriber("/usb_cam/image_raw", Image, callback)
-
+    rospy.search_param
     rospy.spin()
