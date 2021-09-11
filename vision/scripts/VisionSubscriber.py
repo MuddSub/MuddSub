@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from vision.MSCV2.network.util import nms_prediction
 import rospy
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -34,7 +35,7 @@ def callback(image):
                                 transforms.Normalize(0.5,0.5)])
     input_img = transform(input_img)
     input_img = input_img.unsqueeze(0)
-    output, _ = det.get_detections(input_img, conf_thresh=0.99)
+    output, _ = det.get_detections(input_img, conf_thresh=.99, nms_thresh=0)
     
     # name = names[int(output[-1])]
     detections = [names[int(i)] for i in output[:,-1]] 
