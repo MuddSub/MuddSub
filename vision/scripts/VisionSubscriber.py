@@ -13,7 +13,8 @@ from vision.msg import Detection, DetectionArray, BoundingBox2DArray
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Vector3, Pose2D
 
-from vision.YOLO.detector import Detector
+from vision.MSCV2.network.detector import Detector
+from vision.MSCV2.network.model import NetworkModel
 
 bridge = CvBridge()
 
@@ -27,18 +28,20 @@ def callback(image):
     print("input_img.size(): ", input_img.size())
     input_img = input_img.permute(2,0,1)
     print(input_img.size())
-
-    det = Detector(model_path)
+# ______________________________________________________
+    det = Detector(model_path, model_config_path)
     transform = transforms.Compose([transforms.Resize((256,256)),
-                                transforms.ToTensor(),
                                 transforms.Normalize(0.5,0.5)])
-
     input_img = transform(input_img)
-    output = det.get_detections(input_img)
+    input_img = input_img.unsqueeze(0)
+    output, _ = det.get_detections(input_img, conf_thresh=0.99)
     
-    name = names[int(output[-1])]
+    # name = names[int(output[-1])]
+    detections = [names[int(i)] for i in output[:,-1]] 
+    name = detections
     print("name is", name)
-    publish(name)
+    rospy.loginfo(names)
+    publish("-".join(detections))
 
 
 
@@ -68,7 +71,10 @@ if __name__ == '__main__':
     # with open("~/catkin_ws/src/MuddSub/vision/scripts/class-names.txt") as f:
     #     names = f.read().split("\n")
     names = rospy.get_param("names")
+    names = [n.strip() for n in names.split('\n')]
+
     model_path = rospy.get_param("model_path")
+    model_config_path = rospy.get_param("model_config_path")
     rospy.Subscriber("/usb_cam/image_raw", Image, callback)
     rospy.search_param
     rospy.spin()
