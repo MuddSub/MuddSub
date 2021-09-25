@@ -6,7 +6,7 @@ from slam.Utils import wrap_to_pi
 
 class RobotPhysics2DFAForSim(RobotPhysics2DFA):
   '''
-  This is an extension of RobotPhysics2D for the simulator. 
+  This is an extension of RobotPhysics2D for the simulator.
   '''
   def __init__(self, random, position_is_close, verbose=False):
     super().__init__(random)
@@ -21,7 +21,7 @@ class RobotPhysics2DFAForSim(RobotPhysics2DFA):
     '''
     This function computes the control a robot wants to use. 
     If the robot is not close enough to the target in terms of bearing, the robot will 
-    rotate. Otherwise, it will move straight. 
+    rotate. Otherwise, it will move straight.
     '''
     velocity, angular_velocity = velocity
     range_meas, bearing_meas = self.compute_meas_model(robot_pose, target)

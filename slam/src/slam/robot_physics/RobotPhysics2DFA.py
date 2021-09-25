@@ -66,7 +66,7 @@ class RobotPhysics2DFA(RobotPhysicsBase):
     x, y, theta = pose
     next_theta = wrap_to_pi(theta + w * dt)
     next_x = x + v * dt
-    next_y = y * v * dt
+    next_y = y + v * dt
     return np.array([next_x, next_y, next_theta])
   
   def is_landmark_in_range(self, pose, landmark_pos, sensor_limits):
