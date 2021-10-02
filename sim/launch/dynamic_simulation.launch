@@ -19,4 +19,8 @@
   <include file="$(find controls)/launch/control_dispatch.launch"/>
 
   <node name="sim_gazebo_interface" pkg="sim" type="gazebo_interface.py" output="screen"/>
+
+  <!-- launch perfect vision node - still testing -->
+  <node name="sim_vision_perfect" pkg="sim" type="vision_perfect.py" output="screen"/>
+
 </launch>
