@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(slam)
+project(common_msgs)
 
 add_compile_options(-std=c++14)
 
@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  ct_core
+  # ct_core
   rospack
   roslib
   geometry_msgs
