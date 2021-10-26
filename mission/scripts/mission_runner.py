@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import smach
 from std_msgs.msg import Bool, String
 import smach_ros
-import mission_configurator
+import mission.mission_configurator as mission_configurator
 
 class StartSwitchMonitor(smach.State):
     def __init__(self):

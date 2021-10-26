@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import smach
-import mission_generator
+import mission.mission_generator as mission_generator
 import gate
 
 def generate_mission():
