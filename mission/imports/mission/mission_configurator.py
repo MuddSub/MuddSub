@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import smach
 import mission.mission_generator as mission_generator
-import gate
+import mission.gate as gate
 
 def generate_mission():
   MissionRunner = smach.StateMachine(outcomes = ['aborted','succeeded','preempted'])
