@@ -23,20 +23,20 @@ class VisionPublisher:
     def __init__(self, cameraName):
         """Initialize VisionPublisher instance."""
         self._cameraName = cameraName
-        self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
+        # self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
         self._detectionPub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
         self._detectionArrayPub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
 
-    def publishBoundingBoxes(self, boundingBoxes):
-        """
-        Publish a vision/BoundingBox2DArray message.
+    # def publishBoundingBoxes(self, boundingBoxes):
+    #     """
+    #     Publish a vision/BoundingBox2DArray message.
 
-        Uses the bboxesPub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
+    #     Uses the bboxesPub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
 
-        Args:
-            boundingBoxes: The vision/BoundingBox2DArray message.
-        """
-        self._bboxesPub.publish(boundingBoxes)
+    #     Args:
+    #         boundingBoxes: The vision/BoundingBox2DArray message.
+    #     """
+    #     self._bboxesPub.publish(boundingBoxes)
 
     def publishDetection(self, detection):
         """
