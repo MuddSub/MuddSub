@@ -1,3 +1,5 @@
+#include "motion_planning/AStar.hh"
+#include "motion_planning/AStarMission.hh"
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <motion_planning/CreateTrajectoryAction.h>
@@ -15,6 +17,7 @@
 using MuddSub::MotionPlanning::AStar;
 using MuddSub::MotionPlanning::AStarMission;
 // maybe we also need to import slam/obstacles?
+
 class CreateTrajectoryAction
 {
 protected:
@@ -83,29 +86,34 @@ public:
     if(success)
     {
       geometry_msgs::PoseStamped poseStamped1;
-      // ros::Time time();
-      poseStamped.header.stamp = time;
-      poseStamped.pose.position.x = 1.2;
-      poseStamped.pose.position.y = 1.2;
-      poseStamped.pose.position.z = 1.2;
-      poseStamped.pose.orientation.x = 1.2;
-      poseStamped.pose.orientation.y = 1.2;
-      poseStamped.pose.orientation.z = 1.2;
-      poseStamped.pose.orientation.w = 1.2;
+      ros::Time time{};
+      poseStamped1.header.stamp = time;
+      poseStamped1.pose.position.x = 1.2;
+      poseStamped1.pose.position.y = 1.2;
+      poseStamped1.pose.position.z = 1.2;
+      poseStamped1.pose.orientation.x = 1.2;
+      poseStamped1.pose.orientation.y = 1.2;
+      poseStamped1.pose.orientation.z = 1.2;
+      poseStamped1.pose.orientation.w = 1.2;
 
       geometry_msgs::PoseStamped poseStamped2;
-      // ros::Time time(v[6]);
-      poseStamped.header.stamp = time;
-      poseStamped.pose.position.x = 2.3;
-      poseStamped.pose.position.y = 2.3;
-      poseStamped.pose.position.z = 2.3;
+      // ros::Time time{v[6]};
+      poseStamped2.header.stamp = time;
+      poseStamped2.pose.position.x = 2.3;
+      poseStamped2.pose.position.y = 2.3;
+      poseStamped2.pose.position.z = 2.3;
 
-      poseStamped.pose.orientation.x = 2.3;
-      poseStamped.pose.orientation.y = 2.3;
-      poseStamped.pose.orientation.z = 2.3;
-      poseStamped.pose.orientation.w = 2.3;
+      poseStamped2.pose.orientation.x = 2.3;
+      poseStamped2.pose.orientation.y = 2.3;
+      poseStamped2.pose.orientation.z = 2.3;
+      poseStamped2.pose.orientation.w = 2.3;
 
-      geometry_msgs::PoseStamped trajectory [2] = {poseStamped1, poseStamped2};
+      // std::vector<geometry_msgs::PoseStamped> poses;
+      // poses.push_back(poseStamped1);
+      // poses.push_back(poseStamped2);
+      geometry_msgs::PoseStamped poses[2] = {poseStamped1, poseStamped2};
+      motion_planning::Trajectory trajectory;
+      trajectory.trajectory = poses;
       result_.trajectory = trajectory;
 
 
