@@ -13,4 +13,4 @@ def generate_mission():
       gate.GateAction()),\
       transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'},
       remapping=REMAPPING)
-  return MissionRunner 
+  return MissionRunner

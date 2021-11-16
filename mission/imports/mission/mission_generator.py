@@ -60,6 +60,7 @@ def generate_task(task_name,taskAction):
   TaskSpecificPhrase = 'ActOn'+task_name
   REMAPPING = {"userdata":"userdata"}
   with TaskUnderTemplate:
+    print("1")
     smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),
           transitions={'succeeded':AdvancementPhrase,
                        'active':  LocalizationPhrase,
