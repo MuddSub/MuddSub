@@ -109,6 +109,7 @@ namespace MuddSub::MotionPlanning
         poseStamped.pose.orientation.y = q[1];
         poseStamped.pose.orientation.z = q[2];
         poseStamped.pose.orientation.w = q[3];
+	return poseStamped;
 
     }
 
