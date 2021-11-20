@@ -110,6 +110,8 @@ namespace MuddSub::MotionPlanning
         poseStamped.pose.orientation.z = q[2];
         poseStamped.pose.orientation.w = q[3];
 
+	return poseStamped;
+
     }
 
     geometry_msgs::Point AStarMission::getPoint(std::vector<double> v)
