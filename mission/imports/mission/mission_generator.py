@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import smach
 from std_msgs.msg import Bool
-import go_to_target, locate_target
+import mission.go_to_target as go_to_target
+import mission.locate_target as locate_target
 
 class MonitorKillSwitch(smach.State):
     def __init__(self):
@@ -59,6 +60,7 @@ def generate_task(task_name,taskAction):
   TaskSpecificPhrase = 'ActOn'+task_name
   REMAPPING = {"userdata":"userdata"}
   with TaskUnderTemplate:
+    print("1")
     smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),
           transitions={'succeeded':AdvancementPhrase,
                        'active':  LocalizationPhrase,

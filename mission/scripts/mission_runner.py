@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import smach
 from std_msgs.msg import Bool, String
 import smach_ros
-import mission_configurator
+import mission.mission_configurator as mission_configurator
 
 class StartSwitchMonitor(smach.State):
     def __init__(self):
@@ -44,9 +44,9 @@ def main():
 
     with Kernel:
         smach.StateMachine.add('WaitToStart',StartSwitchMonitor(), 
-                transitions={'succeeded':'Running','active':'WaitToStart','aborted':'Reset'})
+                transitions={'succeeded':'Running','active':'WaitToStart','aborted':'WaitToReset'})
         smach.StateMachine.add('Running', MissionRunner, 
-                transitions={'succeeded':'WaitToReset','aborted':'Reset','preempted':'Reset'})
+                transitions={'succeeded':'WaitToReset','aborted':'WaitToReset','preempted':'WaitToReset'})
         smach.StateMachine.add('WaitToReset', ResetMonitor(), 
                 transitions={'succeeded':'WaitToStart','active':'WaitToReset','aborted':'aborted'})
     

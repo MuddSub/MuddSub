@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import smach
@@ -30,7 +30,6 @@ class GenerateTrajectory(smach.State):
 
 # ExecuteTrajectory
 class ExecuteTrajectory(smach.State):
-
     def __init__(self):
         smach.State.__init__(self,
             outcomes=['succeeded', 'failed', 'map_changed'],
@@ -41,9 +40,7 @@ class ExecuteTrajectory(smach.State):
     def execute(self, userdata):
         return 'map_changed'
 
-def main():
-    rospy.init_node('go_to_target')
-
+def GoToTarget(task_name):
     # Create SMACH state machine
     sm = smach.StateMachine(outcomes=['target_reached', 'target_not_found', 'generate_trajectory_failed', 'execute_trajectory_failed'])
 
@@ -72,17 +69,5 @@ def main():
             },
             remapping={}
         )
-
-    # Create and start machine sm finished
-    sis = smach_ros.IntrospectionServer('go_to_target_server', sm, 'SM_ROOT/TASK_LAYER/GO_TO_TARGET')
-    sis.start()
-
-    # Execute the state machine
-    outcome = sm.execute()
-
-    # Wait for ctrl-c to stop the application
-    rospy.spin()
-    sis.stop()
-
-if __name__ == '__main__':
-    main()
+    
+    return sm

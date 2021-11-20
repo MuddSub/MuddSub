@@ -20,6 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   rospack
   roslib
+  geometry_msgs
+  message_generation
 )
 
 find_package(PythonLibs 2.7 REQUIRED)
@@ -30,6 +32,16 @@ find_package(Eigen3 REQUIRED)
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
+
+
+add_message_files(
+  FILES
+  Map.msg
+  Obstacle.msg
+)
+
+generate_messages(DEPENDENCIES std_msgs geometry_msgs)
+
 
 catkin_package(
 	INCLUDE_DIRS include

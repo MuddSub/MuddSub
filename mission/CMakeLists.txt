@@ -7,18 +7,6 @@ add_compile_options(-std=c++14)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
-
-
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  message_generation
-  )
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake)
-
-
 find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   roscpp
@@ -30,27 +18,30 @@ find_package(catkin REQUIRED COMPONENTS
   genmsg
   actionlib_msgs
   actionlib
+  message_generation
+  slam
 )
-
-find_package(PythonLibs 2.7 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
+
 #add_action_files(DIRECTORY action FILES Navigation.action)
-add_message_files (
+
+add_message_files(
   FILES
   RotationalMovement.msg
   SinTraversalPath.msg
 )
+
 generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 
 catkin_package(
 #  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
- CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime
+ CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime slam
 #	DEPENDS system_lib
 )
 
@@ -59,7 +50,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-catkin_install_python(PROGRAMS
-  scripts/GoToTarget.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#catkin_install_python(PROGRAMS
+#  scripts/go_to_target.py
+#  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
+
+

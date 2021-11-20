@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import smach
 from slam.msg import Map, Obstacle
@@ -13,20 +13,24 @@ timeoutTime = 30
 # cannot take longer than .5 seconds 
 # (specifically, a time defined to be the required rxn time to respond to kill switch)
 class LocateTarget(smach.State):
-  def __init__(self):
+  def __init__(self, task_name):
+    print("LocateTarget init")
     smach.State.__init__(self, outcomes=['active', 'success', 'abort'], input_keys = ['target', 'variance_threshold'])
-    self.startTime = time()
+    print("LocateTarget init 2")
+    self.startTime = rospy.get_time()
     self.lastSearch = self.startTime
-    self.slam_subscriber = rospy.Subscriber('/slam/map', Map, self.callback, (userdata))
+    self.slam_subscriber = rospy.Subscriber('/slam/map', Map, self.callback)
+    self.task_name = task_name
     # need to add a publisher that specifies the target and moves into the specific alignment code
     # self.task_publisher = rospy.Publisher('mechanisms/task', ???, queue_size=10)
     # will need to have task name to try to find and whether its found
     self.target_confidence = None
 
-  def callback(self, data, userdata):
+  def callback(self, data):
     for i in range(len(data)):
-      if data[i][1] == userdata.target: # the obstacle at index i's name will be in data[i][1]
+      if data[i][1] == self.task_name: # the obstacle at index i's name will be in data[i][1]
         # getting the variance values from the diagonals of the covariance matrix
+        self.target_confidence = [0] * 3
         self.target_confidence[0] = data[i][3][0]
         self.target_confidence[1] = data[i][3][4]
         self.target_confidence[2] = data[i][3][8]
@@ -35,13 +39,16 @@ class LocateTarget(smach.State):
     return self.target_confidence
   
   def execute(self, userdata):
-    if self.target_confidence is not None and self.target_confidence[0] <= userdata.variance_threshold and self.target_confidence[1] <= userdata.variance_threshold and self.target_confidence[2] <= userdata.variance_threshold:
+    if self.target_confidence is not None and \
+       self.target_confidence[0] <= userdata.variance_threshold and \
+       self.target_confidence[1] <= userdata.variance_threshold and \
+       self.target_confidence[2] <= userdata.variance_threshold:
       return 'success'
     else:
-      if (time() - self.startTime) > timeoutTime:
+      if (rospy.get_time() - self.startTime) > timeoutTime:
         return 'abort'
-      elif (time() - self.lastSearch) > searchTime:
-        self.lastSearch = time()
+      elif (rospy.get_time() - self.lastSearch) > searchTime:
+        self.lastSearch = rospy.get_time()
         # initiate search pattern - should probably just publish a message indicating the target and moving to alignment
         # self.task_publisher.publish(????)
     return 'active'
