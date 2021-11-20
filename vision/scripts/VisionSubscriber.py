@@ -38,22 +38,40 @@ def callback(image):
     output, _ = det.get_detections(input_img, conf_thresh=.99, nms_thresh=0)
     
     # name = names[int(output[-1])]
-    detections = [names[int(i)] for i in output[:,-1]] 
-    name = detections
-    print("name is", name)
+    # get object names
+    list_of_names = [names[int(i)] for i in output[:,-1]] 
+    print("name is", list_of_names)
     rospy.loginfo(names)
-    publish("-".join(detections))
+
+    # get    0          1     2     3     4     5         6           7
+    #       [image num, xmin, ymin, xmax, ymax, box conf, class conf, class num]
+
+    list_of_xy = output[:,1:5]
+    first_object_xmin = list_of_xy[0][0]
+    first_object_ymin = list_of_xy[0][1]
+    first_object_xmax = list_of_xy[0][2]
+    first_object_ymax = list_of_xy[0][3]
+
+    first_object_center = Pose2D((first_object_xmax+first_object_xmin)/2, (first_object_ymax+first_object_ymin)/2, 0)
+    first_object_bounding_box = BoundingBox2D(first_object_center, (first_object_xmax-first_object_xmin)/2, (first_object_ymax-first_object_ymin)/2)
+
+    
+
+    # publish("-".join(list_of_names))
+    # publish(str(len(detections)))
+    # publish("-".join(output))
+    publish(list_of_names[0], first_object_bounding_box)
 
 
-
-def publish(obstacle_name):
+def publish(obstacle_name, bounding_box): 
     obstacle1_header = Header()
     obstacle1_name = obstacle_name
     obstacle1_range = 1.0
     obstacle1_theta = 1.56
     obstacle1_phi = 0.2
     obstacle1_confidence = 0.8 #where 1 is 100%
-    detection1 = Detection(obstacle1_header, obstacle1_name, obstacle1_range, obstacle1_theta, obstacle1_phi, obstacle1_confidence)
+    # bounding_box = BoundingBox2D(Pose2D(21.0, 21.0, 0.11), 51.0, 31.0)
+    detection1 = Detection(obstacle1_header, obstacle1_name, obstacle1_range, obstacle1_theta, obstacle1_phi, obstacle1_confidence, bounding_box)
     visionPublisher.publishDetection(detection1)
 
 def videofeed():
