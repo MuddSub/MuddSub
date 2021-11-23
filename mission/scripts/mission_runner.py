@@ -13,6 +13,7 @@ class StartSwitchMonitor(smach.State):
     def callback(self,data):
         self.to_start = data.data
     def execute(self,data):
+        rospy.loginfo(self.to_start)
         if self.to_start==None:
             return 'active'
         elif self.to_start:

@@ -15,4 +15,4 @@ class GateAction(smach.State):
     pass
 
   def execute(self, ud):
-    pass
+    rospy.loginfo("We are at gate.py")
