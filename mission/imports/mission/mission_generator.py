@@ -4,6 +4,7 @@ import smach
 from std_msgs.msg import Bool
 import mission.go_to_target as go_to_target
 import mission.locate_target as locate_target
+import mission.locate_target_tester as locate_target_tester
 
 class MonitorKillSwitch(smach.State):
     def __init__(self):
@@ -61,7 +62,13 @@ def generate_task(task_name,taskAction):
   REMAPPING = {"userdata":"userdata"}
   with TaskUnderTemplate:
     print("1")
-    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),
+    # smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),
+    #       transitions={'succeeded':AdvancementPhrase,
+    #                    'active':  LocalizationPhrase,
+    #                    'aborted':'aborted',
+    #                    'preempted':'preempted'},
+    #       remapping=REMAPPING)
+    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target_tester.LocateTarget(task_name)),
           transitions={'succeeded':AdvancementPhrase,
                        'active':  LocalizationPhrase,
                        'aborted':'aborted',
