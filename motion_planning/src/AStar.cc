@@ -300,16 +300,26 @@ namespace MuddSub::MotionPlanning
         }
     }
 
-    void AStar::addMotion(AStar::rotationalMotion_ motion, std::string data)
+    void AStar::addMotion(AStar::rotationalMotion_ motion, std::vector<double> pose, std::string data)
     {
-        std::vector<std::string> dataList = AStar::splitData(data);
+        std::vector<std::string> dataList;
+        if(motion != AStar::None)
+        {
+            dataList = AStar::splitData(data);
+        }
         if(motion == AStar::rotationalMotion_::sinTraversalPath)
         {
 
-            addSinTraversal(std::stoi(dataList[0]),std::stoi(dataList[1]),0);
+            addSinTraversal(std::stoi(dataList[0]),std::stoi(dataList[1]));
 
-        }else if(motion == AStar::rotationalMovement)
+        }else if(motion == AStar::rotationalMotion_::rotationalMovement)
         {
+            std::vector<double> initialDegree{pose[3],pose[4], pose[5]};
+            std::vector<double> degreesToRotate{std::stod(dataList[0]),std::stod(dataList[1]), std::stod(dataList[2])};
+            double angularVelocity = std::stod(dataList[3]);
+            double pauseDegree = std::stof(dataList[4]);
+            double pauseTime = std::stof(dataList[5]);
+            addRotation(initialDegree, degreesToRotate, angularVelocity, pauseDegree, pauseTime);
 
         }
 
@@ -339,27 +349,57 @@ namespace MuddSub::MotionPlanning
         return split;
     }
 
-    void AStar::addRotation(std::string data)
+    void AStar::addRotation(std::vector<double> initialDegree, std::vector<double> degreesToRotate, double angularVelocity, double pauseDegree, double pauseTime)
     {
-        return;
+        path_[0][3], path_[0][4], path_[0][5] = initialDegree[0], initialDegree[1], initialDegree[2];
+        double d_incrementx = degreesToRotate[0] / path_.size();
+        double d_incrementy = degreesToRotate[1] / path_.size();
+        double d_incrementz = degreesToRotate[2] / path_.size();
+        double pause = pauseDegree;
+
+
+        for (int i = 1; i < path_.size(); i++){
+
+            path_[i][3] = path_[i-1][3] + d_incrementx;
+            path_[i][4] = path_[i-1][4] + d_incrementy;
+            path_[i][5] = path_[i-1][5] + d_incrementz;
+
+            if (path_[i][3] >= pause){
+                path_[i].push_back(degreesToRotate[0] * angularVelocity + pauseTime);
+            }
+            else{
+                path_[i].push_back(degreesToRotate[0] * angularVelocity);
+            }
+
+        }
+        for(int i = 0; i < path_.size(); i++)
+        {
+            std::cout<<path_[i][0]<<path_[i][1]<<path_[i][2]<<std::endl;
+
+        }
     }
 
-    void AStar::addSinTraversal(int amp, int freq, int period) { 
+        
+    void AStar::addSinTraversal(int amp, int freq) {
+        std::cout<<"CAME HERE"<<std::endl;
         //path_[0][3] path_[0][4], path_[0][5] (what you would change for rotational)
-        int h, x = path_[0][0];
-        int k, y = path_[0][1];
+        //roll pitch yaw (xyz) in radians
+        double h = path_[0][0];
+        double x;
+        double k = path_[0][1];
+        double y = path_[0][1];
 
         std::vector<std::vector<double>> parab_path;
 
         //y-direction: x=msin(fy-h)+k
         if (path_[0][0] - path_[1][0] == 0) {
             std::vector<double> y_path;
-            int f = (1 / (path_[0][1] - path_[1][1]) * M_PI);
-            int interval = abs(path_[0][1] - path_[1][1])/freq;
+            double f = (1 / (path_[0][1] - path_[1][1]) * M_PI);
+            double interval = abs(path_[0][1] - path_[1][1])/freq;
             for (int i = path_[0][1]; i < (path_[path_.size()-1][1])+1; i++){
                 for (int j = 0; j <= freq; j++){
-                    int y = y + interval;
-                    int x = (amp*sin((f*y)-h))+k;
+                    y = y + interval;
+                    x = (amp*sin((f*y)-h))+k;
                     y_path.push_back(x);
                     y_path.push_back(y);
                     y_path.push_back(path_[0][2]);
@@ -369,15 +409,16 @@ namespace MuddSub::MotionPlanning
             }
 
         }
+
         //x-direction: y=msin(fx-h)+k
         if (path_[0][1] - path_[1][1] == 0) {
             std::vector<double> x_path;
-            int f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
-            int interval = abs(path_[0][0] - path_[1][0])/freq;
+            double f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
+            double interval = abs(path_[0][0] - path_[1][0])/freq;
             for (int i = path_[0][0]; i < (path_[path_.size()-1][0])+1; i++){
                 for (int j = 0; j <= freq; j++){
-                    int x = x + interval;
-                    int y = (amp*sin((f*y)-h))+k;
+                    double x = x + interval;
+                    double y = (amp*sin((f*y)-h))+k;
                     x_path.push_back(x);
                     x_path.push_back(y);
                     x_path.push_back(path_[0][2]);
@@ -389,41 +430,53 @@ namespace MuddSub::MotionPlanning
         }
 
         //diagonal-direction:
-        if (path_[0][0] - path_[1][0] == 1) {
+        if (abs(path_[0][0] - path_[1][0]) == 1) {
             std::vector<double> d_path;
 
-            int xlength = pow((path_[path_.size()-1][0] - path_[0][0]),2);
-            int ylength = pow((path_[path_.size()-1][1] - path_[0][1]),2);
-            int distance = sqrt(xlength + ylength);
-            //HOW DO I DO THIS PART???
+            double xlength = pow((path_[path_.size()-1][0] - path_[0][0]),2);
+            double ylength = pow((path_[path_.size()-1][1] - path_[0][1]),2);
+            double distance = sqrt(xlength + ylength);
 
-            int f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
-            int a = (M_PI/4);
-            int interval = abs(path_[0][0] - path_[1][0])/freq;
+            double f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
+            double a = (M_PI/4);
+            double interval = abs(path_[0][0] - path_[1][0])/freq;
             for (int i = path_[0][0]; i < path_.size(); i++){
                 for (int j = 0; j <= freq; j++){
-                    int x = x + interval;
-                    int y = (amp*sin((f*y)-h))+k;
-                    int xcoord = ((x-h)*cos(-a) + (y-k)*sin(-a) + h);
-                    int ycoord = (-(x-h)*sin(-a) + (y-k)*cos(-a) + h);
+                    double x = x + interval;
+                    double y = (amp*sin((f*y)-h))+k;
+                    double xcoord = (((x-h)*cos(-a)) + ((y-k)*sin(-a)) + h);
+                    double ycoord = (-((x-h)*sin(-a)) + ((y-k)*cos(-a)) + h);
                     d_path.push_back(xcoord);
                     d_path.push_back(ycoord);
                     d_path.push_back(path_[0][2]);
+
                     parab_path.push_back(d_path);
                     d_path.clear();
                 }
             }
 
         }
+
+
+        path_ = parab_path;
+        //No rotation
+        for (int i = 0; i < path_.size(); i++)
+        {
+            path_[i].push_back(0);
+            path_[i].push_back(0);
+            path_[i].push_back(0);
+        }
+
+
     }
 
-    void AStar::addTime() 
+
+    void AStar::addTime(int factor) 
     {
-        std::cout<<"Entered Adding time"<<std::endl;
-        /*for (int i = 0; i <= path_.size(); i++){
-            //double time_stamp = i/velocity_;
-            path_[i].push_back(5);
-        }*/
+        for (int i = 0; i <= path_.size(); i++){
+            float time_stamp = factor*i/velocity_;
+            path_[i].push_back(time_stamp);
+        }
     }
 
     void AStar::updatePose(int startx, int starty, int startz)
@@ -514,8 +567,6 @@ namespace MuddSub::MotionPlanning
             grid_[(int) round(obstacle[i][0])][(int) round(obstacle[i][1])][(int) round(obstacle[i][2])].setObstacle(true);
         }
     }
-
-
 
 
     AStar::Node::Node(int x, int y, int z, AStar::Node *end)

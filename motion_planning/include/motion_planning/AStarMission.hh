@@ -33,7 +33,7 @@ namespace MuddSub::MotionPlanning
 
             std::vector<std::vector<double>> path_;
 
-            void addMotion();
+            void addMotion(std::vector<double> pose);
             void convertPath();
             std::vector<std::vector<double>> convertPoints(std::vector<geometry_msgs::Point> points);
 
@@ -58,7 +58,7 @@ namespace MuddSub::MotionPlanning
             void addGoals(std::vector<std::vector<std::string>> goals);
 
             void isSucessful(bool success);
-            void recurse(geometry_msgs::PoseStamped poseStamped);
+            void recurse(geometry_msgs::PoseStamped poseStamped, double time);
             void printPath();
 
 

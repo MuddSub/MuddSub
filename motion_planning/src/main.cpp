@@ -12,7 +12,7 @@ using MuddSub::MotionPlanning::AStarMission;
 
 int main()
 {
-    AStar* pStar = new AStar(1,15,15);
+    /*AStar* pStar = new AStar(1,15,15);
     pStar->solveGrid();
     pStar->solveGridDFS();
     pStar->printGrid();
@@ -28,7 +28,7 @@ int main()
     for(int i = 0; i < path.size(); i++)
     {
         std::cout<<path[i][0]<<' '<<path[i][1]<<' '<<path[i][2]<<std::endl;
-    }
+    }*/
     
     //Testing Mission Interface 
     int map1[1][3][3] = {{{0,1,1},{0,0,0},{0,0,0}}};
@@ -41,8 +41,8 @@ int main()
     
     AStarMission* mission = new AStarMission(goals, 5, 1, 10,10);
 
-    std::vector<double> obstacle1 = {0, 5, 5};
-    std::vector<double> obstacle2 = {0, 1, 1};
+    std::vector<double> obstacle1 = {0, 5, 5, 0.1, 0.1, 0};
+    std::vector<double> obstacle2 = {0, 1, 1, 0, 0, 0};
 
     geometry_msgs::Point p1 = AStarMission::getPoint(obstacle1);
     geometry_msgs::Point p2 = AStarMission::getPoint(obstacle2);
@@ -58,7 +58,7 @@ int main()
     std::vector<double> currentPose = {0, 0, 0, 0, 0, 0, 0};
     geometry_msgs::PoseStamped currentPoseStamped = AStarMission::getPoseStamped(currentPose);
 
-    mission->recurse(currentPoseStamped);
+    mission->recurse(currentPoseStamped, 0);
     mission->printPath();
 
     std::vector<double> obstacle3 = {0,0,2};
@@ -66,13 +66,13 @@ int main()
     obstacles.push_back(p3);
 
     mission->obstacles_ = obstacles;
-    mission->recurse(currentPoseStamped);
+    mission->recurse(currentPoseStamped, 2);
     mission->printPath();
 
     mission->isSucessful(true);
     currentPose[2] = 3;
 
-    mission->recurse(currentPoseStamped);
+    mission->recurse(currentPoseStamped, 3);
     mission->printPath();
 
 
