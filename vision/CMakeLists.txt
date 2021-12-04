@@ -59,7 +59,8 @@ add_message_files(
   FILES
   DetectionArray.msg
   Detection.msg
-  BoundingBox2DArray.msg
+  BoundingBoxArray.msg
+  BoundingBox.msg
 )
 
 ## Generate services in the 'srv' folder

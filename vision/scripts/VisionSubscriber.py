@@ -10,7 +10,7 @@ import numpy as np
 
 from std_msgs.msg import Header, String
 from vision.VisionPublisher import VisionPublisher
-from vision.msg import Detection, DetectionArray, BoundingBox2DArray
+from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Vector3, Pose2D
 
@@ -37,33 +37,59 @@ def callback(image):
     input_img = input_img.unsqueeze(0)
     output, _ = det.get_detections(input_img, conf_thresh=.99, nms_thresh=0)
     
-    # name = names[int(output[-1])]
-    # get object names
-    list_of_names = [names[int(i)] for i in output[:,-1]] 
-    print("name is", list_of_names)
-    rospy.loginfo(names)
+    # # name = names[int(output[-1])]
+    # # get object names
+    # list_of_names = [names[int(i)] for i in output[:,-1]] 
+    # print("name is", list_of_names)
+    # rospy.loginfo(names)
 
     # get    0          1     2     3     4     5         6           7
     #       [image num, xmin, ymin, xmax, ymax, box conf, class conf, class num]
 
-    list_of_xy = output[:,1:5]
-    first_object_xmin = list_of_xy[0][0]
-    first_object_ymin = list_of_xy[0][1]
-    first_object_xmax = list_of_xy[0][2]
-    first_object_ymax = list_of_xy[0][3]
+    # bounding_box_list = []
 
-    first_object_center = Pose2D((first_object_xmax+first_object_xmin)/2, (first_object_ymax+first_object_ymin)/2, 0)
-    first_object_bounding_box = BoundingBox2D(first_object_center, (first_object_xmax-first_object_xmin)/2, (first_object_ymax-first_object_ymin)/2)
+    # for i in range(len(output)):
+    #     xy = output[i,1:5]
+    #     object_xmin = xy[i][0]
+    #     object_ymin = xy[i][1]
+    #     object_xmax = xy[i][2]
+    #     object_ymax = xy[i][3]
+
+    #     object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0)
+    #     bounding_box_list += [BoundingBox2D(object_center, (object_xmax-object_xmin)/2, (object_ymax-object_ymin)/2)]
 
     
 
-    # publish("-".join(list_of_names))
-    # publish(str(len(detections)))
-    # publish("-".join(output))
-    publish(list_of_names[0], first_object_bounding_box)
+    # # publish("-".join(list_of_names))
+    # # publish(str(len(detections)))
+    # # publish("-".join(output))
+    # for i in range(len(bounding_box_list)):
+    #     publish(list_of_names[i], bounding_box_list[i])
+
+    boundingBoxPublish(output)
+
+def boundingBoxPublish(detection_output_list):
+    list_of_bounding_boxes = []
+    for i in range(len(detection_output_list)):
+        name = names[int(detection_output_list[i:7])]
+        xy = detection_output_list[i,1:5]
+        object_xmin = xy[i][0]
+        object_ymin = xy[i][1]
+        object_xmax = xy[i][2]
+        object_ymax = xy[i][3]
+        object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0)
+        bbox = BoundingBox2D(object_center, (object_xmax-object_xmin)/2, (object_ymax-object_ymin)/2)
+        confidence = detection_output_list[i:6]
+        bounding_box = BoundingBox(name, confidence, bbox)
+        list_of_bounding_boxes.append(bounding_box)
+    for bounding_box in list_of_bounding_boxes:
+        visionPublisher.publishBoundingBox(bounding_box)
+    bounding_box_array = BoundingBoxArray(list_of_bounding_boxes)
+    visionPublisher.publishBoundingBoxArray(bounding_box_array)
 
 
-def publish(obstacle_name, bounding_box): 
+#currently unused
+def detectionPublish(obstacle_name, bounding_box): 
     obstacle1_header = Header()
     obstacle1_name = obstacle_name
     obstacle1_range = 1.0
