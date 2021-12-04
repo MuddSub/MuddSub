@@ -80,11 +80,11 @@ def boundingBoxPublish(detection_output_list):
         object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0)
         bbox = BoundingBox2D(object_center, (object_xmax-object_xmin)/2, (object_ymax-object_ymin)/2)
         confidence = detection_output_list[i:6]
-        bounding_box = BoundingBox(name, confidence, bbox)
+        bounding_box = BoundingBox(Header(), name, confidence, bbox)
         list_of_bounding_boxes.append(bounding_box)
     for bounding_box in list_of_bounding_boxes:
         visionPublisher.publishBoundingBox(bounding_box)
-    bounding_box_array = BoundingBoxArray(list_of_bounding_boxes)
+    bounding_box_array = BoundingBoxArray(Header(), list_of_bounding_boxes)
     visionPublisher.publishBoundingBoxArray(bounding_box_array)
 
 

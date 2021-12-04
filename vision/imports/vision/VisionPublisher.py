@@ -25,9 +25,9 @@ class VisionPublisher:
         self._cameraName = cameraName
         # self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
         self._detectionPub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
-        self._detectionArrayPub = rospy.Publisher('vision/' + cameraName + 'detection_array', DetectionArray, queue_size=10)
-        self._boundingBoxPub = rospy.Publisher('vision/' + cameraName + 'bounding_box', BoundingBox, queue_size=10)
-        self._boundingBoxArrayPub = rospy.Publisher('vision/' + cameraName + 'bounding_box_array', BoundingBoxArray, queue_size=10)
+        self._detectionArrayPub = rospy.Publisher('vision/' + cameraName + '/detection_array', DetectionArray, queue_size=10)
+        self._boundingBoxPub = rospy.Publisher('vision/' + cameraName + '/bounding_box', BoundingBox, queue_size=10)
+        self._boundingBoxArrayPub = rospy.Publisher('vision/' + cameraName + '/bounding_box_array', BoundingBoxArray, queue_size=10)
 
     # def publishBoundingBoxes(self, boundingBoxes):
     #     """

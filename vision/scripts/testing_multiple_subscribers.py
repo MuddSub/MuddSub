@@ -28,6 +28,5 @@ if __name__ == '__main__':
 
     rospy.Subscriber('/orientation', Int16 , server.orientation_callback)
     rospy.Subscriber('/velocity', Int16, server.velocity_callback)
-    while True:
-        server.print_data()
+
     rospy.spin()
