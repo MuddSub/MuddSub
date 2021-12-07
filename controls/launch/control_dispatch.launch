@@ -1,0 +1,7 @@
+<launch>
+
+  <rosparam command="load" file="$(find controls)/cfg/pid_tuning.yaml" />
+
+  <include file="$(find core)/launch/alfie_config.launch" />
+  <node name="control_dispatch" pkg="controls" type="control_dispatch" output="screen" />
+</launch>

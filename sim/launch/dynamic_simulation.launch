@@ -1,0 +1,22 @@
+<launch>
+  <param name="slam_use_ground_truth" value="true" />
+
+  <include file="$(find sim)/scenes/launch/transdec.launch">
+    <arg name="paused"       value="true" />
+  </include>
+
+  <include file="$(find core)/descriptions/alfie_description/launch/alfie_upload.launch">
+    <arg name="x"            value="20" />
+    <arg name="y"            value="-20" />
+    <arg name="roll"         value="3.14159265359" />
+    <arg name="yaw"          value="1.57079632679" />
+  </include>
+
+  <include file="$(find core)/descriptions/alfie_control/launch/start_thruster_manager.launch">
+    <arg name="reset_tam"    value="true" />
+  </include>
+
+  <include file="$(find controls)/launch/control_dispatch.launch"/>
+
+  <node name="sim_gazebo_interface" pkg="sim" type="gazebo_interface.py" output="screen"/>
+</launch>

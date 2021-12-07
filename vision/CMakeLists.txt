@@ -12,6 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
+  geometry_msgs
+  sensor_msgs
+  vision_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -48,11 +52,12 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  DetectionArray.msg
+  Detection.msg
+  BoundingBox2DArray.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -69,10 +74,22 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   nav_msgs#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  nav_msgs
+  std_msgs
+  geometry_msgs
+  sensor_msgs
+  vision_msgs
+
+)
+catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+add_executable(VisionExampleNode src/VisionExampleNode.cc src/VisionPublisher.cc)
+target_link_libraries(VisionExampleNode ${catkin_LIBRARIES})
+add_dependencies(VisionExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -80,7 +97,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## To declare and build dynamic reconfigure parameters within this
 ## package, follow these steps:
-## * In the file package.xml:
+## * In the package.xml:
 ##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
 ## * In this file (CMakeLists.txt):
 ##   * add "dynamic_reconfigure" to
@@ -106,7 +123,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES vision
-#  CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
+  CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime geometry_msgs sensor_msgs vision_msgs
 #  DEPENDS system_lib
 )
 
@@ -117,7 +134,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 

@@ -5,7 +5,8 @@ namespace MuddSub::Controls
 {
 
 //Compute the error
-DecoupledLQR::stateVector_t DecoupledLQR::computeError(const stateVector_t& state) const
+stateVector_t DecoupledLQR::computeError(const stateVector_t& state,
+                                         const stateVector_t& setpoint) const
 {
 
 
@@ -19,23 +20,26 @@ DecoupledLQR::stateVector_t DecoupledLQR::computeError(const stateVector_t& stat
   Eigen::Matrix<double, 1, 6> velocity;
   velocity = state.segment<6>(6) - setpoint_.segment<6>(6);
 
-  // For angular position
-  auto err = [](const double& stateElement, const double& setpointElement)
+  // For angular position (verbose for clarity...)
+  auto angleErr = [](const double& stateElement, const double& setpointElement)
   {
-    // Make both from 0-360
     double stateNorm = fmod(stateElement, 2*M_PI);
-    if(stateNorm < 0)
-      stateNorm += 360;
+    if(stateNorm < 0) stateNorm += 2*M_PI;
 
     double setpointNorm = fmod(setpointElement, 2*M_PI);
-    if(setpointNorm < 0)
-      setpointNorm += 360;
+    if(setpointNorm < 0) setpointNorm += 2*M_PI;
 
-    return stateNorm - setpointNorm;
+    double result = fmod(stateNorm - setpointNorm, 2*M_PI);
+    if(result > M_PI)
+      result -= 2*M_PI;
+    else if(result < -M_PI)
+      result += 2*M_PI;
+
+    return result;
   };
 
-  for(auto i = 0; i < 3; ++i)
-    attitude[i] = err(state[i+3], setpoint_[i+3]);
+  for(int i = 0; i < 3; ++i)
+    attitude[i] = angleErr(state[i+3], setpoint[i+3]);
 
   // pack 'em up and send 'em off
   Eigen::Matrix<double, 1, stateDim> result;
@@ -48,6 +52,10 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
                                   const double& t,
                                   controlVector_t& controlAction)
 {
+  // Update the PID controllers
+  double deltaT = t - previousTime_;
+  previousTime_ = t;
+
   ct::core::SystemLinearizer<stateDim,controlDim, double> linearizer(vehicleDynamics_);
 
   // Our system linearization doesn't depend on u, so we can just make it zeros
@@ -56,7 +64,8 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
   Eigen::Matrix<double, stateDim, stateDim> A = linearizer.getDerivativeState(state,u,t);
   Eigen::Matrix<double, stateDim, controlDim> B = linearizer.getDerivativeControl(state,u,t);
 
-  auto err = computeError(state);
+  auto err = computeError(state, setpoint_);
+  std::cout << "Error: " << err.format(eigenInLine) << std::endl;
 
   // Now that we've linearized about the entire state (which needs roll/pitch info)
   //     we actually only keep x,y,z,yaw and those velocities
@@ -67,27 +76,20 @@ void DecoupledLQR::computeControl(const stateVector_t& state,
   Eigen::Matrix<double, stateDimLQR, 1> error8DoF;
   error8DoF << err.segment<3>(0), err[5], err.segment<3>(6), err[11];
 
+  // TODO: This is a very expensive way to do it... shouldn't poll on every iteration
+  double kQ, kR;
+  if(nh_.getParam("/controls/kQ", kQ)) lqr8DoF_.setQUniformDiag(kQ);
+  if(nh_.getParam("/controls/kR", kR)) lqr8DoF_.setQUniformDiag(kR);
+
   const auto& controlActionLQR = lqr8DoF_.computeControl(partitionedA, partitionedB, error8DoF);
 
-  // Update the PID controllers
-  double deltaT = t - previousTime_;
-  previousTime_ = t;
-
-  double controlActionRoll = rollPid_.update(err[3], t);
-  double controlActionPitch = pitchPid_.update(err[4], t);
+  double controlActionRoll = rollPid_.update(err[3], deltaT);
+  double controlActionPitch = pitchPid_.update(err[4], deltaT);
 
   controlAction << controlActionLQR.segment<3>(0), controlActionRoll,
                    controlActionPitch, controlActionLQR[3];
 
-  const auto& G = vehicleDynamics_->getGravityMatrix();
-
-  controlAction += G;
-}
-
-
-DecoupledLQR* DecoupledLQR::clone() const
-{
-  return new DecoupledLQR(*this);
+  std::cout << "Control Action Computed " << controlAction.format(eigenInLine) << std::endl;
 }
 
 // Throw out roll and pitch

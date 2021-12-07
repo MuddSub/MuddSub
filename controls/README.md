@@ -5,7 +5,7 @@ The controls package implements vehicle dynamics and the control systems for our
 
 Maintainer: [Seth Isaacson](sisaacson@hmc.edu).
 
-Status: Tested and Maintained. This is a student project which is still in progress, so there may be some issues. Please tell me if you find anything wrong!
+Status: Mostly working, but not well tested! This is a student project which is still in progress, so there may be some issues. The good news is we're all happy to help you fix them, as that will make it better for everyone!
 
 ## Vehicle Dynamics
 
@@ -49,13 +49,22 @@ incorporate more sensors, but it's a good start for modeling vehicle dynamics an
 You'll need UWSim to run the simulator. This is only tested on ROS melodic. Unfortunately UWSim is quite hard to install from source, and the only package manager
 I've found which installs it correctly is `apt`. So, if you're not on Ubuntu (or maybe some other Debian-esque linux), you may have a hard time. 
 
-Start the visual simulator and vehicle dynamics:
-
+Start the visual simulator:
 ```
-roslaunch sim DynamicSimulation.launch
+cd ~/catkin_ws/src/MuddSub/
+roscore
+rosrun uwsim uwsim 
 ```
 
-Then, you can set the setpoint by publishing to the `/robot_setpoint` topic. Note this to be a 12-vector using euler angles for attitude. Intrinsic to euler angle representations is [gimbal lock](https://en.wikipedia.org/wiki/Gimbal_lock#:~:text=Gimbal%20lock%20is%20the%20loss,misleading%3A%20no%20gimbal%20is%20restrained).
+Launch vehicle dynamics (in another terminal):
+```
+roslaunch controls DynamicSimulation.launch
+```
+
+Then, you can set the setpoint by publishing to the `/robot_setpoint` topic.
+
+Currently, this is not a very streamlined experience, and you're unfortunately likely to run into bugs getting the simulator running. UWSim is great, but very picky,
+and this has only been tested on two machines. Please do not hesitate to email Seth with any questions, and I'm happy to help you debug! 
 
 ## Known Limitations
 - Currently, the tuning abilility of the control systems is very limited, as it must be hardcoded. This will be a good project for a new member in the fall.

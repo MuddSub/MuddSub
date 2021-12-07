@@ -16,3 +16,32 @@
 [submodule "thirdparty/cpptqdm"]
 	path = thirdparty/cpptqdm
 	url = https://github.com/aminnj/cpptqdm
+[submodule "thirdparty/uuv_simulator"]
+	path = thirdparty/uuv_simulator
+	url = https://github.com/muddsub/uuv_simulator
+[submodule "thirdparty/zed-ros-wrapper"]
+	path = thirdparty/zed-ros-wrapper
+	url = https://github.com/stereolabs/zed-ros-wrapper.git
+[submodule "thirdparty/zed-ros-examples"]
+	path = thirdparty/zed-ros-examples
+	url = https://github.com/stereolabs/zed-ros-examples
+[submodule "thirdparty/uuv_simulator/"]
+	branch = master
+[submodule "thirdparty/BlueRobotics_MS5837_Library"]
+	path = thirdparty/BlueRobotics_MS5837_Library
+	url = https://github.com/MuddSub/BlueRobotics_MS5837_Library
+[submodule "thirdparty/imu_vn_100"]
+	path = thirdparty/imu_vn_100
+	url = https://github.com/muddsub/imu_vn_100
+[submodule "drivers/scripts/ms5837-python"]
+	path = drivers/scripts/ms5837-python
+	url = https://github.com/MuddSub/ms5837-python
+[submodule "thirdparty/dvl-python"]
+	path = thirdparty/dvl-python
+	url = https://github.com/MuddSub/dvl-python
+[submodule "drivers/scripts/Adafruit_Python_PCA9685"]
+	path = drivers/scripts/Adafruit_Python_PCA9685
+	url = https://github.com/MuddSub/Adafruit_Python_PCA9685
+[submodule "drivers/scripts/Adafruit_Python_GPIO"]
+	path = drivers/scripts/Adafruit_Python_GPIO
+	url = https://github.com/MuddSub/Adafruit_Python_GPIO

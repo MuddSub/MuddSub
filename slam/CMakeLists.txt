@@ -7,51 +7,63 @@ add_compile_options(-std=c++14)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
-
-
- #find_package(Eigen3 REQUIRED)
+#find_package(Eigen3 REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/builds/cmake)
-
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  rospack
-  roslib
+  nav_msgs
   geometry_msgs
   message_generation
+  rospack
+  roslib
 )
 
 find_package(PythonLibs 2.7 REQUIRED)
-
 find_package(Eigen3 REQUIRED)
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-catkin_python_setup()
-
 
 add_message_files(
   FILES
   Map.msg
-  Obstacle.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
-
-
-catkin_package(
-	INCLUDE_DIRS include
-	CATKIN_DEPENDS roscpp rospy std_msgs
-	DEPENDS system_lib
+generate_messages(
+  DEPENDENCIES
+  geometry_msgs
+  std_msgs
 )
 
-message(${PROJECT_SOURCE_DIR}/../thirdparty)
+# message(${PROJECT_SOURCE_DIR}/../thirdparty)
+
 include_directories(
   include
   ${PROJECT_SOURCE_DIR}/../thirdparty
   ${catkin_INCLUDE_DIRS}
 )
+
+catkin_package(
+	INCLUDE_DIRS include
+	CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs
+	DEPENDS
+)
+
+add_executable(slam_example_node
+	src/SLAMExampleNode.cc
+  src/SLAMPublisher.cc
+)
+add_dependencies(slam_example_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(slam_example_node ${catkin_LIBRARIES})
+
+
+#############
+## Testing ##
+#############
+
+## Add gtest based cpp test target and link libraries
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_slam.cpp)
+# if(TARGET ${PROJECT_NAME}-test)
+#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+# endif()

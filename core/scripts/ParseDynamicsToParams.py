@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+
+import sys
+print("HERE", sys.version)
 import rospy
 import xml.etree.ElementTree as ET
 
+## Loads parameters from description into the ROS parameter server
 class Properties:
     def __init__(self):
         self.cg = None
@@ -29,7 +33,6 @@ class Properties:
         print("===EndProperties===")
 
     def setParams(self):
-        rospy.set_param("robot_name", self.robotName)
         paramRoot = "dynamics/"+self.robotName+"/"
         rospy.set_param(paramRoot + "center_of_gravity", self.cg)
         rospy.set_param(paramRoot + "center_of_buoyancy", self.cb)
@@ -53,30 +56,72 @@ if __name__ == '__main__':
 
     properties.robotName = urdfRoot.attrib['name']
 
+    print("Base Link: ", rospy.get_param("~base_link"))
+
+    baseLink = rospy.get_param("robot_name") + "/" + rospy.get_param("~base_link")
+
     for link in urdfRoot.findall("link"):
-        if link.attrib["name"] == rospy.get_param("~base_link"):
+        if link.attrib["name"] == baseLink:
             inertial = link.find("inertial")
             properties.mass = float(inertial.find("mass").attrib['value'])
+
+
             properties.cg = {}
-            for i in "xyz":
-                properties.cg[i] = float(inertial.find("origin").attrib[i])
+            cb = inertial.find("origin").attrib["xyz"].split()
+            for i in range(3):
+                s = "xyz"[i]
+                properties.cg[s] = cb[i]
 
             properties.inertia = {}
             for i in ["ixx", "ixy", "ixz", "iyy", "iyz", "izz"]:
                 properties.inertia[i] = float(inertial.find("inertia").attrib[i])
 
-            d =  link.find("underwater_dynamics")
-            properties.buoyancy = float(d.find("buoyancy").attrib['value'])
-            properties.cb = {}
-            for i in "xyz":
-                properties.cb[i] = float(d.find("center_of_buoyancy").attrib[i])
+    for gazebo in urdfRoot.findall("gazebo"):
+        for plugin in gazebo.findall("plugin"):
+            if plugin.attrib["name"] == "uuv_plugin":
+                density = float(plugin.find("fluid_density").text)
 
-            properties.linearDamping = {}
-            properties.addedMass = {}
-            for i in "xyzkmn":
-                properties.linearDamping[i] = float(d.find("linear_damping_coeffs").attrib[i])
-                properties.addedMass[i] = float(d.find("added_mass").attrib[i])
-            properties.rate = float(d.find("rate").attrib["value"])
+                for link in plugin.findall("link"):
+                    if link.attrib["name"] == baseLink:
+                        volume = float(link.find("volume").text)
+                        gravity = .98
+                        properties.buoyancy = volume * density * gravity
+
+                        properties.cb = {}
+                        cb = link.find("center_of_buoyancy").text.split()
+                        for i in range(3):
+                            s = "xyz"[i]
+                            properties.cb[s] = float(cb[i])
+
+                        hydrodynamics = link.find("hydrodynamic_model")
+
+                        linearDamping = hydrodynamics.find("linear_damping").text.split()
+                        properties.linearDamping = {}
+                        for i in range(6):
+                            s = "xyzkmn"[i]
+                            properties.linearDamping[s] = float(linearDamping[i])
+
+                        properties.addedMass = {}
+                        addedMass = hydrodynamics.find("added_mass").text.split()
+                        if len(addedMass) == 6:
+                            indices = list(range(6))
+                        else:
+                            indices = [i*6 + i for i in range(6)]
+
+                        for i in range(6):
+                            index = indices[i]
+                            s = "xyzkmn"[i]
+                            properties.addedMass[s] = addedMass[index]
+                        break
+
+
+
+
+    properties.rate = 20
+    # for i in "xyzkmn":
+    #     properties.linearDamping[i] = float(d.find("linear_damping_coeffs").attrib[i])
+    #     properties.addedMass[i] = float(d.find("added_mass").attrib[i])
+    # properties.rate = float(d.find("rate").attrib["value"])
 
     properties.dump()
     properties.setParams()

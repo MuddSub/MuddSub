@@ -1,8 +1,7 @@
 <launch>
+  <param name="robot_name" value="alfie" />
   <param name="robot_description"
-    command="xacro '$(find core)/descriptions/alfie.urdf.xacro'" />
-
-  <param name="robot_properties" textfile="$(find core)/descriptions/alfie.urdf"/>
+    command="rosrun xacro xacro $(find core)/descriptions/alfie_description/robots/default.xacro" />
 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
 

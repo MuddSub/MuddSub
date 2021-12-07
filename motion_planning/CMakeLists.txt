@@ -66,6 +66,13 @@ include_directories(include
   ${catkin_INCLUDE_DIRS}
 )
 
+add_executable(MotionPlanningExampleNode
+	src/MotionPlanningExampleNode.cc
+  src/MotionPlanningPublisher.cc
+)
+add_dependencies(MotionPlanningExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(MotionPlanningExampleNode ${catkin_LIBRARIES})
+
 add_executable(path_server
 	src/PathServer.cc
   src/PathServerNode.cc

@@ -7,11 +7,13 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
+#include "controls/Types.hh"
+
 namespace MuddSub::Controls
 {
 
 /** @brief transforms 12-vector state to nav_msgs/Odometry message
- 
+
 A simple header-only class to take a 12-vector state and publish
 it as a nav_msgs/Odometry message.
 */

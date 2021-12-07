@@ -17,7 +17,6 @@ OdomTfBroadcaster::OdomTfBroadcaster(ros::NodeHandle nh,
 
 void OdomTfBroadcaster::odomCallback(const nav_msgs::Odometry& msg)
 {
-  ROS_INFO("Callback");
   tf::Transform transform;
   geometry_msgs::Point p = msg.pose.pose.position;
   geometry_msgs::Quaternion q = msg.pose.pose.orientation;
