@@ -5,6 +5,7 @@ from std_msgs.msg import Bool
 import mission.go_to_target as go_to_target
 import mission.locate_target as locate_target
 import mission.locate_target_tester as locate_target_tester
+import mission.go_to_target_tester as go_to_target_tester
 
 class MonitorKillSwitch(smach.State):
     def __init__(self):
@@ -74,7 +75,7 @@ def generate_task(task_name,taskAction):
                        'aborted':'aborted',
                        'preempted':'preempted'},
           remapping=REMAPPING)
-    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target.GoToTarget(task_name)),
+    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name)),
           transitions={'succeeded':TaskSpecificPhrase,
                        'active':AdvancementPhrase,
                        'aborted': 'aborted',
