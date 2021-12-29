@@ -8,7 +8,7 @@ from drivers.msg import DVL
 if __name__ == '__main__':
 	rospy.init_node('dvl_jetson', anonymous=True)
 	try:
-		ser = serial.Serial('/dev/ttyUSB0', timeout=0.1, baudrate=115200)
+		ser = serial.Serial('/dev/ttyUSB1', timeout=0.1, baudrate=115200)
 	except:
 		rospy.logerr("Couldn't open serial")
 		exit()
