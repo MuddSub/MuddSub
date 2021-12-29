@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
 import rospy
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String, Header
@@ -21,7 +22,8 @@ def getMessage():
     # This represents a pose in free space with uncertainty.
 
     # Create the PoseWithCovariance
-    position = Point(0.0, 0.0, 0.0) #x, y, z
+    x = rospy.get_param("/spoof/state/pose/x", 0.0)
+    position = Point(x, 0.0, 0.0) #x, y, z
     orientation = Quaternion(0.0, 0.0, 0.0, 1.0) #x, y, z, w
     pose = Pose(position, orientation)
     cov = np.diag([1] * 6).reshape(-1).tolist()
