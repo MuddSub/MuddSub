@@ -61,6 +61,7 @@ def generate_task(task_name,taskAction):
   AdvancementPhrase = 'GoTo'+task_name
   TaskSpecificPhrase = 'ActOn'+task_name
   REMAPPING = {"userdata":"userdata"}
+  TaskUnderTemplate.userdata.isWaiting = False
   with TaskUnderTemplate:
     print("1")
     # smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),
@@ -74,7 +75,10 @@ def generate_task(task_name,taskAction):
                        'active':  LocalizationPhrase,
                        'aborted':'aborted',
                        'preempted':'preempted'},
-          remapping=REMAPPING)
+        #   remapping={'locate_target_input': 'isWaiting',
+        #              'locate_target_output': 'isWaiting'}
+          remapping = {'isWaiting_in':'isWaiting',
+                        'isWaiting_out':'isWaiting'})
     smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name)),
           transitions={'succeeded':TaskSpecificPhrase,
                        'active':AdvancementPhrase,
