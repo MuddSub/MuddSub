@@ -65,21 +65,25 @@ def callback(image):
     # # publish("-".join(output))
     # for i in range(len(bounding_box_list)):
     #     publish(list_of_names[i], bounding_box_list[i])
-
-    boundingBoxPublish(output)
+    #[image num, xmin, ymin, xmax, ymax, box conf, class conf, class num]
+    sample_output = [[1, 15, 51, 14, 41, 0.6, 0.9, 3] ,     # 3 = Bins (2018)
+                     [2, 10, 20, 30, 40, 0,   0,   11],     # 11 = Gate (2018)
+                     [3, 5,  6,  35, 55, 0.7, 0.9, 17]]     # 17 = Torpedo - Board (2019)
+    sample_output = torch.FloatTensor(sample_output)
+    boundingBoxPublish(sample_output)
 
 def boundingBoxPublish(detection_output_list):
     list_of_bounding_boxes = []
     for i in range(len(detection_output_list)):
-        name = names[int(detection_output_list[i:7])]
+        name = names[int(detection_output_list[i, 7])]
         xy = detection_output_list[i,1:5]
-        object_xmin = xy[i][0]
-        object_ymin = xy[i][1]
-        object_xmax = xy[i][2]
-        object_ymax = xy[i][3]
-        object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0)
+        object_xmin = xy[0]
+        object_ymin = xy[1]
+        object_xmax = xy[2]
+        object_ymax = xy[3]
+        object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0) #theta assumed be zero
         bbox = BoundingBox2D(object_center, (object_xmax-object_xmin)/2, (object_ymax-object_ymin)/2)
-        confidence = detection_output_list[i:6]
+        confidence = detection_output_list[i, 6]
         bounding_box = BoundingBox(Header(), name, confidence, bbox)
         list_of_bounding_boxes.append(bounding_box)
     for bounding_box in list_of_bounding_boxes:
