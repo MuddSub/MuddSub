@@ -5,6 +5,7 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import PoseWithCovariance, TwistWithCovariance, Pose, Twist, Point, Quaternion, Vector3
 import numpy as np
+from tf.transformations import quaternion_from_euler
 
 # Row-major representation of the 6x6 covariance matrix
 
@@ -18,20 +19,22 @@ seq = 0
 
 def getMessage():
     global seq
-    # building PoseWithCovariance msg
-    # This represents a pose in free space with uncertainty.
+
+    position = rospy.get_param('mission_server/spoof/slam/pose/position', {'x': 0.0, 'y': 0.0, 'z': 0.0})
+    rot = rospy.get_param('mission_server/spoof/slam/pose/orientation', {'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0})
+    linVel = rospy.get_param('mission_server/spoof/slam/twist/linear', {'x': 0.0, 'y': 0.0, 'z': 0.0})
+    angVel = rospy.get_param('mission_server/spoof/slam/twist/angular', {'roll': 0.0, 'pitch': 0.0, 'yaw': 0.0})
 
     # Create the PoseWithCovariance
-    x = rospy.get_param("/spoof/state/pose/x", 0.0)
-    position = Point(x, 0.0, 0.0) #x, y, z
-    orientation = Quaternion(0.0, 0.0, 0.0, 1.0) #x, y, z, w
+    position = Point(position['x'], position['y'], position['z']) #x, y, z
+    orientation = Quaternion(*quaternion_from_euler(rot['roll'], rot['pitch'], rot['yaw'])) #x, y, z, w
     pose = Pose(position, orientation)
     cov = np.diag([1] * 6).reshape(-1).tolist()
     poseWithCov = PoseWithCovariance(pose, cov)
 
     # Create the TwistWithCovariance
-    linearVel = Vector3(0.0, 0.0, 0.0)
-    angularVel = Vector3(0.0, 0.0, 0.0)
+    linearVel = Vector3(linVel['x'], linVel['y'], linVel['z'])
+    angularVel = Vector3(angVel['roll'], angVel['pitch'], angVel['yaw'])
     twist = Twist(linearVel, angularVel)
     twistWithCov = TwistWithCovariance(twist, cov)
 

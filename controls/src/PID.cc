@@ -74,6 +74,9 @@ double PID::doUpdate(double error, double deltaT)
 
 
   // First-order IIR filter (infinite impulse response)
+  // Essentially acts as a low pass filter with a time constant dependent on
+  // the sampling period and the coefficient used (in this case 0.8):
+  //    http://www.tsdconseil.fr/tutos/tuto-iir1-en.pdf
   double newDerivative = (error - previousError_) / deltaT;
   derivativeError_ = .8*derivativeError_ + .2*newDerivative;
   previousError_ = error;

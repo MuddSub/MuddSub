@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   message_generation
   slam
+  dynamic_reconfigure
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -27,6 +28,24 @@ find_package(catkin REQUIRED COMPONENTS
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 catkin_python_setup()
 
+################################################
+## Declare ROS dynamic reconfigure parameters ##
+################################################
+
+## To declare and build dynamic reconfigure parameters within this
+## package, follow these steps:
+## * In the file package.xml:
+##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
+## * In this file (CMakeLists.txt):
+##   * add "dynamic_reconfigure" to
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * uncomment the "generate_dynamic_reconfigure_options" section below
+##     and list every .cfg file to be processed
+
+## Generate dynamic reconfigure parameters in the 'cfg' folder
+generate_dynamic_reconfigure_options(
+  cfg/Mission.cfg
+)
 
 #add_action_files(DIRECTORY action FILES Navigation.action)
 
@@ -54,5 +73,3 @@ include_directories(
 #  scripts/go_to_target.py
 #  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 #)
-
-

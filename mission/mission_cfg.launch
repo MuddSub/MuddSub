@@ -1,0 +1,9 @@
+
+<launch>
+  <arg name="load_config_file" default="$(find mission)/cfg/mission_params.yaml" />
+  <arg name="dump_config_file" default="$(find mission)/cfg/mission_params.yaml" />
+  <arg name="namespace" value="mission_server" />
+  <node name="$(anon dump_params)" pkg="utils" type="DumpParams.py" args="$(arg dump_config_file) $(arg namespace)" />
+  <rosparam file="$(arg load_config_file)" command="load" ns="$(arg namespace)" />
+  <node name="mission_server" pkg="mission" type="MissionServer.py" />
+</launch>
