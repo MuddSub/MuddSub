@@ -70,7 +70,7 @@ def generate_task(task_name,taskAction):
     #                    'aborted':'aborted',
     #                    'preempted':'preempted'},
     #       remapping=REMAPPING)
-    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target_tester.LocateTarget(task_name)),
+    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target_tester.LocateTarget(task_name,'test_camera',0.8, [0.05,0.05,0.05,0.05])),
           transitions={'succeeded':AdvancementPhrase,
                        'active':  LocalizationPhrase,
                        'aborted':'aborted',

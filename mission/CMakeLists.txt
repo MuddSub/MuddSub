@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   message_generation
   slam
+  vision
 )
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -41,7 +42,7 @@ generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
 catkin_package(
 #  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
- CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime slam
+ CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime slam vision
 #	DEPENDS system_lib
 )
 

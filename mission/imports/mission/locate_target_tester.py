@@ -3,7 +3,10 @@ import rospy
 import smach
 from slam.msg import Map, Obstacle
 from std_msgs.msg import Bool
-
+from vision.msg import DetectionArray
+from nav_msgs.msg import Odometry
+from tf.transformations import euler_from_quaternion
+from functools import reduce
 # check if we found in camera
 
 '''
@@ -33,34 +36,63 @@ if the task_name != Gate
   - keep moving in the last direction until we see the task and pass to "go to target"
 '''
 
+# things to do: 1. camera_name 2. import vision.msg 3. is gate capitalized
 
 
 class LocateTarget(smach.State):
-  def __init__(self, task_name):
+  def __init__(self, task_name, camera_name, min_confidence, thresholds):
     rospy.loginfo("LocateTarget init")
     smach.State.__init__(self, outcomes=['active', 'success', 'abort'], 
-                              input_keys = ['isWaiting_in'],
+                              input_keys = ['isWaiting_in',],
                               output_keys = ['isWaiting_out'])
     # self.locateTarget_subscriber = rospy.Subscriber('/mission/target', Bool, self.callback)
+    # self.detection_subscriber = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.detection_callback)
+    # self.error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
+    self.camera_name = camera_name
     self.found_target = False
     self.reached_requested_position = False
     self.spin_count = 0
+    self.min_confidence = min_confidence
+    self.threshold = thresholds
     # self.startTime = rospy.get_time()
     # self.lastSearch = self.startTime
     self.task_name = task_name # we are not doing anything which this yet!
     rospy.loginfo("task_name is " + task_name)
 
-  def callback(self, data):
-    rospy.loginfo("The Data we recieve is " + str(data.data) + "...")
-    if data.data:
-        self.found = True
-    self.lastSearch = rospy.get_time()
-  
+  def detection_callback(self, data):
+    for i in data.detections:
+      if i.name == 'gate' and i.confidence > self.min_confidence:
+        self.found_target = True
+        break
+
+  def error_callback(self,data):
+      # thresholds[point_threshold, angle_, velocity, angular velocity]
+      # point (m), quarternion( rad), xyz (m/s), angle velocity (rad/s)
+      # 1. x, y, z same threshold
+      # 2. roll, pitch, yaw same threshold
+      point = data.pose.pose.position.x
+      point = (point.x, point.y, point.z)
+      orientation = euler_from_quaternion(data.pose.pose.orientation)
+      velocity = data.twist.twist.linear
+      velocity = (velocity.x, velocity.y, velocity.z)      
+      angular_velocity = data.twist.twist.angular
+      angular_velocity = (angular_velocity.x, angular_velocity.y, angular_velocity.z)
+      self.reached_requested_position = self.check_threshold(point, self.threshold[0]) and \
+                                        self.check_threshold(orientation, self.threshold[1]) and \
+                                        self.check_threshold(velocity, self.threshold[2]) and \
+                                        self.check_threshold(angular_velocity, self.threshold[3])
+
+  def check_threshold(self, position, threshold):
+    return reduce(lambda x, y: x and y, map(lambda x: x < threshold, position))
+
   def execute(self, userdata):
+    detection_subscriber = rospy.Subscriber('vision/' + self.camera_name + '/detection_array', DetectionArray, self.detection_callback)
+    error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
     if self.task_name == 'Gate':
       if self.found_target:
         return 'succeeded'
 
+      # waiting for controls to move us
       elif userdata.isWaiting_in:
         if self.reached_requested_position:
           userdata.isWaiting_out = False
