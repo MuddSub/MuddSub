@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 from vision.VisionPublisher import VisionPublisher
@@ -44,7 +45,6 @@ def callback(data):
 
     visionPublisher.publishDetectionArray(detectionArray)
 
-
 def estimate_range(boundingBox):
     return 15
 
@@ -56,4 +56,6 @@ if __name__ == '__main__':
     rospy.init_node('vision_output')
     visionPublisher = VisionPublisher("test_camera")
     rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
+    rospy.spin()
+    
     
