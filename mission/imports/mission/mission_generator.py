@@ -43,14 +43,20 @@ def add_kill_monitor(State):
           return 'aborted' 
   
   REMAPPING = {"userdata":"userdata"}
+#   MonitorState = smach.Concurrence(outcomes = ['preempted','aborted','succeeded','active'],
+#                                       default_outcome= 'active',
+#                                     child_termination_cb = monitor_task_child_cb,
+#                                     outcome_cb = monitor_task_outcome_cb,
+#                                     input_keys=['userdata'],output_keys=['userdata'])
   MonitorState = smach.Concurrence(outcomes = ['preempted','aborted','succeeded','active'],
                                       default_outcome= 'active',
                                     child_termination_cb = monitor_task_child_cb,
                                     outcome_cb = monitor_task_outcome_cb,
-                                    input_keys=['userdata'],output_keys=['userdata'])
+                                    input_keys=list(State.get_registered_input_keys()), output_keys=list(State.get_registered_output_keys()))
 
   with MonitorState:
-      smach.Concurrence.add('RunState',State, remapping=REMAPPING)
+    #   smach.Concurrence.add('RunState',State, remapping=REMAPPING)
+      smach.Concurrence.add('RunState',State)
       smach.Concurrence.add('MonitorKill',MonitorKillSwitch())
   return MonitorState
   
@@ -62,6 +68,7 @@ def generate_task(task_name,taskAction):
   TaskSpecificPhrase = 'ActOn'+task_name
   REMAPPING = {"userdata":"userdata"}
   TaskUnderTemplate.userdata.isWaiting = False
+
   with TaskUnderTemplate:
     print("1")
     # smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target.LocateTarget(task_name)),

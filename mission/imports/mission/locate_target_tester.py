@@ -87,7 +87,7 @@ class LocateTarget(smach.State):
 
   def execute(self, userdata):
     detection_subscriber = rospy.Subscriber('vision/' + self.camera_name + '/detection_array', DetectionArray, self.detection_callback)
-    error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
+    error_subscriber =  rospy.Subscriber('/controls/robot/error', Odometry, self.error_callback)
     if self.task_name == 'Gate':
       if self.found_target:
         return 'succeeded'

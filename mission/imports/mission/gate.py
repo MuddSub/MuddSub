@@ -10,9 +10,20 @@ def gateLoateCB():
 def gateGoToCB():
   pass
 
+# class GateAction(smach.State):
+#   def __init__(self):
+#     smach.State.__init__(self, outcomes=[])
+
+#   def execute(self, ud):
+#     rospy.loginfo("We are at gate.py")
+
+
+
 class GateAction(smach.State):
   def __init__(self):
-    pass
-
-  def execute(self, ud):
-    rospy.loginfo("We are at gate.py")
+    rospy.loginfo("LocateTarget init")
+    smach.State.__init__(self, outcomes=['active', 'success', 'abort'], 
+                              input_keys = ['isWaiting_in',],
+                              output_keys = ['isWaiting_out'])
+  def execute(self, userdata):
+    return 'abort'
