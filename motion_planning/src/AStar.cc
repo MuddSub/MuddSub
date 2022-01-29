@@ -345,7 +345,6 @@ namespace MuddSub::MotionPlanning
     }
 
     void AStar::addSinTraversal(int amp, int freq, int period) { 
-        //path_[0][3] path_[0][4], path_[0][5] (what you would change for rotational)
         int h, x = path_[0][0];
         int k, y = path_[0][1];
 
@@ -395,7 +394,6 @@ namespace MuddSub::MotionPlanning
             int xlength = pow((path_[path_.size()-1][0] - path_[0][0]),2);
             int ylength = pow((path_[path_.size()-1][1] - path_[0][1]),2);
             int distance = sqrt(xlength + ylength);
-            //HOW DO I DO THIS PART???
 
             int f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
             int a = (M_PI/4);
@@ -420,10 +418,10 @@ namespace MuddSub::MotionPlanning
     void AStar::addTime() 
     {
         std::cout<<"Entered Adding time"<<std::endl;
-        /*for (int i = 0; i <= path_.size(); i++){
-            //double time_stamp = i/velocity_;
+        for (int i = 0; i <= path_.size(); i++){
+            double time_stamp = i/velocity_;
             path_[i].push_back(5);
-        }*/
+        }
     }
 
     void AStar::updatePose(int startx, int starty, int startz)
@@ -479,12 +477,6 @@ namespace MuddSub::MotionPlanning
                     0 <= now->z_ + dz[i] && now->z_ + dz[i] < depth_)
                 {
                     Node *side = &grid_[now->x_ + dx[i]][now->y_ + dy[i]][now->z_ + dz[i]];
-                    /*if(side->str_ == "3")
-                    {
-                        side->parent_ = &grid_[now->x_][now->y_][now->z_];
-                        makeParent(&grid_[endx_][endy_][endz_], "4");
-                        return;
-                    }*/
                     if (side->isObstacle_) continue;
                     if (closed.find(side->id_) != closed.end()) continue;
                     double distance = pow((pow((dx[i]), 2) + pow((dy[i]), 2) + pow((dz[i]), 2)), 0.5);
