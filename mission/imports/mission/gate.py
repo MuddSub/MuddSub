@@ -4,26 +4,28 @@ import smach
 from std_msgs.msg import Bool, String
 import smach_ros
 
-def gateLoateCB():
-  pass
-
-def gateGoToCB():
-  pass
-
-# class GateAction(smach.State):
-#   def __init__(self):
-#     smach.State.__init__(self, outcomes=[])
-
-#   def execute(self, ud):
-#     rospy.loginfo("We are at gate.py")
-
-
-
 class GateAction(smach.State):
+   '''
+  Move to Gate
+
+  Once we detect the gate, we need to move(straight) to the gate (assuming there is no obstacles)
+  We need to check our position relative to the gate as we move
+
+  If we see the gate directly facing us, we move forward
+    - Communicate with control?
+
+  If we sdon't see the gate, we rotate and search for the gate again
+    - Goes back to the previous state, locate target
+
+  If we reached the gate, return success
+    - how do we determine if we have reached the gate
+    - How do we differentiate reaching gate and losing gate in sight
+
+  '''
+  
   def __init__(self):
-    rospy.loginfo("LocateTarget init")
-    smach.State.__init__(self, outcomes=['active', 'success', 'abort'], 
-                              input_keys = ['isWaiting_in',],
-                              output_keys = ['isWaiting_out'])
-  def execute(self, userdata):
-    return 'abort'
+    pass
+
+  def execute(self, ud):
+    rospy.loginfo("We are at gate.py")
+
