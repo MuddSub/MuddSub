@@ -1,0 +1,5 @@
+<launch>
+    <arg name="image_storage_path" default="$(find vision)/images"/>
+    <param name="image_storage_path" value="$(arg image_storage_path)" />
+    <node name="image_saver" pkg="vision" type="SaveImages.py" />
+</launch>

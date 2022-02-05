@@ -1,0 +1,6 @@
+<launch>
+    
+    <include file="$vision/left_camera.launch"/>
+    <include file="$vision/object_detection.launch"/>
+    <node name="vision_output" pkg="vision" type="VisionOutput.py">
+</launch>

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from vision.Camera import Camera
 import rospy
 
