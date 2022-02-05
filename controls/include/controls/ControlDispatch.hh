@@ -6,6 +6,7 @@
 #include "controls/Controller.hh"
 #include "controls/Types.hh"
 #include "controls/Utils.hh"
+#include "controls/ControlsPublisher.hh"
 
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/Empty.h>
@@ -43,7 +44,7 @@ private:
   ros::Subscriber zeroHereSub_;
   ros::Subscriber zeroSub_;
 
-  ros::Publisher controlPub_;
+  // ros::Publisher controlPub_;
 
   stateVector_t plantState_{stateVector_t::Zero()};
   stateVector_t plantZero_{stateVector_t::Zero()};
@@ -66,6 +67,7 @@ private:
   stateVector_t odomToState(const nav_msgs::Odometry& msg);
   Eigen::IOFormat eigenInLine{Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", ";"};
 
+  ControlsPublisher controlsPublisher_;
 };
 
 }

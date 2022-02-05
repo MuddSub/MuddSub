@@ -2,7 +2,7 @@
 
 namespace MuddSub::Controls
 {
-  ControlsPublisher::ControlsPublisher(ros::NodeHandle n):
+  ControlsPublisher::ControlsPublisher(ros::NodeHandle n) :
     n_(n)
   {
     wrenchPub_ = n_.advertise<geometry_msgs::WrenchStamped>("controls/robot/wrench", 1000);
@@ -13,6 +13,11 @@ namespace MuddSub::Controls
   void ControlsPublisher::publishWrench(geometry_msgs::WrenchStamped& wrenchStamped)
   {
     wrenchPub_.publish(wrenchStamped);
+  }
+
+  void ControlsPublisher::publishError(nav_msgs::Odometry& odometry)
+  {
+    errorPub_.publish(odometry);
   }
 
   void ControlsPublisher::publishForces(controls::ThrusterForceArray& forces)

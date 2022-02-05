@@ -2,6 +2,7 @@
 
 #include "ros/ros.h"
 #include "geometry_msgs/WrenchStamped.h"
+#include "nav_msgs/Odometry.h"
 #include "controls/ThrusterForceArray.h"
 #include "controls/ThrusterPWMArray.h"
 
@@ -19,8 +20,11 @@ namespace MuddSub::Controls
   class ControlsPublisher
   {
     private:
-      /// @brief Publishes to geometry_msgs/WrenchStamped messages controls/robot/wrench topic
+      /// @brief Publishes geometry_msgs/WrenchStamped messages to controls/robot/wrench topic
       ros::Publisher wrenchPub_;
+
+      /// @brief Publishes nav_msgs/Odometry messages to controls/robot/error topic
+      ros::Publisher errorPub_;
 
       /// @brief Publishes controls/ThrusterForceArray messages to controls/thruster/forces topic
       ros::Publisher forcesPub_;
@@ -55,6 +59,15 @@ namespace MuddSub::Controls
        * @param wrenchStamped The WrenchStamped message to publish
        */
       void publishWrench(geometry_msgs::WrenchStamped& wrenchStamped);
+
+      /**
+       * @brief Publishes a nav_msgs/Odometry message
+       *
+       * Uses the errorPub_ Publisher to publish to controls/robot/error
+       *
+       * @param odometry The Odometry message to publish
+       */
+      void publishError(nav_msgs::Odometry& odometry);
 
       /**
        * @brief Publishes a controls/ThrusterForceArray message

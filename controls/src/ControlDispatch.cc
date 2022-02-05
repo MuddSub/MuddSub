@@ -4,7 +4,9 @@ namespace MuddSub::Controls
 {
 
 
-ControlDispatch::ControlDispatch()
+ControlDispatch::ControlDispatch() :
+  nh_(),
+  controlsPublisher_(nh_)
 {
   controller_ = std::make_shared<SixDegreePID>();
   dynamics_.setController(controller_);
@@ -17,7 +19,7 @@ ControlDispatch::ControlDispatch()
   zeroSub_ = nh_.subscribe("/controls/robot/set_zero_to_odom", 1, &ControlDispatch::zeroToCallback, this);
   zeroHereSub_ = nh_.subscribe("/controls/robot/set_zero_here", 1, &ControlDispatch::zeroCurrentCallback, this);
 
-  controlPub_ = nh_.advertise<geometry_msgs::WrenchStamped>("/controls/robot/wrench", 10);
+  // controlPub_ = nh_.advertise<geometry_msgs::WrenchStamped>("/controls/robot/wrench", 10);
 }
 
 stateVector_t ControlDispatch::odomToState(const nav_msgs::Odometry& msg)
@@ -83,7 +85,9 @@ void ControlDispatch::publishControl(const controlVector_t& control)
   msg.wrench.torque.y = control[4];
   msg.wrench.torque.z = control[5];
 
-  controlPub_.publish(msg);
+  // controlPub_.publish(msg);
+  controlsPublisher_.publishWrench(msg);
+  controlsPublisher_.publishError(stateToOdom(getError()));
 }
 
 void ControlDispatch::iterate()
