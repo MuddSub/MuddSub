@@ -1,11 +1,12 @@
 #!/usr/bin/env python
+from multiprocessing.dummy import active_children
 import rospy
 import smach
 from std_msgs.msg import Bool, String
 import smach_ros
 
 class GateAction(smach.State):
-   '''
+  '''
   Move to Gate
 
   Once we detect the gate, we need to move(straight) to the gate (assuming there is no obstacles)
@@ -21,11 +22,33 @@ class GateAction(smach.State):
     - how do we determine if we have reached the gate
     - How do we differentiate reaching gate and losing gate in sight
 
-  '''
+  ''' 
   
   def __init__(self):
-    pass
+    smach.State.__init__(self, outcomes=['active', 'success', 'abort','lost_target'],
+                              input_keys = ['isWaiting_in',],
+                              output_keys = ['isWaiting_out'])
+    self.visible = True
+    self.reached_requested_pos = False
+    self.success = False
 
   def execute(self, ud):
-    rospy.loginfo("We are at gate.py")
+    if self.success:
+      return 'success'
+    
+    elif ud.isWaiting_in and self.visible:
+      if self.reached_requested_pos:
+          ud.isWaiting_out = False
+      return 'active'
+
+    elif not ud.isWaiting_in and self.visible:
+      rospy.log("Request to Move Forward 1 meter")
+      return 'active'
+
+    elif not self.visible:
+      #Determine whether right in front of gate or lost gate
+      return 'success'
+
+    else:
+      return 'lost_target'
 
