@@ -66,7 +66,9 @@ namespace MuddSub::MotionPlanning
         void makeParent(Node *node, std::string value);
         void DFS(int x, int y, int z);
         void addRotation(std::vector<double> initialDegree, std::vector<double> degreesToRotate, double angularVelocity, double pauseDegree, double pauseTime);
+        void addSinTraversalSegment(int amp, int freq, int period);
         void addSinTraversal(int amp, int freq, int period);
+        
 
         class Node 
         {

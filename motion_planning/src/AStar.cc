@@ -307,7 +307,7 @@ namespace MuddSub::MotionPlanning
         {
             std::cout<<"Adding Sin traversal"<<std::endl;
 
-            addSinTraversal(std::stoi(dataList[0]),std::stoi(dataList[1]),0);
+            addSinTraversalSegment(std::stoi(dataList[0]),std::stoi(dataList[1]),0);
 
         }else if(motion == AStar::rotationalMovement)
         {
@@ -377,6 +377,54 @@ namespace MuddSub::MotionPlanning
     }
 
     void AStar::addSinTraversal(int amp, int freq, int period) {
+        std::vector<std::vector<std::vector<double>>> n_path;
+        std::vector<int> directions;
+        int count = 0;
+
+        for (int i = 0; i < path_.size()-1; i++)
+        {
+            if(path_[i][0]-path_[i+1][0] == 0)
+            {
+                directions.push_back(1);
+            }else if(path_[i][1] - path_[i+1][1] == 0)
+            {
+                directions.push_back(2);
+            }else if(path_[i][0] - path_[i+1][0] == 1)
+            {
+                directions.push_back(3);
+            }
+        }
+        
+        for(int i = 1; i < directions.size(); i++)
+        {
+            if(count == 0)
+            {
+                std::vector<std::vector<double>> startingPath;
+                startingPath.push_back(path_[i-1]);
+                startingPath.push_back(path_[i]);
+                n_path.push_back(startingPath);
+            }
+            count = 0;
+
+            if(directions[i-1] == directions[i])
+            {
+                n_path[n_path.size()-1].push_back(path_[i+1]);
+                count++;
+            }
+            
+        }
+        if(count == 0)
+        {
+            std::vector<std::vector<double>> lastPath;
+            lastPath.push_back(path_[path_.size()-2]);
+            lastPath.push_back(path_[path_.size()-1]);
+            n_path.push_back(lastPath);
+        
+        }
+
+    }
+
+    void AStar::addSinTraversalSegment(int amp, int freq, int period) {
         std::cout<<"amp" <<amp;
         std::cout<<"freq"<<freq;
         std::cout<<"period"<<period;
