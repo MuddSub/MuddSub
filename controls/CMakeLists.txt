@@ -103,9 +103,9 @@ target_link_libraries(ControlsExampleNode ${catkin_LIBRARIES})
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-generate_dynamic_reconfigure_options(
-   cfg/Controls.cfg
-)
+# generate_dynamic_reconfigure_options(
+#    cfg/Controls.cfg
+# }
 
 ###################################
 ## catkin specific configuration ##

@@ -87,7 +87,9 @@ void ControlDispatch::publishControl(const controlVector_t& control)
 
   // controlPub_.publish(msg);
   controlsPublisher_.publishWrench(msg);
-  controlsPublisher_.publishError(stateToOdom(getError()));
+  // const stateVector_t& error = controller_->getError();
+  // nav_msgs::Odometry odom = stateToOdom(error);
+  // controlsPublisher_.publishError(odom);
 }
 
 void ControlDispatch::iterate()

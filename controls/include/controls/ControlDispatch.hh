@@ -37,6 +37,7 @@ private:
   VehicleDynamics dynamics_;
 
   ros::NodeHandle nh_;
+  ControlsPublisher controlsPublisher_;
 
   ros::Subscriber setpointSub_;
   ros::Subscriber plantStateSub_;
@@ -67,7 +68,7 @@ private:
   stateVector_t odomToState(const nav_msgs::Odometry& msg);
   Eigen::IOFormat eigenInLine{Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", "", ";"};
 
-  ControlsPublisher controlsPublisher_;
+  
 };
 
 }
