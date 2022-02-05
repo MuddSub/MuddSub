@@ -2,17 +2,28 @@
 
 import rospy
 from std_msgs.msg import Header
-from HydrophonesPublisher import HydrophonesPublisher
+# from HydrophonesPublisher import *
+from hydrophones.utils.HydrophonesPublisher import HydrophonesPublisher
 from hydrophones.msg import PingerData
 from sensor_msgs.msg import Range
 from geometry_msgs.msg import Vector3
+import dynamic_reconfigure.client
+
+def update(config):
+    # Add whatever needs to be updated when configuration parameters change here
+    rospy.loginfo("""Config set to {pinger_bearing}, {pinger_range_confidence}, {pinger_bearing_confidence}""".format(**config))
 
 def hydrophonesExampleNode():
     rospy.init_node('hydrophones_example_node', anonymous=True)
     hydrophonesPublisher = HydrophonesPublisher()
+    client = dynamic_reconfigure.client.Client("hydrophones_server", timeout=30, config_callback=update)
+    client.update_configuration({})
+
     rate = rospy.Rate(1)
 
     while not rospy.is_shutdown():
+        params = client.get_configuration()
+
         # Create Header message
         header = Header()
         header.stamp = rospy.Time.now()
@@ -26,12 +37,14 @@ def hydrophonesExampleNode():
         pinger_range.max_range = 2.0
         pinger_range.range = 1.5
 
-        pinger_bearing = 1.56
-        pinger_range_confidence = 0.7
-        pinger_bearing_confidence = 0.8
+        # pinger_bearing = 1.56
+        pinger_bearing = params["pinger_bearing"]
+        pinger_range_confidence = params["pinger_range_confidence"]
+        pinger_bearing_confidence = params["pinger_bearing_confidence"]
 
         pinger_data = PingerData(header, pinger_range, pinger_bearing, pinger_range_confidence, pinger_bearing_confidence)
         hydrophonesPublisher.publishData(pinger_data)
+
         rate.sleep()
 
 if __name__ == '__main__':

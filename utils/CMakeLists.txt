@@ -88,10 +88,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/State_machine.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -159,14 +158,9 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-#catkin_install_python(PROGRAMS
-#  scripts/DumpParams.py
-#  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+
 
 catkin_install_python(PROGRAMS scripts/DumpParams.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

@@ -1,0 +1,8 @@
+<launch>
+  <arg name="load_config_file" default="$(find state_machine)/cfg/state_machine_params.yaml" />
+  <arg name="dump_config_file" default="$(find state_machine)/cfg/state_machine_params.yaml" />
+  <arg name="namespace" value="state_machine_server" />
+  <node name="$(anon dump_params)" pkg="utils" type="DumpParams.py" args="$(arg dump_config_file) $(arg namespace)" />
+  <rosparam file="$(arg load_config_file)" command="load" ns="$(arg namespace)" />
+  <node name="state_machine_server" pkg="state_machine" type="StateMachineServer.py" />
+</launch>

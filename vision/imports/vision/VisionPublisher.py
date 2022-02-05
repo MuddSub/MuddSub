@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 #from sensor_msgs.msg import CameraInfo, Image, CompressedImage
-from vision.msg import Detection, DetectionArray, BoundingBox2DArray
+from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 
 class VisionPublisher:
     """
@@ -23,20 +23,22 @@ class VisionPublisher:
     def __init__(self, cameraName):
         """Initialize VisionPublisher instance."""
         self._cameraName = cameraName
-        self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
+        # self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
         self._detectionPub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
-        self._detectionArrayPub = rospy.Publisher('vision/detection_array', DetectionArray, queue_size=10)
+        self._detectionArrayPub = rospy.Publisher('vision/' + cameraName + '/detection_array', DetectionArray, queue_size=10)
+        self._boundingBoxPub = rospy.Publisher('vision/' + cameraName + '/bounding_box', BoundingBox, queue_size=10)
+        self._boundingBoxArrayPub = rospy.Publisher('vision/' + cameraName + '/bounding_box_array', BoundingBoxArray, queue_size=10)
 
-    def publishBoundingBoxes(self, boundingBoxes):
-        """
-        Publish a vision/BoundingBox2DArray message.
+    # def publishBoundingBoxes(self, boundingBoxes):
+    #     """
+    #     Publish a vision/BoundingBox2DArray message.
 
-        Uses the bboxesPub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
+    #     Uses the bboxesPub Publisher to publish to vision/{cameraName}/bounding_boxes topic.
 
-        Args:
-            boundingBoxes: The vision/BoundingBox2DArray message.
-        """
-        self._bboxesPub.publish(boundingBoxes)
+    #     Args:
+    #         boundingBoxes: The vision/BoundingBox2DArray message.
+    #     """
+    #     self._bboxesPub.publish(boundingBoxes)
 
     def publishDetection(self, detection):
         """
@@ -59,3 +61,9 @@ class VisionPublisher:
             detectionArray: The vision/DetectionArray message.
         """
         self._detectionArrayPub.publish(detectionArray)
+
+    def publishBoundingBox(self, boundingBox):
+        self._boundingBoxPub.publish(boundingBox)
+
+    def publishBoundingBoxArray(self, boundingBoxArray):
+        self._boundingBoxArrayPub.publish(boundingBoxArray)

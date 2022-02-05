@@ -16,6 +16,9 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   vision_msgs
+  dynamic_reconfigure
+  usb_cam
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
@@ -25,7 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -56,7 +59,8 @@ add_message_files(
   FILES
   DetectionArray.msg
   Detection.msg
-  BoundingBox2DArray.msg
+  BoundingBoxArray.msg
+  BoundingBox.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -83,7 +87,7 @@ generate_messages(
   vision_msgs
 
 )
-catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
+catkin_install_python(PROGRAMS scripts/VisionExampleNode.py scripts/VisionSubscriber.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -106,10 +110,9 @@ add_dependencies(VisionExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/Vision.cfg
+)
 
 ###################################
 ## catkin specific configuration ##

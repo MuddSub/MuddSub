@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   sensor_msgs
   geometry_msgs
+  dynamic_reconfigure
 )
 
 <<<<<<< HEAD
@@ -25,7 +26,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -80,13 +81,16 @@ generate_messages(
   geometry_msgs
 )
 
-catkin_install_python(PROGRAMS scripts/HydrophonesExampleNode.py
+catkin_install_python(PROGRAMS
+  scripts/HydrophonesExampleNode.py
+  scripts/HydrophonesServer.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 add_executable(HydrophonesExampleNode src/HydrophonesExampleNode.cc src/HydrophonesPublisher.cc)
 add_dependencies(HydrophonesExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(HydrophonesExampleNode ${catkin_LIBRARIES})
+
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -102,10 +106,9 @@ target_link_libraries(HydrophonesExampleNode ${catkin_LIBRARIES})
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+   cfg/Hydrophones.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
