@@ -34,7 +34,7 @@ namespace MuddSub::MotionPlanning
         void solveGridDFS();
         void printGrid() const;
         void addObstacles(std::vector<std::vector<double>> obstacle);
-        void addMotion(rotationalMotion_ motion, std::string data);
+        void addMotion(rotationalMotion_ motion, std::vector<double> pose, std::string data);
         void addTime(); 
 
         static std::vector<std::string> splitData(std::string data);
@@ -65,7 +65,7 @@ namespace MuddSub::MotionPlanning
 
         void makeParent(Node *node, std::string value);
         void DFS(int x, int y, int z);
-        void addRotation(std::string data);
+        void addRotation(std::vector<double> initialDegree, std::vector<double> degreesToRotate, double angularVelocity, double pauseDegree, double pauseTime);
         void addSinTraversal(int amp, int freq, int period);
 
         class Node 

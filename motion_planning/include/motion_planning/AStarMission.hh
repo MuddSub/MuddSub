@@ -34,7 +34,7 @@ namespace MuddSub::MotionPlanning
 
             std::vector<std::vector<double>> path_;
 
-            void addMotion();
+            void addMotion(std::vector<double> pose);
             void convertPath();
             std::vector<std::vector<double>> convertPoints(std::vector<geometry_msgs::Point> points);
 

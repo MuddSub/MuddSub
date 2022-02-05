@@ -201,17 +201,17 @@ namespace MuddSub::MotionPlanning
         return e;
     }
 
-    void AStarMission::addMotion()
+    void AStarMission::addMotion(std::vector<double> pose)
     {
         if(goals_[0][2] == "None")
         {
-            current_->addMotion(AStar::None, "");
+            current_->addMotion(AStar::None, pose, "");
         }else if(goals_[0][2] == "SineTraversalMovement")
         {
-            current_->addMotion(AStar::sinTraversalPath, goals_[0][3]);
+            current_->addMotion(AStar::sinTraversalPath,  pose, goals_[0][3]);
         }else if(goals_[0][2] == "RotationalMovement" )
         {
-            current_->addMotion(AStar::rotationalMovement, goals_[0][3]);
+            current_->addMotion(AStar::rotationalMovement, pose, goals_[0][3]);
         }
     }
 
@@ -259,8 +259,8 @@ namespace MuddSub::MotionPlanning
                 current_->resolveGrid();
                 current_->printGrid();
             }
-            addMotion();
-            //current_->addTime();
+            addMotion(pose);
+            current_->addTime();
             path_ = current_->path_;
         }else
         {
@@ -276,9 +276,9 @@ namespace MuddSub::MotionPlanning
             pastObstacles_ = obstacles_;
             current_->solveGrid();
             current_->printGrid();
-            addMotion();
+            addMotion(pose);
             std::cout<<"Added motion"<<std::endl;
-            //current_->addTime();
+            current_->addTime();
             path_ = current_->path_;
         }
 
