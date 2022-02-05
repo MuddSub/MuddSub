@@ -24,7 +24,7 @@ class Gate_Protocol():
                 self.gateDetection = detection
                 FOUND_GATE = True
         self.range_to_gate = self.gateDetection.range if FOUND_GATE else None
-        self.gate_width = self.gateDetection.boundingBox.x * 2 if FOUND_GATE else self.gate_width
+        self.gate_width = self.gateDetection.boundingBox.size_x * 2 if FOUND_GATE else self.gate_width
         
     def main(self):
         # check if self.gate_width is not None
@@ -57,7 +57,7 @@ class Gate_Protocol():
                 return False
             print("Cannot find Gate")
         OBS_X = self.gateDetection.boundingBox.center.x # pixel vs normalized 0 - 1
-        theta = Gate_Protocol.CAMERA_FOV * (OBS_X/Gate_Protocol.X_RES - 0.5)
+        theta = Gate_Protocol.CAMERA_FOV * (OBS_X/Gate_Protocol.CAMERA_XRES - 0.5)
         if self.controls_spin(theta):
             return True
         # blocking
@@ -68,17 +68,6 @@ class Gate_Protocol():
         r = self.range_to_gate #this is in the x direction
         # check if 1 is inclusive 
         N = np.arange(0,1,Gate_Protocol.NUM_SET_POINTS)
-        # self.set_points = r*np.array([
-        #     r * (1-np.cos(2*np.pi*N)), 
-        #     r * (np.sin(2*np.pi*N)),
-        #     np.zeros(Gate_Protocol.NUM_SET_POINTS), # same z position
-        #     np.zeros(Gate_Protocol.NUM_SET_POINTS), # no rotation around x
-        #     np.zeros(Gate_Protocol.NUM_SET_POINTS), # no rotation around y
-        #     -2*np.pi*N, # rotation around z counterclockwise
-        #     np.zeros(Gate_Protocol.NUM_SET_POINTS),np.zeros(Gate_Protocol.NUM_SET_POINTS),
-        #     np.zeros(Gate_Protocol.NUM_SET_POINTS),np.zeros(Gate_Protocol.NUM_SET_POINTS),
-        #     np.zeros(Gate_Protocol.NUM_SET_POINTS),np.zeros(Gate_Protocol.NUM_SET_POINTS) # all zero velocities
-        #     ]).reshape(-1, 12)
         self.set_points = r*np.array([
             r * (1-np.cos(2*np.pi*N)), 
             r * (np.sin(2*np.pi*N)),
