@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   sensor_msgs
   imu_vn_100
+  dynamic_reconfigure
 )
 
 # System dependencies are found with CMake's conventions
