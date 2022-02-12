@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 from std_msgs.msg import Header, String
 import os
+import sys
 
 bridge = CvBridge()
 
@@ -20,10 +21,13 @@ def callback(image):
 
     cv2.imwrite(image_name,image_message)
     # input_img = np.copy(image_message).astype(float)
+    rospy.sleep(5)
 
 if __name__ == '__main__':
     rospy.loginfo("SaveImages is launched")
     rospy.init_node('vision_subscriber')
+    sys.argv[1]
     image_storage_path = rospy.get_param("image_storage_path")
-    rospy.Subscriber("/usb_cam/image_raw", Image, callback)
+    rospy.Subscriber(f"/{sys.argv[1]}/image_raw", Image, callback)
+    # rospy.Subscriber("/usb_cam/image_raw", Image, callback)
     rospy.spin()
