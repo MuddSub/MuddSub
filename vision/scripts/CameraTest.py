@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from vision.Camera import Camera
 import rospy
 
@@ -7,5 +8,7 @@ if __name__ == '__main__':
 
     model_path = rospy.get_param("model_path")
     model_config_path = rospy.get_param("model_config_path")
-    test = Camera('usb_cam', obstacle_names, model_path, model_config_path)
+
+    camera_name = rospy.get_param("camera_name")
+    test = Camera(camera_name, obstacle_names, model_path, model_config_path)
     test.main()

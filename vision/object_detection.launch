@@ -1,8 +1,10 @@
 <launch>
-    <param name="names" textfile="$(find vision)/scripts/class-names.txt" />
-    <arg name="model_path" default="$(find vision)/imports/vision/MSCV2/yv3m-256-testing.pt" />
+    <param name="names" textfile="$(find vision)/scripts/class-names.txt"/>
+    <arg name="model_path" default="$(find vision)/imports/vision/MSCV2/yv3m-256-testing.pt"/>
     <arg name="model_config_path" default="$(find vision)/imports/vision/MSCV2/cfg/yolov3-mid-256.cfg"/>
+    <arg name="camera_name" default="left_camera"/>
     <param name="model_path" value="$(arg model_path)"/>
-    <param name="model_config_path" value="$(arg model_config_path)" />
-    <node name="vision_subscriber" pkg="vision" type="VisionSubscriber.py" />
+    <param name="model_config_path" value="$(arg model_config_path)"/>
+    <param name="camera_name" value="$(arg camera_name)"/>
+    <node name="camera_test" pkg="vision" type="CameraTest.py"/>
 </launch>
