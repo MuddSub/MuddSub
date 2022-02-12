@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys
 from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 from vision.VisionPublisher import VisionPublisher
 from std_msgs.msg import Header, String
@@ -52,7 +53,7 @@ def estimate_angles(boundingBox):
     return 10, 20
     
 if __name__ == '__main__':
-    camera_name = rospy.get_param("camera_name")
+    camera_name = sys.argv[0]
     rospy.init_node('vision_output')
     visionPublisher = VisionPublisher(camera_name)
     # rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
