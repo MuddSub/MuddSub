@@ -4,7 +4,7 @@
 #include "sensor_msgs/CameraInfo.h"
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/CompressedImage.h"
-#include "vision/BoundingBox2DArray.h"
+// #include "vision/BoundingBox2DArray.h"
 #include "vision/Detection.h"
 #include "vision/DetectionArray.h"
 
@@ -53,7 +53,7 @@ namespace MuddSub::Vision
        *
        * @param boundingbox The BoundingBox2DArray message to publish
        */
-      void publishBoundingBox(vision::BoundingBox2DArray& boundingBox);
+      // void publishBoundingBox(vision::BoundingBox2DArray& boundingBox);
 
       /**
        * @brief Publishes a vision/Detection message
