@@ -1,6 +1,6 @@
 <launch>
     
-    <include file="$vision/left_camera.launch">
+    <include file="$(find vision)/left_camera.launch">
         <arg name="camera_name" value="left_camera" />
         <arg name="video_device" value="/dev/video0" />
         <arg name="image_width" value="640" />
@@ -8,7 +8,7 @@
         <arg name="camera_frame_id" value="left_camera" />
     </include>
 
-    <include file="$vision/object_detection.launch">
+    <include file="$(find vision)/object_detection.launch">
         <arg name="camera_name" value="left_camera" />
     </include>
     <node name="vision_output" pkg="vision" type="VisionOutput.py">
