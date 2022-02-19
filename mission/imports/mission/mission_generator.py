@@ -6,7 +6,7 @@ import mission.go_to_target as go_to_target
 import mission.locate_target as locate_target
 import mission.locate_target_tester as locate_target_tester
 import mission.go_to_target_tester as go_to_target_tester
-
+import mission.gate as gate
 class MonitorKillSwitch(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['active','aborted'])  
@@ -90,12 +90,14 @@ def generate_task(task_name,taskAction):
           transitions={'succeeded':TaskSpecificPhrase,
                        'active':AdvancementPhrase,
                        'aborted': 'aborted',
+                       'lost_target':LocalizationPhrase,
                        'preempted':'preempted'},
           remapping=REMAPPING)
-    smach.StateMachine.add(TaskSpecificPhrase,add_kill_monitor(taskAction), 
+    smach.StateMachine.add(TaskSpecificPhrase,add_kill_monitor(gate.GateAction('test_camera',0.8, [0.05,0.05,0.05,0.05])), 
           transitions={'succeeded':'succeeded',
                        'active':TaskSpecificPhrase, 
                        'aborted':'aborted',
+                       'lost_target':LocalizationPhrase,
                        'preempted':'preempted'},
           remapping=REMAPPING)
   return TaskUnderTemplate
