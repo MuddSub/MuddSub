@@ -5,9 +5,12 @@ import smach
 from std_msgs.msg import Bool, String
 import smach_ros
 from vision.msg import DetectionArray
+from controls.msg import State
+from std_msgs.msg import Header
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
 from functools import reduce
+import numpy as np
 
 class GateAction(smach.State):
   '''
@@ -32,9 +35,13 @@ class GateAction(smach.State):
     smach.State.__init__(self, outcomes=['active', 'success', 'abort','lost_target'],
                               input_keys = ['isWaiting_in',],
                               output_keys = ['isWaiting_out'])
+                            
 
     self.isVisible = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.gate_callback)
     self.reachedTarget_subscriber = rospy.Subscriber('/controls/robot/error', Odometry, self.reachedTarget_callback)
+    self.state_subscriber = rospy.Subscriber('/slam/robot/state', Odometry, self.state_callback)
+    self.setpoint_publisher = rospy.Publisher('/robot_setpoint', State)
+    self.GATE_LENGTH = 3.048  
     
     self.camera_name = camera_name
     self.min_confidence = min_confidence
@@ -48,6 +55,13 @@ class GateAction(smach.State):
     self.startTime = rospy.get_time()
     self.lastSearch = self.startTime
 
+
+  def stateCallback(self, msg):
+    pos = msg.pose.pose.position
+    r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+    vel = msg.twist.twist.linear
+    omega = msg.twist.twist.anguler
+    self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
 
   def gate_callback(self,data):
     gate_flag = False
@@ -85,9 +99,10 @@ class GateAction(smach.State):
       return 'abort'
 
     elif abs(self.range_to_beam - 1) < 0.1:
-      rospy.log('Ask to move to current position')
-      rospy.log('Move to the right')
-      rospy.log('Request to move 1 meter')
+      self.requestForwardMovement(0)
+
+      self.requestAnyMovement("Right", self.GATE_LENGTH / 4)
+      self.requestForwardMovement(1)
       return 'success'
 
     elif ud.isWaiting_in and (self.bem_visible or self.gate_visible):
@@ -96,7 +111,7 @@ class GateAction(smach.State):
       return 'active'
 
     elif not ud.isWaiting_in and (self.beam_visible or self.gate_visible):
-      rospy.log("Request to Move Forward 1 meter")
+      self.requestForwardMovement(1)
       return 'active'
 
     elif not self.beam_visible and not self.gate_visible:
@@ -105,3 +120,31 @@ class GateAction(smach.State):
     else:
       return 'abort'
      
+  def requestSpin(self, angleOffset):
+    '''Requests a spin of angleOffset radians from controls'''
+    setpoint = self.current_state + np.array([0, 0, 0, 0, 0, angleOffset, 0, 0, 0, 0, 0, 0])
+    self.publishSetpoint(setpoint)
+  
+  def requestForwardMovement(self, distance):
+    '''Requests a movement of distance meters forward relative to the robot's bearing'''
+    setpoint = self.current_state + np.array([distance * np.cos(self.current_state[5]), distance * np.sin(self.current_state[5]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    self.publishSetpoint(setpoint)
+
+  def requestAnyMovement(self, direction, distance):
+    if direction == "Forward":
+      self.requestForwardMovement(distance)
+    if direction == "Backward":
+      self.requestForwardMovement(-1*distance)
+    if direction == "Right":
+      setpoint = self.current_state + np.array([distance * np.cos(self.current_state[5]+np.pi/2), distance * np.sin(self.current_state[5]+np.pi/2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+      self.publishSetpoint(setpoint)
+    if direction == "Left":
+      setpoint = self.current_state + np.array([distance * np.cos(self.current_state[5] - np.pi/2), distance * np.sin(self.current_state[5] - np.pi/2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+      self.publishSetpoint(setpoint)
+  
+  def publishSetpoint(self, setpoint):
+    state = State()
+    state.header = Header(self.header_seq, rospy.Time.now(), 'BASE')
+    state.state = setpoint.tolist()
+    self.header_seq += 1
+    self.setpoint_publisher.publish(state)

@@ -60,7 +60,7 @@ class LocateTarget(smach.State):
     self.min_confidence = min_confidence
     self.threshold = thresholds
     self.task_name = task_name # we are not doing anything which this yet!
-    self.state = None
+    self.current_state = None
     self.numSpins = 8
     self.centered = False
     self.header_seq = 0
@@ -93,12 +93,20 @@ class LocateTarget(smach.State):
   def check_threshold(self, position, threshold):
     return reduce(lambda x, y: x and y, list(map(lambda x: x < threshold, position)))
 
+  def stateCallback(self, msg):
+    pos = msg.pose.pose.position
+    r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+    vel = msg.twist.twist.linear
+    omega = msg.twist.twist.anguler
+    self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
+    
   def execute(self, userdata):
     detection_subscriber = rospy.Subscriber('vision/' + self.camera_name + '/detection_array', DetectionArray, self.detection_callback)
     error_subscriber =  rospy.Subscriber('/controls/robot/error', Odometry, self.error_callback)
     if self.task_name == 'Gate':
       if self.found_target and self.centered:
-        rospy.loginfo('Request to stop')
+        #rospy.loginfo('Request to stop')
+        self.requestForwardMovement(0)
         return 'succeeded'
 
       # waiting for controls to move us
@@ -118,21 +126,21 @@ class LocateTarget(smach.State):
         userdata.isWaiting_out = True
         return 'active'
   
-  def stateCallback(self, msg):
-    pos = msg.pose.pose.position
-    r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
-    vel = msg.twist.twist.linear
-    omega = msg.twist.twist.anguler
-    self.state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
+  # def stateCallback(self, msg):
+  #   pos = msg.pose.pose.position
+  #   r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+  #   vel = msg.twist.twist.linear
+  #   omega = msg.twist.twist.anguler
+  #   self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
 
   def requestSpin(self, angleOffset):
     '''Requests a spin of angleOffset radians from controls'''
-    setpoint = self.state + np.array([0, 0, 0, 0, 0, angleOffset, 0, 0, 0, 0, 0, 0])
+    setpoint = self.current_state + np.array([0, 0, 0, 0, 0, angleOffset, 0, 0, 0, 0, 0, 0])
     self.publishSetpoint(setpoint)
   
   def requestForwardMovement(self, distance):
     '''Requests a movement of distance meters forward relative to the robot's bearing'''
-    setpoint = self.state + np.array([np.cos(self.state[5]), np.sin(self.state[5]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    setpoint = self.current_state + np.array([distance * np.cos(self.current_state[5]), distance * np.sin(self.current_state[5]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     self.publishSetpoint(setpoint)
 
   def publishSetpoint(self, setpoint):
