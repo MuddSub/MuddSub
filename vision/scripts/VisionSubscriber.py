@@ -23,12 +23,12 @@ def callback(image):
     image_message = bridge.imgmsg_to_cv2(image, "rgb8")
     input_img = np.copy(image_message).astype(float)
     input_img = torch.from_numpy(input_img).float()
-    print(type(input_img))
+    # print(type(input_img))
     input_img = Variable(input_img.type(torch.FloatTensor))
-    print(input_img)
-    print("input_img.size(): ", input_img.size())
+    # print(input_img)
+    # print("input_img.size(): ", input_img.size())
     input_img = input_img.permute(2,0,1)
-    print(input_img.size())
+    # print(input_img.size())
 # ______________________________________________________
     det = Detector(model_path, model_config_path)
     transform = transforms.Compose([transforms.Resize((256,256)),
@@ -36,9 +36,10 @@ def callback(image):
     input_img = transform(input_img)
     input_img = input_img.unsqueeze(0)
     output, _ = det.get_detections(input_img, conf_thresh=.99, nms_thresh=0)
-    
-    # # name = names[int(output[-1])]
-    # # get object names
+    print(output)
+    boundingBoxPublish(output)
+    # name = names[int(output[-1])]
+    # get object names
     # list_of_names = [names[int(i)] for i in output[:,-1]] 
     # print("name is", list_of_names)
     # rospy.loginfo(names)
@@ -66,11 +67,13 @@ def callback(image):
     # for i in range(len(bounding_box_list)):
     #     publish(list_of_names[i], bounding_box_list[i])
     #[image num, xmin, ymin, xmax, ymax, box conf, class conf, class num]
-    sample_output = [[1, 15, 51, 14, 41, 0.6, 0.9, 3] ,     # 3 = Bins (2018)
-                     [2, 10, 20, 30, 40, 0,   0,   11],     # 11 = Gate (2018)
-                     [3, 5,  6,  35, 55, 0.7, 0.9, 17]]     # 17 = Torpedo - Board (2019)
-    sample_output = torch.FloatTensor(sample_output)
-    boundingBoxPublish(sample_output)
+
+
+    # sample_output = [[1, 15, 51, 14, 41, 0.6, 0.9, 3] ,     # 3 = Bins (2018)
+    #                  [2, 10, 20, 30, 40, 0,   0,   11],     # 11 = Gate (2018)
+    #                  [3, 5,  6,  35, 55, 0.7, 0.9, 17]]     # 17 = Torpedo - Board (2019)
+    # sample_output = torch.FloatTensor(sample_output)
+    # boundingBoxPublish(sample_output)
 
 def boundingBoxPublish(detection_output_list):
     list_of_bounding_boxes = []
