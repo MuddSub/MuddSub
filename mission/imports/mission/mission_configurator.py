@@ -10,7 +10,7 @@ def generate_mission():
   with MissionRunner:
     # for loop 
     smach.StateMachine.add("GateSequence",mission_generator.generate_task("Gate",\
-      gate.GateAction()),\
+      gate.GateAction('test_camera',0.8, [0.05,0.05,0.05,0.05])),\
       transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'},
       remapping=REMAPPING)
   return MissionRunner

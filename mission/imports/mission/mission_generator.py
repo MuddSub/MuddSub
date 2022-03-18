@@ -22,6 +22,12 @@ class MonitorKillSwitch(smach.State):
             return 'active'
 
 def add_kill_monitor(State):
+  registered_outcomes = list(State.get_registered_outcomes())
+  print(registered_outcomes)
+  for outcome in ['succeeded', 'aborted', 'active']:
+    if outcome not in registered_outcomes:
+      raise Exception("A monitored state must have the succeeded, aborted, and active outcomes")
+
   def monitor_task_child_cb(outcome):
       if outcome['MonitorKill']=='aborted' \
         or outcome['RunState']=='aborted' \
@@ -42,14 +48,14 @@ def add_kill_monitor(State):
       else:
           return 'aborted' 
   
-  REMAPPING = {"userdata":"userdata"}
+  # REMAPPING = {"userdata":"userdata"}
 #   MonitorState = smach.Concurrence(outcomes = ['preempted','aborted','succeeded','active'],
 #                                       default_outcome= 'active',
 #                                     child_termination_cb = monitor_task_child_cb,
 #                                     outcome_cb = monitor_task_outcome_cb,
 #                                     input_keys=['userdata'],output_keys=['userdata'])
-  MonitorState = smach.Concurrence(outcomes = ['preempted','aborted','succeeded','active'],
-                                      default_outcome= 'active',
+  MonitorState = smach.Concurrence(outcomes = registered_outcomes,
+                                    default_outcome = 'active',
                                     child_termination_cb = monitor_task_child_cb,
                                     outcome_cb = monitor_task_outcome_cb,
                                     input_keys=list(State.get_registered_input_keys()), output_keys=list(State.get_registered_output_keys()))
@@ -80,24 +86,20 @@ def generate_task(task_name,taskAction):
     smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target_tester.LocateTarget(task_name,'test_camera',0.8, [0.05,0.05,0.05,0.05])),
           transitions={'succeeded':AdvancementPhrase,
                        'active':  LocalizationPhrase,
-                       'aborted':'aborted',
-                       'preempted':'preempted'},
+                       'aborted':'aborted'},
         #   remapping={'locate_target_input': 'isWaiting',
         #              'locate_target_output': 'isWaiting'}
           remapping = {'isWaiting_in':'isWaiting',
-                        'isWaiting_out':'isWaiting'})
-    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name)),
+                       'isWaiting_out':'isWaiting'})
+    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name,'test_camera')),
           transitions={'succeeded':TaskSpecificPhrase,
                        'active':AdvancementPhrase,
-                       'aborted': 'aborted',
-                       'lost_target':LocalizationPhrase,
-                       'preempted':'preempted'},
+                       'aborted': 'aborted'},
           remapping=REMAPPING)
     smach.StateMachine.add(TaskSpecificPhrase,add_kill_monitor(gate.GateAction('test_camera',0.8, [0.05,0.05,0.05,0.05])), 
           transitions={'succeeded':'succeeded',
                        'active':TaskSpecificPhrase, 
                        'aborted':'aborted',
-                       'lost_target':LocalizationPhrase,
-                       'preempted':'preempted'},
+                       'lost_target':LocalizationPhrase},
           remapping=REMAPPING)
   return TaskUnderTemplate

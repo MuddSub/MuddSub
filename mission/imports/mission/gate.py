@@ -25,14 +25,14 @@ class GateAction(smach.State):
   If we sdon't see the gate, we rotate and search for the gate again
     - Goes back to the previous state, locate target
 
-  If we reached the gate, return success
+  If we reached the gate, return succeeded
     - how do we determine if we have reached the gate
     - How do we differentiate reaching gate and losing gate in sight
 
-  ''' 
+  '''
   
   def __init__(self,camera_name, min_confidence, thresholds):
-    smach.State.__init__(self, outcomes=['active', 'success', 'abort','lost_target'],
+    smach.State.__init__(self, outcomes=['active', 'succeeded', 'aborted','lost_target'],
                               input_keys = ['isWaiting_in',],
                               output_keys = ['isWaiting_out'])
                             
@@ -56,11 +56,13 @@ class GateAction(smach.State):
     self.lastSearch = self.startTime
 
 
-  def stateCallback(self, msg):
+  def state_callback(self, msg):
     pos = msg.pose.pose.position
-    r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+    orientation = msg.pose.pose.orientation
+    orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+    r,p,y = euler_from_quaternion(orientation)
     vel = msg.twist.twist.linear
-    omega = msg.twist.twist.anguler
+    omega = msg.twist.twist.angular
     self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
 
   def gate_callback(self,data):
@@ -81,7 +83,9 @@ class GateAction(smach.State):
 
     point = data.pose.pose.position.x
     point = (point.x, point.y, point.z)
-    orientation = euler_from_quaternion(data.pose.pose.orientation)
+    orientation = data.pose.pose.orientation
+    orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+    orientation = euler_from_quaternion(orientation)
     velocity = data.twist.twist.linear
     velocity = (velocity.x, velocity.y, velocity.z)      
     angular_velocity = data.twist.twist.angular
@@ -96,14 +100,14 @@ class GateAction(smach.State):
   
   def execute(self, ud):
     if self.startTime - self.lastSearch > 60:
-      return 'abort'
+      return 'aborted'
 
     elif abs(self.range_to_beam - 1) < 0.1:
       self.requestForwardMovement(0)
 
       self.requestAnyMovement("Right", self.GATE_LENGTH / 4)
       self.requestForwardMovement(1)
-      return 'success'
+      return 'succeeded'
 
     elif ud.isWaiting_in and (self.bem_visible or self.gate_visible):
       if self.reached_requested_pos:
@@ -118,7 +122,7 @@ class GateAction(smach.State):
       return 'lost_target'
 
     else:
-      return 'abort'
+      return 'aborted'
      
   def requestSpin(self, angleOffset):
     '''Requests a spin of angleOffset radians from controls'''

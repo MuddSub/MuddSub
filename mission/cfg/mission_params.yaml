@@ -1,15 +1,39 @@
 spoof:
   setpoint:
     pose:
-      orientation: {pitch: 0.0, roll: 0.0, yaw: 0.0}
-      position: {x: 0.0, y: 0.0, z: 0.0}
+      orientation:
+        pitch: 0.0
+        roll: 0.0
+        yaw: 0.0
+      position:
+        x: 0.0
+        y: 0.0
+        z: 0.0
     twist:
-      angular: {pitch: 0.0, roll: 0.0, yaw: 0.0}
-      linear: {x: 0.0, y: 0.0, z: 0.0}
+      angular:
+        pitch: 0.0
+        roll: 0.0
+        yaw: 0.0
+      linear:
+        x: 0.0
+        y: 0.0
+        z: 0.0
   slam:
     pose:
-      orientation: {pitch: 0.0, roll: 0.0, yaw: 0.0}
-      position: {x: 4.6, y: 2.8, z: 3.4}
+      orientation:
+        pitch: 0.0
+        roll: 0.0
+        yaw: 0.0
+      position:
+        x: 4.6
+        y: 2.8
+        z: 3.4
     twist:
-      angular: {pitch: 0.0, roll: 0.0, yaw: 0.0}
-      linear: {x: 0.0, y: 0.0, z: 0.0}
+      angular:
+        pitch: 0.0
+        roll: 0.0
+        yaw: 0.0
+      linear:
+        x: 0.0
+        y: 0.0
+        z: 0.0

@@ -13,7 +13,9 @@ import numpy as np
 
 def state_callback(msg):
   pos = msg.pose.pose.position
-  r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+  orientation = msg.pose.pose.orientation
+  orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+  r,p,y = euler_from_quaternion(orientation)
   vel = msg.twist.twist.linear
   omega = msg.twist.twist.anguler
   ControlState._current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])

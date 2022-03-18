@@ -45,10 +45,9 @@ if the task_name != Gate
 class LocateTarget(smach.State):
   def __init__(self, task_name, camera_name, min_confidence, thresholds):
     rospy.loginfo("LocateTarget init")
-    smach.State.__init__(self, outcomes=['active', 'success', 'abort'], 
+    smach.State.__init__(self, outcomes=['active', 'succeeded', 'aborted'], 
                               input_keys = ['isWaiting_in',],
                               output_keys = ['isWaiting_out'])
-    self.locateTarget_subscriber = rospy.Subscriber('/mission/target', Bool, self.callback)
     self.detection_subscriber = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.detection_callback)
     self.error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
     self.state_subscriber = rospy.Subscriber('/slam/robot/state', Odometry, self.state_callback)
@@ -80,7 +79,9 @@ class LocateTarget(smach.State):
       # 2. roll, pitch, yaw same threshold
       point = data.pose.pose.position.x
       point = (point.x, point.y, point.z)
-      orientation = euler_from_quaternion(data.pose.pose.orientation)
+      orientation = data.pose.pose.orientation
+      orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+      orientation = euler_from_quaternion(orientation)
       velocity = data.twist.twist.linear
       velocity = (velocity.x, velocity.y, velocity.z)      
       angular_velocity = data.twist.twist.angular
@@ -93,17 +94,20 @@ class LocateTarget(smach.State):
   def check_threshold(self, position, threshold):
     return reduce(lambda x, y: x and y, list(map(lambda x: x < threshold, position)))
 
-  def stateCallback(self, msg):
+  def state_callback(self, msg):
     pos = msg.pose.pose.position
-    r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+    orientation = msg.pose.pose.orientation
+    orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+    r,p,y = euler_from_quaternion(orientation)
     vel = msg.twist.twist.linear
-    omega = msg.twist.twist.anguler
+    omega = msg.twist.twist.angular
     self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
     
   def execute(self, userdata):
-    detection_subscriber = rospy.Subscriber('vision/' + self.camera_name + '/detection_array', DetectionArray, self.detection_callback)
-    error_subscriber =  rospy.Subscriber('/controls/robot/error', Odometry, self.error_callback)
     if self.task_name == 'Gate':
+      if self.current_state is None:
+        print(userdata.isWaiting_out)
+        return 'active'
       if self.found_target and self.centered:
         #rospy.loginfo('Request to stop')
         self.requestForwardMovement(0)
@@ -122,7 +126,7 @@ class LocateTarget(smach.State):
         elif self.spin_count == self.numSpins:
           self.requestForwardMovement(10)
         elif self.spin_count >= self.numSpins:
-          return 'abort'
+          return 'aborted'
         userdata.isWaiting_out = True
         return 'active'
   
@@ -130,7 +134,7 @@ class LocateTarget(smach.State):
   #   pos = msg.pose.pose.position
   #   r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
   #   vel = msg.twist.twist.linear
-  #   omega = msg.twist.twist.anguler
+  #   omega = msg.twist.twist.angular
   #   self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
 
   def requestSpin(self, angleOffset):

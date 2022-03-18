@@ -13,7 +13,7 @@ from vision.msg import DetectionArray
 class GoToTarget(smach.State):
   def __init__(self, task_name,camera_name):
     rospy.loginfo("GoToTarget init")
-    smach.State.__init__(self, outcomes=['active', 'success', 'abort'], input_keys = ['target', 'variance_threshold'])
+    smach.State.__init__(self, outcomes=['active', 'succeeded', 'aborted'], input_keys = ['target', 'variance_threshold'])
     self.goToTarget_subscriber = rospy.Subscriber('/mission/reach_target', Bool, self.callback)
     self.detection_subscriber = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.detection_callback)
     self.reached = False
@@ -37,9 +37,10 @@ class GoToTarget(smach.State):
     self.lastSearch = rospy.get_time()
   
   def execute(self, userdata):
-    if self.reached == False and self.startTime - self.lastSearch < 20:
-        return 'active'
-    elif self.reached == True:
-        return 'succeeded'
-    else:
-        return 'abort'
+    return 'succeeded'
+    # if self.reached == False and self.startTime - self.lastSearch < 20:
+    #     return 'active'
+    # elif self.reached == True:
+    #     return 'succeeded'
+    # else:
+    #     return 'aborted'
