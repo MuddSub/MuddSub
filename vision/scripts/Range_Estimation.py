@@ -19,7 +19,8 @@ class Range_Estimation():
         self.CAMERA_WIDTH = 1280
         self.CAMERA_HEIGHT = 720
         self.depth_map = None
-        self.sample_depth_map = np.random.rand(self.CAMERA_HEIGHT, self.CAMERA_WIDTH)
+    #    self.sample_depth_map = np.random.rand(self.CAMERA_HEIGHT, self.CAMERA_WIDTH)
+        self.sample_depth_map = np.ones((self.CAMERA_HEIGHT, self.CAMERA_WIDTH))
 
         #making a testing bounding box
 
@@ -78,14 +79,15 @@ class Range_Estimation():
         #    falls within the bounding box
         bounding_box_with_depth = self.sample_depth_map[y_min: y_max + 1, x_min: x_max + 1]
 
-        # 3. Find the 50 min points and take average
+        # 3. Find the num_element min points and take average
         num_elements = int(bounding_box_with_depth.size * 0.1)
         print(bounding_box_with_depth)
         print(len(bounding_box_with_depth.flatten()))
         print(num_elements)
         min_indices = np.argpartition(bounding_box_with_depth.flatten(), num_elements)[:num_elements]
-        min_points = bounding_box_with_depth[min_indices]
-        # out of bound error
+        print(min_indices)
+        print(len(min_indices))
+        min_points = bounding_box_with_depth.flatten()[min_indices]
         # 4. return
         return np.mean(min_points)
     
