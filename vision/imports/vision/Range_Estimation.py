@@ -13,35 +13,35 @@ from geometry_msgs.msg import Vector3, Pose2D
 
 class Range_Estimation():
     def __init__(self):
-        rospy.init_node('range_estimation')
+     #   rospy.init_node('range_estimation')
         self.depthMapSub  = rospy.Subscriber('/zed2/zed_node/depth/depth_registered', Image, self.callback)
         self.bridge = CvBridge()
         self.CAMERA_WIDTH = 1280
         self.CAMERA_HEIGHT = 720
         self.depth_map = None
-    #    self.sample_depth_map = np.random.rand(self.CAMERA_HEIGHT, self.CAMERA_WIDTH)
-        self.sample_depth_map = np.ones((self.CAMERA_HEIGHT, self.CAMERA_WIDTH))
+        self.sample_depth_map = np.random.rand(self.CAMERA_HEIGHT, self.CAMERA_WIDTH)
+    #    self.sample_depth_map = np.ones((self.CAMERA_HEIGHT, self.CAMERA_WIDTH))
 
         #making a testing bounding box
 
-        # creating the name of the detection
-        name = "Gate"
+        # # creating the name of the detection
+        # name = "Gate"
 
-        # creating the confidance value
-        confidence = 0.80
+        # # creating the confidance value
+        # confidence = 0.80
 
-        # creating the bounding box
-        # the left top corner I think
-        object_xmin = 0.1 #these values go from 0 to 1
-        object_ymin = 0.1
-        # the right bot corner I think
-        object_xmax = 0.9 
-        object_ymax = 0.9
-        object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0)
-        box = BoundingBox2D(object_center, (object_xmax-object_xmin)/2, (object_ymax-object_ymin)/2)
+        # # creating the bounding box
+        # # the left top corner I think
+        # object_xmin = 0.1 #these values go from 0 to 1
+        # object_ymin = 0.1
+        # # the right bot corner I think
+        # object_xmax = 0.9 
+        # object_ymax = 0.9
+        # object_center = Pose2D((object_xmax+object_xmin)/2, (object_ymax+object_ymin)/2, 0)
+        # box = BoundingBox2D(object_center, (object_xmax-object_xmin)/2, (object_ymax-object_ymin)/2)
         
-        # creating the final BoundingBox message from the name, confidance, and box
-        self.boundingBox = BoundingBox(Header(), name, confidence, box)
+        # # creating the final BoundingBox message from the name, confidance, and box
+        # self.boundingBox = BoundingBox(Header(), name, confidence, box)
 
 
     def callback(self, image):
@@ -89,6 +89,8 @@ class Range_Estimation():
         print(len(min_indices))
         min_points = bounding_box_with_depth.flatten()[min_indices]
         # 4. return
+        if (np.NaN in min_points):
+            print("--------------------------------=-=----------------------------------------------------------------")
         return np.mean(min_points)
     
     def estimate_angles(boundingBox):

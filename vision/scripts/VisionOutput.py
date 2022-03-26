@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 import sys
+from vision.Range_Estimation import Range_Estimation
 from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 from vision.VisionPublisher import VisionPublisher
 from std_msgs.msg import Header, String
@@ -16,7 +17,7 @@ def callback(data):
     """
     detectionList = []
     for currentBoundingBox in data.bounding_boxes:
-        range = estimate_range(currentBoundingBox)
+        range = rangeEstimator.estimate_range(currentBoundingBox)
         theta, phi = estimate_angles(currentBoundingBox)
         detectionList += [Detection(Header(), 
                             currentBoundingBox.name, 
@@ -56,6 +57,7 @@ if __name__ == '__main__':
     camera_name = sys.argv[1]
     rospy.init_node('vision_output')
     visionPublisher = VisionPublisher(camera_name)
+    rangeEstimator = Range_Estimation()
     # rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
     rospy.Subscriber(f"/vision/{camera_name}/bounding_box_array", BoundingBoxArray, callback)
     rospy.spin()
