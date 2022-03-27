@@ -89,8 +89,7 @@ def generate_task(task_name,taskAction):
                        'aborted':'aborted'},
         #   remapping={'locate_target_input': 'isWaiting',
         #              'locate_target_output': 'isWaiting'}
-          remapping = {'isWaiting_in':'isWaiting',
-                       'isWaiting_out':'isWaiting'})
+          remapping = {'isWaiting':'isWaiting'})
     smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name,'test_camera')),
           transitions={'succeeded':TaskSpecificPhrase,
                        'active':AdvancementPhrase,

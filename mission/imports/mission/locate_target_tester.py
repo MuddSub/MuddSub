@@ -46,8 +46,8 @@ class LocateTarget(smach.State):
   def __init__(self, task_name, camera_name, min_confidence, thresholds):
     rospy.loginfo("LocateTarget init")
     smach.State.__init__(self, outcomes=['active', 'succeeded', 'aborted'], 
-                              input_keys = ['isWaiting_in',],
-                              output_keys = ['isWaiting_out'])
+                              input_keys = ['isWaiting',],
+                              output_keys = ['isWaiting'])
     self.detection_subscriber = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.detection_callback)
     self.error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
     self.state_subscriber = rospy.Subscriber('/slam/robot/state', Odometry, self.state_callback)
@@ -106,7 +106,7 @@ class LocateTarget(smach.State):
   def execute(self, userdata):
     if self.task_name == 'Gate':
       if self.current_state is None:
-        print(userdata.isWaiting_out)
+        print(userdata.isWaiting)
         return 'active'
       if self.found_target and self.centered:
         #rospy.loginfo('Request to stop')
@@ -114,9 +114,9 @@ class LocateTarget(smach.State):
         return 'succeeded'
 
       # waiting for controls to move us
-      elif userdata.isWaiting_in:
+      elif userdata.isWaiting:
         if self.reached_requested_position:
-          userdata.isWaiting_out = False
+          userdata.isWaiting = False
         return 'active'
 
       else:
@@ -127,7 +127,7 @@ class LocateTarget(smach.State):
           self.requestForwardMovement(10)
         elif self.spin_count >= self.numSpins:
           return 'aborted'
-        userdata.isWaiting_out = True
+        userdata.isWaiting = True
         return 'active'
   
   # def stateCallback(self, msg):
