@@ -4,4 +4,5 @@ float64 range
 float64 theta
 float64 phi
 float64 confidence
+float64 id
 vision_msgs/BoundingBox2D boundingBox
