@@ -67,7 +67,7 @@ class LocateTarget(smach.State):
 
   def detection_callback(self, data):
     for i in data.detections:
-      if i.name == 'gate' and i.confidence > self.min_confidence:
+      if i.name == 'Gate' and i.confidence > self.min_confidence:
         self.found_target = True
         self.centered = abs(i.boundingBox.center.x - 0.5) < 0.01
         break
@@ -82,6 +82,7 @@ class LocateTarget(smach.State):
       orientation = data.pose.pose.orientation
       orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
       orientation = euler_from_quaternion(orientation)
+      
       velocity = data.twist.twist.linear
       velocity = (velocity.x, velocity.y, velocity.z)      
       angular_velocity = data.twist.twist.angular
@@ -106,15 +107,16 @@ class LocateTarget(smach.State):
   def execute(self, userdata):
     if self.task_name == 'Gate':
       if self.current_state is None:
-        print(userdata.isWaiting)
+        rospy.loginfo(userdata.isWaiting)
         return 'active'
       if self.found_target and self.centered:
-        #rospy.loginfo('Request to stop')
+        rospy.loginfo('Request to stop')
         self.requestForwardMovement(0)
         return 'succeeded'
 
       # waiting for controls to move us
       elif userdata.isWaiting:
+        rospy.loginfo("---------------------stuck waiting--------")
         if self.reached_requested_position:
           userdata.isWaiting = False
         return 'active'

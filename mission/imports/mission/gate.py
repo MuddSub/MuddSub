@@ -33,8 +33,8 @@ class GateAction(smach.State):
   
   def __init__(self,camera_name, min_confidence, thresholds):
     smach.State.__init__(self, outcomes=['active', 'succeeded', 'aborted','lost_target'],
-                              input_keys = ['isWaiting_in',],
-                              output_keys = ['isWaiting_out'])
+                              input_keys = ['isWaiting',],
+                              output_keys = ['isWaiting'])
                             
 
     self.isVisible = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.gate_callback)
@@ -54,6 +54,7 @@ class GateAction(smach.State):
     self.range_to_beam = float('-inf')
     self.startTime = rospy.get_time()
     self.lastSearch = self.startTime
+    self.header_seq = 0
 
 
   def state_callback(self, msg):
@@ -69,7 +70,7 @@ class GateAction(smach.State):
     gate_flag = False
     beam_flag = False
     for i in data.detections:
-      if i.name == 'gate' and i.confidence > self.min_confidence:
+      if i.name == 'Gate' and i.confidence > self.min_confidence:
         gate_flag= True
       elif i.name == 'gate_center_beam' and i.confidence > self.min_confidence:
         beam_flag = True
@@ -109,12 +110,12 @@ class GateAction(smach.State):
       self.requestForwardMovement(1)
       return 'succeeded'
 
-    elif ud.isWaiting_in and (self.bem_visible or self.gate_visible):
+    elif ud.isWaiting and (self.bem_visible or self.gate_visible):
       if self.reached_requested_pos:
-          ud.isWaiting_out = False
+          ud.isWaiting = False
       return 'active'
 
-    elif not ud.isWaiting_in and (self.beam_visible or self.gate_visible):
+    elif not ud.isWaiting and (self.beam_visible or self.gate_visible):
       self.requestForwardMovement(1)
       return 'active'
 

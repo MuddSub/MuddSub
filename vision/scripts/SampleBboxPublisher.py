@@ -11,7 +11,9 @@ from geometry_msgs.msg import Vector3, Pose2D
 
 
 def sampleDetectionPublisher():
-    visionPublisher = VisionPublisher("left_camera")
+    # visionPublisher = VisionPublisher("left_camera")
+    visionPublisher = VisionPublisher("test_camera")
+
     rospy.init_node('sample_bbox_publisher')
     while not rospy.is_shutdown():
 
@@ -19,7 +21,7 @@ def sampleDetectionPublisher():
         name = "Gate"
 
         # creating the confidance value
-        confidence = 0.80
+        confidence = 0.81
 
         # creating the bounding box
         # the left top corner I think

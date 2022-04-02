@@ -100,5 +100,5 @@ def generate_task(task_name,taskAction):
                        'active':TaskSpecificPhrase, 
                        'aborted':'aborted',
                        'lost_target':LocalizationPhrase},
-          remapping=REMAPPING)
+          remapping={'isWaiting':'isWaiting'})
   return TaskUnderTemplate
