@@ -307,7 +307,7 @@ namespace MuddSub::MotionPlanning
         {
             std::cout<<"Adding Sin traversal"<<std::endl;
 
-            addSinTraversalSegment(std::stoi(dataList[0]),std::stoi(dataList[1]),0);
+            addSinTraversal(std::stoi(dataList[0]),std::stoi(dataList[1]),0);
 
         }else if(motion == AStar::rotationalMovement)
         {
@@ -422,32 +422,72 @@ namespace MuddSub::MotionPlanning
         
         }
 
+        std::cout<<"Directions"<<std::endl;
+
+
+    
+        for(int i = 0; i < directions.size(); i++)
+        {
+            std::cout<<path_[i][0]<<' '<<path_[i][1]<<std::endl;
+            std::cout<<directions[i]<<std::endl;
+        }
+
+        std::cout<<"----------------------"<<std::endl;
+        std::cout<<"Path 1"<<std::endl;
+        
+        std::vector<std::vector<double>> path1 = {{0, 1, 0}, {1, 2, 0}, {2, 3, 0}, {3, 4, 0}};
+
+        addSinTraversalSegment(2, 2, period, path1);
+
+        std::vector<std::vector<double>> path2 = {{4, 3, 0}, {3, 4, 0}, {2, 5, 0}, {1, 6, 0}};
+
+        std::cout<<"----------------------"<<std::endl;
+        std::cout<<"Path 2"<<std::endl;
+        addSinTraversalSegment(2, freq, period, path2);
+        std::cout<<"out of segment"<<std::endl; 
+
+        std::vector<std::vector<double>> path3 = {{0, 1, 0}, {0, 3, 0}, {0, 5, 0}, {0, 6, 0}};
+
+        std::cout<<"----------------------"<<std::endl;
+        std::cout<<"Path 3"<<std::endl;
+        addSinTraversalSegment(2, freq, period, path3);
+        std::cout<<"out of segment"<<std::endl; 
+
+
+        std::vector<std::vector<double>> path4 = {{1, 1, 0}, {4, 1, 0}, {8, 1, 0}, {10, 1, 0}};
+
+        std::cout<<"----------------------"<<std::endl;
+        std::cout<<"Path 4"<<std::endl;
+        addSinTraversalSegment(2, 4, period, path4);
+        std::cout<<"out of segment"<<std::endl; 
+
     }
 
-    void AStar::addSinTraversalSegment(int amp, int freq, int period) {
+    void AStar::addSinTraversalSegment(int amp, int freq, int period, std::vector<std::vector<double>> path) {
         std::cout<<"amp" <<amp;
         std::cout<<"freq"<<freq;
         std::cout<<"period"<<period;
 
-        double h = path_[0][0];
+        double h = path[0][0];
         double x;
-        double k = path_[0][1];
-        double y = path_[0][1];
+        double k = path[0][1];
+        double y = path[0][1];
 
         std::vector<std::vector<double>> parab_path;
 
         //y-direction: x=msin(fy-h)+k
-        if (path_[0][0] - path_[1][0] == 0) {
+        if (path[0][0] - path[1][0] == 0) {
+            std::cout<<"is y"<<std::endl;
             std::vector<double> y_path;
-            double f = (1 / (path_[0][1] - path_[1][1]) * M_PI);
-            double interval = abs(path_[0][1] - path_[1][1])/freq;
-            for (int i = path_[0][1]; i < (path_[path_.size()-1][1])+1; i++){
+            double f = (1 / (path[0][1] - path[1][1]) * M_PI);
+            double interval = abs(path[0][1] - path[1][1])/freq;
+            for (int i = path[0][1]; i < (path[path.size()-1][1])+1; i++){
                 for (int j = 0; j <= freq; j++){
                     y = y + interval;
                     x = (amp*sin((f*y)-h))+k;
                     y_path.push_back(x);
                     y_path.push_back(y);
-                    y_path.push_back(path_[0][2]);
+                    y_path.push_back(path[0][2]);
                     parab_path.push_back(y_path);
                     y_path.clear();
                 }
@@ -456,17 +496,17 @@ namespace MuddSub::MotionPlanning
         }
 
         //x-direction: y=msin(fx-h)+k
-        if (path_[0][1] - path_[1][1] == 0) {
+        if (path[0][1] - path[1][1] == 0) {
             std::vector<double> x_path;
-            double f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
-            double interval = abs(path_[0][0] - path_[1][0])/freq;
-            for (int i = path_[0][0]; i < (path_[path_.size()-1][0])+1; i++){
+            double f = (1 / (path[1][0] - path[0][0]) * M_PI);
+            double interval = abs(path[0][0] - path_[1][0])/freq;
+            for (int i = path[0][0]; i < (path[path.size()-1][0])+1; i++){
                 for (int j = 0; j <= freq; j++){
                     double x = x + interval;
                     double y = (amp*sin((f*y)-h))+k;
                     x_path.push_back(x);
                     x_path.push_back(y);
-                    x_path.push_back(path_[0][2]);
+                    x_path.push_back(path[0][2]);
                     parab_path.push_back(x_path);
                     x_path.clear();
                 }
@@ -475,25 +515,28 @@ namespace MuddSub::MotionPlanning
         }
 
         //diagonal-direction:
-        if (abs(path_[0][0] - path_[1][0]) == 1) {
+        if (abs(path[0][0] - path[1][0]) == 1) {
+            std::cout<<"is diagonlal"<<std::endl;
             std::vector<double> d_path;
 
-            double xlength = pow((path_[path_.size()-1][0] - path_[0][0]),2);
-            double ylength = pow((path_[path_.size()-1][1] - path_[0][1]),2);
+            double xlength = pow((path[path.size()-1][0] - path[0][0]),2);
+            double ylength = pow((path[path.size()-1][1] - path[0][1]),2);
             double distance = sqrt(xlength + ylength);
 
-            double f = (1 / (path_[1][0] - path_[0][0]) * M_PI);
+            double f = (1 / (path[1][0] - path[0][0]) * M_PI);
             double a = (M_PI/4);
-            double interval = abs(path_[0][0] - path_[1][0])/freq;
-            for (int i = path_[0][0]; i < path_.size(); i++){
+            double interval = abs(path[0][0] - path[1][0])/freq;
+            std::cout<<"interval"<<interval<<std::endl;
+            for (int i = path[0][0]; i < path.size(); i++){
                 for (int j = 0; j <= freq; j++){
                     double x = x + interval;
                     double y = (amp*sin((f*y)-h))+k;
                     double xcoord = (((x-h)*cos(-a)) + ((y-k)*sin(-a)) + h);
                     double ycoord = (-((x-h)*sin(-a)) + ((y-k)*cos(-a)) + h);
+                    std::cout<<"diff"<<ycoord- xcoord<<' '<<std::endl;
                     d_path.push_back(xcoord);
                     d_path.push_back(ycoord);
-                    d_path.push_back(path_[0][2]);
+                    d_path.push_back(path[0][2]);
 
                     parab_path.push_back(d_path);
                     d_path.clear();
@@ -504,12 +547,9 @@ namespace MuddSub::MotionPlanning
 
         for(int i = 0; i < parab_path.size(); i++)
         {
-            for(int j = 0; j < parab_path[0].size(); j++)
-            {
-                std::cout<<parab_path[i][j]<<' ';
-            }
-            std::cout<<std::endl;
+            std::cout<<"("<<parab_path[i][0]<<", "<<parab_path[i][1]<<"),";  
         }
+        std::cout<<std::endl;
         std::cout<<"Added sine traversal"<<std::endl;
     }
 

@@ -52,40 +52,72 @@ def parabola(path, period, amp, freq):
 
     # y-direction: x=msin(fy-h)+k
     if path[0][0] - path[1][0] == 0: 
-        f = (1/(path[0][1] - path[1][1]) * math.pi)
-        interval = abs(path[0][1] - path[1][1])/freq
-        for dy in range(path[0][1], (path[len(path)-1][1])+1):
-            for i in range(freq+1):
-                y = y + interval
-                x = (m*math.sin((f*y)-h))+k
-                parab_path += [[-x,y,path[0][2]]]
+        mult = 1
+        if(path[0][1] - path[0][0] < 0):
+            mult = -1
+        f = (1/(path[0][1] - path[1][1]) * math.pi) * mult
+        endy = path[len(path)-1][1]
+        interval = (path[1][1] - path[0][1])/freq 
+    
+        index = 0
+        while(abs(y) <= (abs(endy) + 0.0001)):            
+            x = (m*math.sin((f*(y-k))))+h
+            parab_path += [[-x,y,path[index][2]]]
+            y += interval
+            if (y > mult * path[index][1]):
+                index += 1
+                index = min(index, len(path)-1)
+                
     # x-direction: y=msin(fx-h)+k
     elif path[0][1] - path[1][1] == 0:
-        f = (1/(path[1][0] - path[0][0]) * math.pi)
-        interval = abs(path[0][0] - path[1][0])/freq
-        for dx in range(path[0][0], (path[len(path)-1][0])+1):
-            for i in range(freq+1):
-                x = x + interval
-                y = (m*math.sin((f*x)-h))+k
-                parab_path += [[x,y,path[0][2]]]
-    
+        mult = 1
+        if(path[1][0] - path[0][0] < 0):
+            mult = -1
+        f = (1/(path[1][0] - path[0][0]) * math.pi) * mult
+        interval = (path[1][0] - path[0][0])/freq
+        lastx = path[len(path)-1][0]
+        index = 0 #first z value is path[index][2]
+        while(abs(x) <= (abs(lastx) + 0.0001)):
+            y = (m*math.sin((f*(x-h))))+k
+            parab_path += [[x,y,path[index][2]]]
+            x = x + interval
+            if (x > path[index][0]):
+                index += 1
+                index = min(index, len(path)-1)
+            
+                
     # diagonal-direction: 
     elif abs(path[0][0] - path[1][0]) == 1:
+        multx = 1
+        multy = 1
+        if(path[1][0] - path[0][0] < 0):
+            multx = -1
+        if(path[1][1] - path[0][1] < 0):
+            multy = -1
+
         xlength = pow((path[len(path)-1][0] - path[0][0]),2)
         ylength = pow((path[len(path)-1][1] - path[0][1]),2)
-        distance = int(pow((xlength+ylength), 0.5))
+        distance = int(pow((xlength+ylength), 0.5)) * multx
 
-        f = (1/(path[1][0] - path[0][0]) * math.pi)
+        f = (1/(path[1][0] - path[0][0]) * math.pi) * multx
         a = (math.pi/4)
-        interval = abs(path[0][0] - path[1][0])/freq
-        for dx in range(path[0][0], distance):
+        interval = (path[1][0] - path[0][0])/freq
+        index = 0
+        for dx in range(abs(path[0][0]), (abs(distance))):
             for i in range(freq+1):
+                y = (m*math.sin((f*(x-h))))+k
+                xcoord = ((x-h)*math.cos(-a) + (y-k)*math.sin(-a) + h) 
+                ycoord = (-(x-h)*math.sin(-a) + (y-k)*math.cos(-a) + h) * multy
+                parab_path += [[xcoord, ycoord, path[index][2]]]
                 x = x + interval
-                y = (m*math.sin((f*x)-h))+k
-                xcoord = ((x-h)*math.cos(-a) + (y-k)*math.sin(-a) + h)
-                ycoord = (-(x-h)*math.sin(-a) + (y-k)*math.cos(-a) + h)
-                parab_path += [[xcoord, ycoord, path[0][2]]]
+                if (abs(x) > abs(path[index][0])):
+                    index += 1
+                    index = min(index, len(path)-1)
 
+    
+    for point in parab_path:
+        for i in range(len(point)):
+            point[i] = round(point[i], 2)
     
     return parab_path
 
@@ -132,3 +164,26 @@ def time_stamp(path, velocity):
     for i in range(len(path)):
         path[i] += [i/velocity]            
 
+
+def printPath(twodarray):
+    for point in twodarray:
+        print("(", point[0], ", ", point[1], ", ", point[2], "),", end = "")
+    
+
+def main():
+    path1 = [[0, 1, 1], [0, 2, 2], [0, 3, 3], [0, 4, 4]] # Straight vertical line
+    path2 = [[1, 0, 1], [2, 0, 2], [3, 0, 3], [4, 0, 4]] # Straight horizontal line
+    path3 = [[0, 1, 1], [0, 3, 2], [0, 5, 3], [0, 6, 4]] # Vertical line (points not all same distance)
+    path4 = [[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]] # Diagonal line (up left)
+
+    path5 = [(0, -1, 1), (0, -2, 2), (0, -3, 3), (0, -4, 4)] # Straight vertical line
+    path6 = [(-1, 0, 1), (-2, 0, 2), (-3, 0, 3), (-4, 0, 4)] # Straight horizontal line
+    path7 = [(0, -1, 1), (0, -3, 2), (0, -5, 3), (0, -6, 4)] # Vertical line (points not all same distance)
+    path8 = [(-1, -1, 1), (-2, -2, 2), (-3, -3, 3), (-4, -4, 4)] # Diagonal line (down left)
+    path9 = [(1, -1, 1), (2, -2, 2), (3, -3, 3), (4, -4, 4)] # Diagonal line (down right)
+    path10 = [(-1, 1, 1), (-2, 2, 2), (-3, 3, 3), (-4, 4, 4)] # Diagonal line (up left)
+    
+    printPath(parabola(path4, 2, 2, 1))
+
+if __name__=="__main__":
+    main()
