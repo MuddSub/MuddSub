@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from multiprocessing.dummy import active_children
 import rospy
 import smach
