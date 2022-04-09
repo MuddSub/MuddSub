@@ -54,12 +54,13 @@ def estimate_angles(boundingBox):
     return 10, 20
     
 if __name__ == '__main__':
-    camera_name = sys.argv[1]
+    # camera_name = sys.argv[1]
     rospy.init_node('vision_output')
-    visionPublisher = VisionPublisher(camera_name)
+    # visionPublisher = VisionPublisher(camera_name)
+    visionPublisher = VisionPublisher("test_camera")
     rangeEstimator = Range_Estimation()
-    # rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
-    rospy.Subscriber(f"/vision/{camera_name}/bounding_box_array", BoundingBoxArray, callback)
+    rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
+    # rospy.Subscriber(f"/vision/{camera_name}/bounding_box_array", BoundingBoxArray, callback)
     rospy.spin()
     
     

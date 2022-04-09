@@ -18,7 +18,7 @@ def sampleDetectionPublisher():
     while not rospy.is_shutdown():
 
         # creating the name of the detection
-        name = "Gate"
+        name = "Gate!"
 
         # creating the confidance value
         confidence = 0.81
