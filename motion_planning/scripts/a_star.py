@@ -155,8 +155,8 @@ def solveGrid(grid, start_x, start_y, end_x, end_y):
 
 def makeParent(grid, node):
     grid[node.x][node.y].string = "3"
-    if(node.parent == None): return 
-    makeParent(grid, node.parent)
+    if(node.parent == None): return []
+    return [[node.x,node.y]] + makeParent(grid, node.parent)
 
 def animateGrid(grid):
     """Create a graphical representation of the grid in matplotlib"""
@@ -253,6 +253,8 @@ def printGrid(grid):
     # ax.set_yticklabels([])
 
     plt.show()
+
+    plt.savefig("A_star_figure.png")
 
 
 def solveGridDFS(grid, start_x, start_y, end_x, end_y):
@@ -383,7 +385,7 @@ def main():
 0100010000100000000100100
 0100000000011101000010000"""
 
-    testHeuristicFunctions(testingText, width, length)
+    #testHeuristicFunctions(testingText, width, length)
    
 
     

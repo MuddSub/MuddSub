@@ -42,7 +42,48 @@ def coordinates(path):
     return coord
 
 
-def parabola(path, period, amp, freq):
+
+
+def getmultpaths(path, amp, freq):
+    """We want to split the paths based on the direction/slop it is"""
+       
+    multpaths = []
+    dx = math.inf
+    dy = math.inf
+
+
+    previous_index = 0
+    for i in range(len(path) -1):
+        if (dx == math.inf and dy == math.inf):
+            #we want to redo it 
+            dx = path[i+1][0] - path[i][0]
+            dy = path[i+1][1] - path[i][1]
+
+        else:
+            current_dx =  path[i+1][0] - path[i][0]
+            current_dy =  path[i+1][1] - path[i][1]
+
+            if (current_dx == dx and current_dy == dy):
+                pass
+            else:
+                print("hi")
+                multpaths += [path[previous_index:i]]
+                previous_index = i
+                dx = math.inf
+                dy = math.inf
+    
+    multpaths += [path[previous_index:]]
+
+    return multpaths
+
+
+
+def parabola(path, amp, freq, z = False):
+
+
+    if(len(path) <= 1):
+        return path
+    
     h = path[0][0]
     k = path[0][1]
     m = amp
@@ -62,7 +103,10 @@ def parabola(path, period, amp, freq):
         index = 0
         while(abs(y) <= (abs(endy) + 0.0001)):            
             x = (m*math.sin((f*(y-k))))+h
-            parab_path += [[-x,y,path[index][2]]]
+            if(z):
+                parab_path += [[-x,y,path[index][2]]]
+            else:
+                parab_path += [[-x,y]]
             y += interval
             if (y > mult * path[index][1]):
                 index += 1
@@ -79,7 +123,10 @@ def parabola(path, period, amp, freq):
         index = 0 #first z value is path[index][2]
         while(abs(x) <= (abs(lastx) + 0.0001)):
             y = (m*math.sin((f*(x-h))))+k
-            parab_path += [[x,y,path[index][2]]]
+            if(z):
+                parab_path += [[x,y,path[index][2]]]
+            else:
+                parab_path += [[x,y]]
             x = x + interval
             if (x > path[index][0]):
                 index += 1
@@ -108,7 +155,10 @@ def parabola(path, period, amp, freq):
                 y = (m*math.sin((f*(x-h))))+k
                 xcoord = ((x-h)*math.cos(-a) + (y-k)*math.sin(-a) + h) 
                 ycoord = (-(x-h)*math.sin(-a) + (y-k)*math.cos(-a) + h) * multy
-                parab_path += [[xcoord, ycoord, path[index][2]]]
+                if(z):
+                    parab_path += [[xcoord,ycoord,path[index][2]]]
+                else:
+                    parab_path += [[xcoord,ycoord]]
                 x = x + interval
                 if (abs(x) > abs(path[index][0])):
                     index += 1
@@ -167,8 +217,10 @@ def time_stamp(path, velocity):
 
 def printPath(twodarray):
     for point in twodarray:
-        print("(", point[0], ", ", point[1], ", ", point[2], "),", end = "")
-    
+        print("(", point[0], ", ", point[1], "),", end = "")
+
+
+
 
 def main():
     path1 = [[0, 1, 1], [0, 2, 2], [0, 3, 3], [0, 4, 4]] # Straight vertical line
@@ -182,8 +234,13 @@ def main():
     path8 = [(-1, -1, 1), (-2, -2, 2), (-3, -3, 3), (-4, -4, 4)] # Diagonal line (down left)
     path9 = [(1, -1, 1), (2, -2, 2), (3, -3, 3), (4, -4, 4)] # Diagonal line (down right)
     path10 = [(-1, 1, 1), (-2, 2, 2), (-3, 3, 3), (-4, 4, 4)] # Diagonal line (up left)
+
+
+    path_test = [[7, 7], [8, 8], [9,9], [10,10]]
+    multpathtest = [[1,1,0], [2,1,1], [3,1,1], [3,2,2], [3,3,2], [4,4,4], [4,5,5], [5,6,6]]
+    getmultpaths(multpathtest, 2, 2)
     
-    printPath(parabola(path4, 2, 2, 1))
+    printPath(parabola(path_test, 3, 2))
 
 if __name__=="__main__":
     main()
