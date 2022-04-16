@@ -18,9 +18,13 @@ class Range_Estimation():
         self.bridge = CvBridge()
         self.CAMERA_WIDTH = 1280
         self.CAMERA_HEIGHT = 720
+        self.flags = [0,0,0]    #["TOO_CLOSE", "TOO_FAR", "OCCLUSION_VALUE"] 
         self.depth_map = None
         self.sample_depth_map = np.random.rand(self.CAMERA_HEIGHT, self.CAMERA_WIDTH)
-        self.sample_depth_map[0:int(self.CAMERA_HEIGHT*0.3), :] = np.inf*-1
+        # self.sample_depth_map[0:int(self.CAMERA_HEIGHT*0.3), :] = np.inf*-1
+        # self.sample_depth_map[int(self.CAMERA_HEIGHT*0.3):int(self.CAMERA_HEIGHT*0.3)+1, :] = np.inf
+        self.sample_depth_map[:, :] = np.NaN
+        self.sample_depth_map[int(self.CAMERA_HEIGHT/2), int(self.CAMERA_WIDTH/2)] = 3
     #    self.sample_depth_map = np.ones((self.CAMERA_HEIGHT, self.CAMERA_WIDTH))
 
         #making a testing bounding box
@@ -82,21 +86,32 @@ class Range_Estimation():
 
         # 3. Find the num_element min points and take average
         #Count number of -inf in bounding box
+        numPosInf = np.sum(bounding_box_with_depth == (np.inf))
+        if numPosInf > 0:
+            self.flags[1] = 1
+            bounding_box_with_depth = np.where(bounding_box_with_depth == np.inf, 20, bounding_box_with_depth)
         numNegInf = np.sum(bounding_box_with_depth == (np.inf*-1))
+        
+        numNaN = np.sum(np.isnan(bounding_box_with_depth))
+        if numNaN > 0:
+            self.flags[2] = 1
+
+        if numNegInf > 0:
+            self.flags[0] = 1
+            print("self.flags is ", self.flags)
+
         #if num of -inf/ bounding box size > 0.3, return -inf, else get min_points replace -inf with 0.4 then calculate
-        print(numNegInf / bounding_box_with_depth.size)
+        print("proportion of -inf: ", numNegInf / bounding_box_with_depth.size)
         if (numNegInf / bounding_box_with_depth.size) > 0.3:
             return np.inf*-1
         else:
             bounding_box_with_depth = np.where(bounding_box_with_depth == np.inf*-1, 0.4, bounding_box_with_depth)
         num_elements = int(bounding_box_with_depth.size * 0.1)
         min_indices = np.argpartition(bounding_box_with_depth.flatten(), num_elements)[:num_elements]
-        print(min_indices)
         min_points = bounding_box_with_depth.flatten()[min_indices]
+        min_points = min_points[~np.isnan(min_points)]
         
         # 4. return
-        if (np.NaN in min_points):
-            print("--------------------------------=-=----------------------------------------------------------------")
         return np.mean(min_points)
     
     def estimate_angles(boundingBox):
@@ -105,6 +120,6 @@ class Range_Estimation():
 if __name__ == "__main__":
     range = Range_Estimation()
     print(range.estimate_range(range.boundingBox))
-    rospy.spin()
+    print(range.flags)
 
 

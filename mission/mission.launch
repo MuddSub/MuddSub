@@ -2,4 +2,7 @@
     <node pkg="rostopic" type="rostopic" name="start_state_machine" args="pub /start_state_machine std_msgs/Bool 'data: true' "/>
     <node pkg="rostopic" type="rostopic" name="start_switch" args="pub /start_switch std_msgs/Bool 'data: true' "/>
     <node name="mission_runner" pkg="mission" type="mission_runner.py" output="screen"/>
+    <node name="state_publisher" pkg="mission" type="StatePublisher.py" output="screen"/>
+    <include file="$(find controls)/launch/control_dispatch.launch">
+    </include>
 </launch>

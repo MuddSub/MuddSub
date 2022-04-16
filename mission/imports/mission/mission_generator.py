@@ -83,19 +83,19 @@ def generate_task(task_name,taskAction):
     #                    'aborted':'aborted',
     #                    'preempted':'preempted'},
     #       remapping=REMAPPING)
-    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target_tester.LocateTarget(task_name,'test_camera',0.8, [0.05,0.05,0.05,0.05])),
+    smach.StateMachine.add(LocalizationPhrase, add_kill_monitor(locate_target_tester.LocateTarget(task_name,'left_camera',0.8, [0.05,0.05,0.05,0.05])),
           transitions={'succeeded':AdvancementPhrase,
                        'active':  LocalizationPhrase,
                        'aborted':'aborted'},
         #   remapping={'locate_target_input': 'isWaiting',
         #              'locate_target_output': 'isWaiting'}
           remapping = {'isWaiting':'isWaiting'})
-    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name,'test_camera')),
+    smach.StateMachine.add(AdvancementPhrase, add_kill_monitor(go_to_target_tester.GoToTarget(task_name,'left_camera')),
           transitions={'succeeded':TaskSpecificPhrase,
                        'active':AdvancementPhrase,
                        'aborted': 'aborted'},
           remapping=REMAPPING)
-    smach.StateMachine.add(TaskSpecificPhrase,add_kill_monitor(gate.GateAction('test_camera',0.8, [0.05,0.05,0.05,0.05])), 
+    smach.StateMachine.add(TaskSpecificPhrase,add_kill_monitor(gate.GateAction('left_camera',0.8, [0.05,0.05,0.05,0.05])), 
           transitions={'succeeded':'succeeded',
                        'active':TaskSpecificPhrase, 
                        'aborted':'aborted',
