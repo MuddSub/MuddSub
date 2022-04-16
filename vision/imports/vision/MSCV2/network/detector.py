@@ -28,7 +28,13 @@ class Detector(object):
         # +++ load and configure the yolo network
         self.model = NetworkModel(cfg_file)
         with open(state_dict_path, 'rb') as f:
-            self.model.load_state_dict(torch.load(state_dict_path))
+            if torch.cuda.is_available():
+                map_location=lambda storage, loc: storage.cuda()
+            else:
+                map_location='cpu'
+            # self.model.load_state_dict(torch.load(state_dict_path))
+            self.model.load_state_dict(torch.load(state_dict_path, map_location=map_location))
+
         self.model.to(self.device)
         self.model.eval()
 

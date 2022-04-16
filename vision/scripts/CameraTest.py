@@ -3,6 +3,7 @@ from vision.Camera import Camera
 import rospy
 
 if __name__ == '__main__':
+    rospy.loginfo("Hello, we started")
     obstacle_names = rospy.get_param("names")
     obstacle_names = [n.strip() for n in obstacle_names.split('\n')]
 
