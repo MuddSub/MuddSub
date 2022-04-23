@@ -82,7 +82,7 @@ class GateAction(smach.State):
   def reachedTarget_callback(self,data):
     self.lastSearch = rospy.get_time()
 
-    point = data.pose.pose.position.x
+    point = data.pose.pose.position
     point = (point.x, point.y, point.z)
     orientation = data.pose.pose.orientation
     orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
@@ -105,18 +105,19 @@ class GateAction(smach.State):
 
     elif abs(self.range_to_beam - 1) < 0.1:
       self.requestForwardMovement(0)
-
       self.requestAnyMovement("Right", self.GATE_LENGTH / 4)
       self.requestForwardMovement(1)
       return 'succeeded'
 
     elif ud.isWaiting and (self.bem_visible or self.gate_visible):
+      
       if self.reached_requested_pos:
           ud.isWaiting = False
       return 'active'
 
     elif not ud.isWaiting and (self.beam_visible or self.gate_visible):
       self.requestForwardMovement(1)
+      ud.isWaiting = True
       return 'active'
 
     elif not self.beam_visible and not self.gate_visible:

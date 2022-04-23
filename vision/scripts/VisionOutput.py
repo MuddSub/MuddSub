@@ -18,6 +18,7 @@ def callback(data):
     detectionList = []
     for currentBoundingBox in data.bounding_boxes:
         range = rangeEstimator.estimate_range(currentBoundingBox)
+        range = estimate_range(currentBoundingBox)
         theta, phi = estimate_angles(currentBoundingBox)
         detectionList += [Detection(Header(), 
                             currentBoundingBox.name, 
@@ -40,7 +41,7 @@ def estimate_range(boundingBox):
     Return:
         The distance to the obstacle in meters.
     """
-    return 15
+    return 1
 
 def estimate_angles(boundingBox):
     """Estimates theta and phi of an obstacle relative to the camera.
@@ -55,12 +56,13 @@ def estimate_angles(boundingBox):
     
 if __name__ == '__main__':
     # camera_name = sys.argv[1]
+    camera_name = "left_camera"
     rospy.init_node('vision_output')
-    # visionPublisher = VisionPublisher(camera_name)
-    visionPublisher = VisionPublisher("test_camera")
+    visionPublisher = VisionPublisher(camera_name)
+    # visionPublisher = VisionPublisher("test_camera")
     rangeEstimator = Range_Estimation()
-    rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
-    # rospy.Subscriber(f"/vision/{camera_name}/bounding_box_array", BoundingBoxArray, callback)
+    #rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
+    rospy.Subscriber(f"/vision/{camera_name}/bounding_box_array", BoundingBoxArray, callback)
     rospy.spin()
     
     

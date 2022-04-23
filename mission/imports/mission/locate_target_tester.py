@@ -77,7 +77,7 @@ class LocateTarget(smach.State):
       # point (m), quarternion( rad), xyz (m/s), angle velocity (rad/s)
       # 1. x, y, z same threshold
       # 2. roll, pitch, yaw same threshold
-      point = data.pose.pose.position.x
+      point = data.pose.pose.position
       point = (point.x, point.y, point.z)
       orientation = data.pose.pose.orientation
       orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
