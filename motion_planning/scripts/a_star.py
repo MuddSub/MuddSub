@@ -256,6 +256,8 @@ def printGrid(grid):
 
     plt.savefig("A_star_figure.png")
 
+    return data
+
 
 def solveGridDFS(grid, start_x, start_y, end_x, end_y):
     distance =[]

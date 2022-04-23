@@ -66,7 +66,6 @@ def getmultpaths(path, amp, freq):
             if (current_dx == dx and current_dy == dy):
                 pass
             else:
-                print("hi")
                 multpaths += [path[previous_index:i]]
                 previous_index = i
                 dx = math.inf
@@ -150,11 +149,13 @@ def parabola(path, amp, freq, z = False):
         a = (math.pi/4)
         interval = (path[1][0] - path[0][0])/freq
         index = 0
-        for dx in range(abs(path[0][0]), (abs(distance))):
+
+        for dx in range(abs(path[0][0]), (abs(distance) + abs(path[0][0]))):
             for i in range(freq+1):
                 y = (m*math.sin((f*(x-h))))+k
+
                 xcoord = ((x-h)*math.cos(-a) + (y-k)*math.sin(-a) + h) 
-                ycoord = (-(x-h)*math.sin(-a) + (y-k)*math.cos(-a) + h) * multy
+                ycoord = (-(x-h)*math.sin(-a) + (y-k)*math.cos(-a) + k) * multy
                 if(z):
                     parab_path += [[xcoord,ycoord,path[index][2]]]
                 else:
@@ -237,10 +238,12 @@ def main():
 
 
     path_test = [[7, 7], [8, 8], [9,9], [10,10]]
+    rip_test = [[11, 8], [12, 9]]
+    ah_test = [[11, 11], [12, 12], [13, 13]]
     multpathtest = [[1,1,0], [2,1,1], [3,1,1], [3,2,2], [3,3,2], [4,4,4], [4,5,5], [5,6,6]]
-    getmultpaths(multpathtest, 2, 2)
+    # getmultpaths(multpathtest, 2, 2)
     
-    printPath(parabola(path_test, 3, 2))
+    printPath(parabola(ah_test, 3, 2))
 
 if __name__=="__main__":
     main()

@@ -1,6 +1,6 @@
 
 #include "motion_planning/AStar.hh"
-
+#include <limits>
 
 
 namespace MuddSub::MotionPlanning
@@ -307,7 +307,13 @@ namespace MuddSub::MotionPlanning
         {
             std::cout<<"Adding Sin traversal"<<std::endl;
 
-            addSinTraversal(std::stoi(dataList[0]),std::stoi(dataList[1]),0);
+            for (int i = 0; i < dataList.size(); i++)
+            {
+                std::cout<<"   "<<dataList[i];
+            }
+            std::cout<<std::endl;
+
+            addSinTraversal(std::stoi(dataList[0]),std::stoi(dataList[1]));
 
         }else if(motion == AStar::rotationalMovement)
         {
@@ -376,81 +382,74 @@ namespace MuddSub::MotionPlanning
         }
     }
 
-    void AStar::addSinTraversal(int amp, int freq, int period) {
-        std::vector<std::vector<std::vector<double>>> n_path;
-        std::vector<int> directions;
-        int count = 0;
+    void AStar::addSinTraversal(int amp, int freq) 
+    {
+        std::vector<std::vector<std::vector<double>>> multpaths;
+        
+        int dx = std::numeric_limits<int>::max();
+        int dy = std::numeric_limits<int>::max();
+
+        int previous_index = 0;
 
         for (int i = 0; i < path_.size()-1; i++)
         {
-            if(path_[i][0]-path_[i+1][0] == 0)
+            if(dx == std::numeric_limits<int>::max() && dy == std::numeric_limits<int>::max())
             {
-                directions.push_back(1);
-            }else if(path_[i][1] - path_[i+1][1] == 0)
+                dx = path_[i+1][0] - path_[i][0];
+                dy = path_[i+1][1] - path_[i][1];
+            }else 
             {
-                directions.push_back(2);
-            }else if(path_[i][0] - path_[i+1][0] == 1)
-            {
-                directions.push_back(3);
+                int current_dx =  path_[i+1][0] - path_[i][0];
+                int current_dy =  path_[i+1][1] - path_[i][1];
+
+                    
+                if (current_dx != dx || current_dy != dy) 
+                {
+
+                    std::vector<std::vector<double>> new_path;
+
+                    for(int j = 0; j < previous_index; j++)
+                    {
+                        new_path.push_back(path_[j]);
+                    }
+
+                    multpaths.push_back(new_path);
+                    previous_index = i;
+                    dx = std::numeric_limits<int>::max();
+                    dy = std::numeric_limits<int>::max();
+                }
             }
         }
+
+        std::vector<std::vector<double>> new_path;
+
+        for(int i = previous_index; i < path_.size(); i++) 
+        {
+            new_path.push_back(path_[i]);
+        }
+
+        multpaths.push_back(new_path);
         
-        for(int i = 1; i < directions.size(); i++)
-        {
-            if(count == 0)
-            {
-                std::vector<std::vector<double>> startingPath;
-                startingPath.push_back(path_[i-1]);
-                startingPath.push_back(path_[i]);
-                n_path.push_back(startingPath);
-            }
-            count = 0;
-
-            if(directions[i-1] == directions[i])
-            {
-                n_path[n_path.size()-1].push_back(path_[i+1]);
-                count++;
-            }
-            
-        }
-        if(count == 0)
-        {
-            std::vector<std::vector<double>> lastPath;
-            lastPath.push_back(path_[path_.size()-2]);
-            lastPath.push_back(path_[path_.size()-1]);
-            n_path.push_back(lastPath);
-        
-        }
-
-        std::cout<<"Directions"<<std::endl;
-
-
-    
-        for(int i = 0; i < directions.size(); i++)
-        {
-            std::cout<<path_[i][0]<<' '<<path_[i][1]<<std::endl;
-            std::cout<<directions[i]<<std::endl;
-        }
 
         std::cout<<"----------------------"<<std::endl;
         std::cout<<"Path 1"<<std::endl;
         
         std::vector<std::vector<double>> path1 = {{0, 1, 0}, {1, 2, 0}, {2, 3, 0}, {3, 4, 0}};
 
-        addSinTraversalSegment(2, 2, period, path1);
+        addSinTraversalSegment(2, 2, path1);
 
         std::vector<std::vector<double>> path2 = {{4, 3, 0}, {3, 4, 0}, {2, 5, 0}, {1, 6, 0}};
 
         std::cout<<"----------------------"<<std::endl;
         std::cout<<"Path 2"<<std::endl;
-        addSinTraversalSegment(2, freq, period, path2);
+        addSinTraversalSegment(2, freq, path2);
         std::cout<<"out of segment"<<std::endl; 
 
         std::vector<std::vector<double>> path3 = {{0, 1, 0}, {0, 3, 0}, {0, 5, 0}, {0, 6, 0}};
 
         std::cout<<"----------------------"<<std::endl;
         std::cout<<"Path 3"<<std::endl;
-        addSinTraversalSegment(2, freq, period, path3);
+        addSinTraversalSegment(2, freq,  path3);
         std::cout<<"out of segment"<<std::endl; 
 
 
@@ -458,57 +457,86 @@ namespace MuddSub::MotionPlanning
 
         std::cout<<"----------------------"<<std::endl;
         std::cout<<"Path 4"<<std::endl;
-        addSinTraversalSegment(2, 4, period, path4);
+        addSinTraversalSegment(2, 4,  path4);
         std::cout<<"out of segment"<<std::endl; 
 
     }
 
-    void AStar::addSinTraversalSegment(int amp, int freq, int period, std::vector<std::vector<double>> path) {
+    void AStar::addSinTraversalSegment(int amp, int freq, std::vector<std::vector<double>> path) {
         std::cout<<"amp" <<amp;
         std::cout<<"freq"<<freq;
-        std::cout<<"period"<<period;
 
         double h = path[0][0];
-        double x;
+        double x = path[0][0];
         double k = path[0][1];
         double y = path[0][1];
+        int mult = 0;
 
         std::vector<std::vector<double>> parab_path;
 
         //y-direction: x=msin(fy-h)+k
         if (path[0][0] - path[1][0] == 0) {
             std::cout<<"is y"<<std::endl;
-            std::vector<double> y_path;
-            double f = (1 / (path[0][1] - path[1][1]) * M_PI);
+            
+
+            mult = 1;
+            if (path[0][1] - path[0][0] < 0) {
+                mult = -1;
+            }           
+
+            double f = (mult / (path[0][1] - path[1][1]) * M_PI);
+            double endy = path[path.size() - 1][1];
             double interval = abs(path[0][1] - path[1][1])/freq;
-            for (int i = path[0][1]; i < (path[path.size()-1][1])+1; i++){
-                for (int j = 0; j <= freq; j++){
-                    y = y + interval;
-                    x = (amp*sin((f*y)-h))+k;
-                    y_path.push_back(x);
-                    y_path.push_back(y);
-                    y_path.push_back(path[0][2]);
-                    parab_path.push_back(y_path);
-                    y_path.clear();
+
+            int index = 0;
+            while (abs(y) <= (abs(endy) + 0.0001)) {
+                x = (amp * sin((f*(y - k)))) + h;
+                std::cout<<"x in Y" <<x;
+                std::cout<<"y in Y" <<y<<"\n";
+                std::vector<double> y_path;
+                y_path.push_back(x);
+                y_path.push_back(y);
+                y_path.push_back(path[index][2]);
+                parab_path.push_back(y_path);
+                
+
+                y = y + interval;
+                if (y > (mult * path[index][1])){
+                    index++;
+                    index = std::min(index, (int) (path.size()-1));
                 }
+                
+                
             }
 
+        
         }
 
         //x-direction: y=msin(fx-h)+k
         if (path[0][1] - path[1][1] == 0) {
-            std::vector<double> x_path;
-            double f = (1 / (path[1][0] - path[0][0]) * M_PI);
-            double interval = abs(path[0][0] - path_[1][0])/freq;
-            for (int i = path[0][0]; i < (path[path.size()-1][0])+1; i++){
-                for (int j = 0; j <= freq; j++){
-                    double x = x + interval;
-                    double y = (amp*sin((f*y)-h))+k;
-                    x_path.push_back(x);
-                    x_path.push_back(y);
-                    x_path.push_back(path[0][2]);
-                    parab_path.push_back(x_path);
-                    x_path.clear();
+            mult = 1;
+            if (path[1][0] - path[0][0] < 0) {
+                mult = -1;
+            }           
+
+            double f = (mult / (path[1][0] - path[0][0]) * M_PI);
+            double endx = path[path.size() - 1][0];
+            double interval = abs(path[1][0] - path[0][0])/freq;
+
+            int index = 0;
+            while (abs(x) <= (abs(endx) + 0.0001)) {
+                std::vector<double> x_path;
+                y = (amp * sin((f*(x - h)))) + k;
+                x_path.push_back(x);
+                x_path.push_back(y);
+                x_path.push_back(path[index][2]);
+                parab_path.push_back(x_path);
+
+                x = x + interval;
+                //KEEP MULT IN?????
+                if (x > (mult * path[index][1])){
+                    index++;
+                    index = std::min(index, (int) (path.size()-1));
                 }
             }
 
@@ -516,27 +544,46 @@ namespace MuddSub::MotionPlanning
 
         //diagonal-direction:
         if (abs(path[0][0] - path[1][0]) == 1) {
-            std::cout<<"is diagonlal"<<std::endl;
-            std::vector<double> d_path;
+            std::cout<<"is diagonal"<<std::endl;
+            
+            int multx = 1;
+            int multy = 1;
+            if (path[1][0] - path[0][0] < 0) {
+                multx = -1;
+            } 
+            if (path[1][1] - path[0][1] < 0) {
+                multy = -1;
+            }  
 
             double xlength = pow((path[path.size()-1][0] - path[0][0]),2);
             double ylength = pow((path[path.size()-1][1] - path[0][1]),2);
             double distance = sqrt(xlength + ylength);
 
-            double f = (1 / (path[1][0] - path[0][0]) * M_PI);
+            double f = (multx / (path[1][0] - path[0][0]) * M_PI);
             double a = (M_PI/4);
             double interval = abs(path[0][0] - path[1][0])/freq;
             std::cout<<"interval"<<interval<<std::endl;
-            for (int i = path[0][0]; i < path.size(); i++){
+
+            int index = 0;
+            for (int i = path[0][0]; i < (abs(distance) + abs(path[0][0])); i++){
                 for (int j = 0; j <= freq; j++){
-                    double x = x + interval;
-                    double y = (amp*sin((f*y)-h))+k;
+                    std::vector<double> d_path;
+                    double y = (amp*sin((f*(x-h))))+k;
+
                     double xcoord = (((x-h)*cos(-a)) + ((y-k)*sin(-a)) + h);
-                    double ycoord = (-((x-h)*sin(-a)) + ((y-k)*cos(-a)) + h);
-                    std::cout<<"diff"<<ycoord- xcoord<<' '<<std::endl;
+                    double ycoord = (-((x-h)*sin(-a)) + ((y-k)*cos(-a)) + k) * multy;
+
+                    double x = x + interval;
+
                     d_path.push_back(xcoord);
                     d_path.push_back(ycoord);
-                    d_path.push_back(path[0][2]);
+                    d_path.push_back(path[index][2]);
+
+
+                    if (abs(x) > abs(path[index][0])) {
+                        index++;
+                        index = std::min(index, (int) (path.size()-1));
+                    }
 
                     parab_path.push_back(d_path);
                     d_path.clear();
