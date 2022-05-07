@@ -1,3 +1,10 @@
+<!-- 
+Launch this file for complete object detection (camera + detection).
+
+This launch file imports left_camera.launch and object_detection.launch, 
+and sets up the vision_output node using the VisionOutput.py executable.
+-->
+
 <launch>
     
     <include file="$(find vision)/left_camera.launch">
