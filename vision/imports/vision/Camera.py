@@ -20,7 +20,22 @@ from vision.MSCV2.network.model import NetworkModel
 bridge = CvBridge()
 
 class Camera:
+    """
+    Subscribes to the camera_topic to obtain images, passes them into the object detection model, 
+    then publishes object detection messages using the VisionPublisher class.
 
+    Detections are published in a BoundingBoxArray message, which does not include range estimation data.
+
+    The addition of range estimation data to bounding boxes in the BoundingBoxArray is handled by VisionOutput.
+
+    Attributes:
+        name: The name of the camera that captured the obstacle
+        camera_topic: The topic which contains the camera feed
+        obstacle_names: The names of all possible obstacles
+        model_path: The location of the object detection model
+        model_config_path: The location of the object detection model configuration file
+    """
+    
     def __init__(self, name, obstacle_names, model_path, model_config_path):
         self.name = name
         self.camera_topic = "/" + self.name + "/image_raw"
