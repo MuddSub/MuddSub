@@ -1,3 +1,8 @@
+<!-- 
+Sets up a camera node, which takes camera images, pass them into 
+the object detection model, then publishes object detection messages.
+-->
+
 <launch>
     <param name="names" textfile="$(find vision)/scripts/class-names.txt"/>
     <arg name="model_path" default="$(find vision)/imports/vision/MSCV2/yv3m-256-testing.pt"/>
