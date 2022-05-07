@@ -1,3 +1,9 @@
+"""
+Node that takes BoundingBoxArray messages and outputs DetectionArray messages.
+
+DetectionArray messages are BoundingBoxArray messages with the addition of range estimation data.
+"""
+
 #!/usr/bin/env python3
 import rospy
 import sys
