@@ -4,7 +4,7 @@ import rospy
 import serial
 from std_msgs.msg import Int32, Float64
 
-from DepthSensorPublisher import DepthSensorPublisher
+# from DepthSensorPublisher import DepthSensorPublisher
 from drivers.msg import DVL
 
 global ser
@@ -21,9 +21,9 @@ def collectSensors():
 		return "dvl", items
 
 def pulseToSerial(msg, i):
-		pulse = msg.data
-		rospy.loginfo(pulse)
-		thrusters[i] = pulse
+	pulse = msg.data
+	rospy.loginfo(pulse)
+	thrusters[i] = pulse
 
 if __name__ == '__main__':
 		
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 		vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, pulseToSerial, (1), queue_size=1)
 
 	
-		dsp = DepthSensorPublisher()
+		# dsp = DepthSensorPublisher()
 		dvlp = rospy.Publisher('/drivers/dvl', DVL, queue_size=1)
 		rate = rospy.Rate(10000)
 		while not rospy.is_shutdown():
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 				# dvl_msg.status = bool(float(sensor[1][7]))
 				# dvlp.publish(dvl_msg)
 			
-			ser.write("thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n".format(*thrusters))
+			ser.write("thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n".format(*thrusters).encode('utf_8'))
 			rate.sleep()
 			
 
