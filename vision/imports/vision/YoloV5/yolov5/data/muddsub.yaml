@@ -1,0 +1,45 @@
+# YOLOv5 🚀 by Ultralytics, AGPL-3.0 license
+# COCO128 dataset https://www.kaggle.com/ultralytics/coco128 (first 128 images from COCO train2017) by Ultralytics
+# Example usage: python train.py --data coco128.yaml
+# parent
+# ├── yolov5
+# └── datasets
+#     └── coco128  ← downloads here (7 MB)
+
+
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+path: ../datasets/coco  # dataset root dir
+train: train2017  # train images (relative to 'path') 128 images
+val: val2017  # val images (relative to 'path') 128 images
+test:  # test images (optional)
+
+# Classes
+names: 
+0: Bins - Bar (2019)
+1:  Bins - Container (2019)
+2: Bins - Sorting (2019)
+3: Bins (2018)
+4: Buoys - Gargoyle (2019)
+5: Buoys - Fairy (2019)
+6: Buoys - Rock (2019)
+7: Buoys - Zombie (2019)
+8: Buoys (2018)
+9: Buoys (2017)
+10: Gate (2019)
+11: Gate (2018)
+12: Gripper Object - Cross (2019)
+13: Gripper Object - Dracula (2019)
+14: Gripper Object - Garlic (2019)
+15: Path Marker (2019)
+16: Torpedo - Bar (2019)
+17: Torpedo - Board (2019)
+18: Torpedo - Heart (2019)
+19: Torpedo - Target (2019)
+20: Torpedo - Board (2018)
+21: Gate
+22: Center_Beam
+
+
+
+# Download script/URL (optional)
+#download: https://ultralytics.com/assets/coco128.zip

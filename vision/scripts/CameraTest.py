@@ -13,3 +13,9 @@ if __name__ == '__main__':
     camera_name = rospy.get_param("camera_name")
     test = Camera(camera_name, obstacle_names, model_path, model_config_path)
     test.main()
+
+    # camera_name = "test_cam"
+    # obstacle_names = ""
+    # weights = "./models/7_16_2023/best_small.pt"
+    # model_config_path = None
+    # test_camera = Camera(camera_name, obstacle_names, weights, model_config_path)
