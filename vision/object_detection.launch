@@ -7,5 +7,5 @@
     <param name="model_path" value="$(arg model_path)"/>
     <param name="model_config_path" value="$(arg model_config_path)"/>
     <param name="camera_name" value="$(arg camera_name)"/>
-    <node name="camera_test" pkg="vision" type="CameraTest.py"/>
+    <node name="camera_test" pkg="vision" type="CameraTest.py" output="screen"/>
 </launch>

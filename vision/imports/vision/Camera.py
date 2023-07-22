@@ -37,9 +37,10 @@ class Camera:
         device = torch.device("cuda:0" if torch.cuda.is_available else "cpu")
 
         # the two following lines are giving me trouble. need the ultralytics package
-        self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
-        # self.model = DetectMultiBackend(weights, device=device, dnn=False, data=False, fp16=False)
-        rospy.loginfo("out")
+        # self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        rospy.loginfo(self.weights)
+        self.model = DetectMultiBackend(weights, device=device, dnn=False, data=False, fp16=False)
+        # rospy.loginfo("out")
         print(self.model)
         stride, names, pt = self.model.stride, self.model.names, self.model.pt # stride = 32
         imgsz = check_img_size(imgsz, s=stride)  # check image size
@@ -68,7 +69,6 @@ class Camera:
         rospy.spin()
 
     def callback(self, image):
-        print("in call back")
         image_message = bridge.imgmsg_to_cv2(image, "rgb8")
         input_img = np.copy(image_message).astype(float)
         input_img = torch.from_numpy(input_img).float()
@@ -112,8 +112,8 @@ class Camera:
             pred = non_max_suppression(pred, self.conf_thres, self.iou_thres, self.classes, self.agnostic_nms, max_det=self.max_det)
         if len(pred) == 0:
             rospy.loginfo("No object.")
-        print("pred!",str(pred))
-        # self.boundingBoxPublish2(pred)
+        else:
+            self.boundingBoxPublish2(pred)
 
     def boundingBoxPublish(self, detection_output_list):
         list_of_bounding_boxes = []
@@ -138,11 +138,10 @@ class Camera:
         """
         detection_output_list = list of detections, on (n,6) tensor per image [xyxy, conf, cls]
         """
-
         list_of_bounding_boxes = []
         for i in range(len(detection_output_list)):
-            name = self.obstacle_names[int(detection_output_list[i, 5])]
-            xy = detection_output_list[i,0:4]
+            name = self.obstacle_names[int(detection_output_list[i][5])]
+            xy = detection_output_list[i][0:4]
             object_xmin = xy[0]
             object_ymin = xy[1]
             object_xmax = xy[2]

@@ -330,7 +330,7 @@ class DetectMultiBackend(nn.Module):
         #   TensorFlow Lite:                *.tflite
         #   TensorFlow Edge TPU:            *_edgetpu.tflite
         #   PaddlePaddle:                   *_paddle_model
-        # from vision.YoloV5.yolov5.models.experimental import attempt_download, attempt_load  # scoped to avoid circular import
+        from vision.YoloV5.yolov5.models.experimental import attempt_download, attempt_load  # scoped to avoid circular import
         
         import rospy
         rospy.loginfo("hello")
