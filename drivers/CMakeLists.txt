@@ -104,6 +104,7 @@ target_link_libraries(DepthSensorExampleNode ${catkin_LIBRARIES})
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
    cfg/Drivers.cfg
+   cfg/Thrusters.cfg
 )
 
 ###################################

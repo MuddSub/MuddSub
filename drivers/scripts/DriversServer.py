@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 
 from dynamic_reconfigure.server import Server
-from drivers.cfg import ThrustersConfig
 from drivers.cfg import DriversConfig
+from drivers.cfg import ThrustersConfig
 
 def callback(config, level):
     return config
