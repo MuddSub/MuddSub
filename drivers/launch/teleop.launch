@@ -1,0 +1,7 @@
+<launch>
+    <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
+    <node name="pwm_publisher" pkg="drivers" type="PWMPublisher.py" />
+    <node name="thrusters_teleop" pkg="drivers" type="ThrustersTeleop.py" output="screen" />
+    <include file="$(find drivers)/drivers_cfg.launch" />
+    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" args="-s reconfigure" />
+</launch>

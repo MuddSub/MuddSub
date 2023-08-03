@@ -15,7 +15,7 @@ def main():
     vbr_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=1)
 
     rospy.init_node('pwm_publisher', anonymous=True)
-    rate = rospy.Rate(1)  # 1Hz
+    rate = rospy.Rate(20)  # 20Hz
     while not rospy.is_shutdown():
         horizontal_thrusters = rospy.get_param('drivers_server/pwm/thrusters/horizontal', {'bl': 1500, 'br': 1500, 'fl': 1500, 'fr': 1500})
         vertical_thrusters = rospy.get_param('drivers_server/pwm/thrusters/vertical', {'bl': 1500, 'br': 1500, 'fl': 1500, 'fr': 1500})
