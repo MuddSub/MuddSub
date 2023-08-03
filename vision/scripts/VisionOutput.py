@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rospy
 import sys
-from vision.Range_Estimation import Range_Estimation
+# from vision.Range_Estimation import Range_Estimation
 from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 from vision.VisionPublisher import VisionPublisher
 from std_msgs.msg import Header, String
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     rospy.init_node('vision_output')
     visionPublisher = VisionPublisher(camera_name)
     # visionPublisher = VisionPublisher("test_camera")
-    rangeEstimator = Range_Estimation()
+    # rangeEstimator = Range_Estimation()
     #rospy.Subscriber("/vision/test_camera/bounding_box_array", BoundingBoxArray, callback)
     rospy.Subscriber(f"/vision/{camera_name}/bounding_box_array", BoundingBoxArray, callback)
     rospy.spin()

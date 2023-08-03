@@ -3,9 +3,11 @@
 import rospy
 import serial
 from std_msgs.msg import Int32, Float64
-
 from drivers.utils.DepthSensorPublisher import DepthSensorPublisher
 from drivers.msg import DVL
+import numpy as np
+import time
+from std_msgs.msg import Bool
 
 global ser
 line_buffer = b''
@@ -61,7 +63,7 @@ def parse_line(line):
     elif len(items) == 8:
         return 'dvl', items
     else:
-        print("Recieved:", line)
+        print('Recieved:', line)
         return None, None
 
 def pulseToSerial(msg, i):
@@ -91,7 +93,14 @@ if __name__ == '__main__':
         vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, pulseToSerial, (7), queue_size=1)
         vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, pulseToSerial, (1), queue_size=1)
 
-    
+        mission_started_publisher = rospy.Publisher('/robot/mission_started', Bool, queue_size=1)
+
+        depth_queue = [0] * 10
+        submerged = False
+        prev_submerged = False
+        start_time = time.time()
+        mission_started = False
+
         dsp = DepthSensorPublisher()
         dvlp = rospy.Publisher('/drivers/dvl', DVL, queue_size=1)
         rate = rospy.Rate(30)
@@ -100,7 +109,8 @@ if __name__ == '__main__':
             for line in lines:
                 ty, data = parse_line(line)
                 if ty == 'depth':
-                    print("depth:", data)
+                    print('depth:', data)
+                    depth_queue = [data] + depth_queue[:-1]
                     dsp.publishDepth(data)
                 elif ty == 'dvl':
                     dvl_msg = DVL()
@@ -114,23 +124,21 @@ if __name__ == '__main__':
                     dvl_msg.status = bool(float(data[7]))
                     dvlp.publish(dvl_msg)
 
-            # if sensor is not None and sensor[0] == "depth":
-            # 	dsp.publishDepth(sensor[1])
-            # elif sensor is not None and sensor[0] == "dvl":
-            # 	dvl_msg = DVL()
-            # 	sensor[1][0] = rospy.Time.now()
-            # 	dvl_msg.header.stamp = rospy.Time.from_sec(float(sensor[1][0]))
-            # 	dvl_msg.header.stamp = sensor[1][0]
-            # 	dvl_msg.velocity.x = float(sensor[1][1])
-            # 	dvl_msg.velocity.y = float(sensor[1][2])
-            # 	dvl_msg.velocity.z = float(sensor[1][3])
-            #	dvl_msg.fom = float(sensor[1][4])
-            #	dvl_msg.altitude = float(sensor[1][5])
-            #	dvl_msg.valid = sensor[1][6] == 'y'
-            #	dvl_msg.status = bool(float(sensor[1][7]))
-            #	dvlp.publish(dvl_msg)
+            # Code to start mission
+            submerged = np.min(depth_queue) > 0.05
+            if submerged:
+                if not prev_submerged:
+                    print('Robot entered water')
+                    start_time = time.time()
+                
+                # Wait a minute afte                if :r submerging to start
+                mission_started = time.time() - start_time > 60
+            else:
+                mission_started = False
+            prev_submerged = submerged
+            mission_started_publisher.publish(mission_started)
 
-            ser.write("thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n".format(*thrusters).encode('utf_8'))
+            ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
             rate.sleep()
             
 

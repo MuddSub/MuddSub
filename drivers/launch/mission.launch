@@ -1,0 +1,7 @@
+<launch>
+    <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
+    <node name="teensy_interface" pkg="drivers" type="DepthController.py" output="screen" />
+    <include file="$(find vision)/complete_left_camera.launch" />
+    <node pkg="rosbag" type="record" name="rosbag_record"
+    args="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/" />
+</launch>

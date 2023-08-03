@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import rospy
-from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 import torch
 from torchvision import transforms
@@ -16,7 +15,7 @@ from geometry_msgs.msg import Vector3, Pose2D
 from vision.YoloV5.yolov5.models.common import DetectMultiBackend
 from vision.YoloV5.yolov5.utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, colorstr, cv2,
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
-
+from cv_bridge import CvBridge
 bridge = CvBridge()
 class Camera:
 
@@ -27,7 +26,8 @@ class Camera:
         self.weights = weights
         imgsz = (640, 640)
 
-        device = torch.device("cuda:0" if torch.cuda.is_available else "cpu")
+        device = torch.device("cpu")
+        # device = torch.device("cuda:0" if torch.cuda.is_available else "cpu")
 
         # self.model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
         rospy.loginfo(self.weights)
@@ -70,7 +70,7 @@ class Camera:
         input_img = input_img.permute(2,0,1)
 
         with self.dt[0]:
-            # input_img = self.test_image
+            input_img = self.test_image
             im = input_img.to(self.model.device)
             im = im.half() if self.model.fp16 else im.float()  # uint8 to fp16/32
             im /= 255  # 0 - 255 to 0.0 - 1.0

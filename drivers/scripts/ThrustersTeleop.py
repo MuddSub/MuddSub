@@ -48,16 +48,16 @@ if __name__ == "__main__":
 
     max_speed = 0.1  # Percentage of full speed
     forward = np.array([
-        [-1, -1, -1, -1],
+        [1, 1, 1, 1],
         [0, 0, 0, 0]
     ])
     clockwise = np.array([
-        [-1, 1, -1, 1],
+        [1, -1, 1, -1],
         [0, 0, 0, 0]
     ])
     up = np.array([
         [0, 0, 0, 0],
-        [1, 1, 1, 1]
+        [0, 1, 1, 0]
     ])
     speeds = np.zeros([2, 4])
 

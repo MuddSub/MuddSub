@@ -74,8 +74,8 @@ class DepthController:
         if out_pwm < MIN_PWM:
             out_pwm = MIN_PWM
         self.desired_vertical_pwm ={'vfl':int(out_pwm),
-                                    'vfr':int(out_pwm),
-                                    'vbl':int(out_pwm),
+                                    'vfr':int(1500),
+                                    'vbl':int(1500),
                                     'vbr':int(out_pwm)}
         self.submerge()
 
@@ -101,7 +101,7 @@ class DepthController:
 if __name__ == '__main__':
     rospy.init_node('depth_controller', anonymous=True)
     rate = rospy.Rate(50)  # 50Hz
-    Kp = 100
+    Kp = 800
     depth_controller = DepthController(Kp)
     depth_controller.timer.start()
     acceptable_error = 0.1
