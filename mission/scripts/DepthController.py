@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from std_msgs.msg import Int32, Float32
+from std_msgs.msg import Int32, Float32, Bool
 from vision.msg import BoundingBoxArray
 from drivers.msg import Depth
 from collections import deque
@@ -16,6 +16,8 @@ class DepthController:
     def __init__(self, Kp):
         self.depth_sensor = rospy.Subscriber('/drivers/depth_sensor/depth', Depth, self.depth_sensor_callback)
         self.desired_depth = rospy.Subscriber('/mission/desired_depth', Float32, self.update_desired_depth_callback,)
+        self.mission_start = rospy.Subscriber("/robot/mission_started", Bool, self.start_callback)
+
         # self.camera_detections = rospy.Subscriber(bounding_box_array_topic, BoundingBoxArray)
         # self.hfl_pwm_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=1)
         # self.hfr_pwm_publisher = rospy.Publisher('/robot/pwm/hfr', Int32, queue_size=1)
@@ -42,7 +44,11 @@ class DepthController:
         self.desired_depth = 0
         self.default_desired_depth = 0
         self.timer = threading.Timer(TIMER_LIMIT, self.reset_desired_depth)
-        
+        self.start = False
+    
+    def start_callback(self, msg):
+        self.start = msg.data
+
     def reset_desired_depth(self):
         # self.desired_depth = self.default_desired_depth
         # print(f"Just reset desired_depth to {self.desired_depth}")
@@ -106,12 +112,15 @@ if __name__ == '__main__':
     depth_controller.timer.start()
     acceptable_error = 0.1
     while not rospy.is_shutdown():
-        if not depth_controller.avg_depth:
-            print("no depth_controller")
-        elif abs(depth_controller.avg_depth - depth_controller.desired_depth) < acceptable_error:
-            print(f"reached desired depth of {depth_controller.avg_depth}")
-        print(f"desired depth: {depth_controller.desired_depth}")
-        depth_controller.depth_controller(depth_controller.desired_depth)
-        # except Exception:
-        #     print("Error in depth controller")
+        if depth_controller.start == False:
+            continue
+        else:
+            if not depth_controller.avg_depth:
+                print("no depth_controller")
+            elif abs(depth_controller.avg_depth - depth_controller.desired_depth) < acceptable_error:
+                print(f"reached desired depth of {depth_controller.avg_depth}")
+            print(f"desired depth: {depth_controller.desired_depth}")
+            depth_controller.depth_controller(depth_controller.desired_depth)
+            # except Exception:
+            #     print("Error in depth controller")
         rate.sleep()
