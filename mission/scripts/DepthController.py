@@ -4,14 +4,18 @@ from std_msgs.msg import Int32, Float32
 from vision.msg import BoundingBoxArray
 from drivers.msg import Depth
 from collections import deque
+import threading
 
 DEFAULT_PWM = 1500
 MAX_PWM = 3000
 MIN_PWM = 0
+TIMER_LIMIT = 1 #1 sec
+
 
 class DepthController:
     def __init__(self, Kp):
         self.depth_sensor = rospy.Subscriber('/drivers/depth_sensor/depth', Depth, self.depth_sensor_callback)
+        self.desired_depth = rospy.Subscriber('/mission/desired_depth', Float32, self.update_desired_depth_callback,)
         # self.camera_detections = rospy.Subscriber(bounding_box_array_topic, BoundingBoxArray)
         # self.hfl_pwm_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=1)
         # self.hfr_pwm_publisher = rospy.Publisher('/robot/pwm/hfr', Int32, queue_size=1)
@@ -33,15 +37,32 @@ class DepthController:
         self.desired_horizontal_pwm = {}
         self.latest_ten_depth = deque()
         self.Kp = Kp
+        self.avg_depth = 0
+        self.depth = 0
+        self.desired_depth = 0
+        self.default_desired_depth = 0
+        self.timer = threading.Timer(TIMER_LIMIT, self.reset_desired_depth)
         
- 
+    def reset_desired_depth(self):
+        # self.desired_depth = self.default_desired_depth
+        # print(f"Just reset desired_depth to {self.desired_depth}")
+        pass
 
     def depth_sensor_callback(self, msg):
+        print(msg.depth)
         self.depth = msg.depth
         if len(self.latest_ten_depth)>=10:
             self.latest_ten_depth.popleft()
         self.latest_ten_depth.append(self.depth)
-        self.avg_depth = sum(self.latest_ten_depth)/len(self.latest_ten_depth)
+        # self.avg_depth = sum(self.latest_ten_depth)/len(self.latest_ten_depth)
+        self.avg_depth = 10
+
+    
+    def update_desired_depth_callback(self, msg):
+        self.timer.cancel()
+        self.desired_depth = msg.data
+        self.timer = threading.Timer(TIMER_LIMIT, self.reset_desired_depth)
+        self.timer.start()
     
     def depth_controller(self, desired_depth):
         #base: 1500, upward: 1600, downward:1400, max: 3000, min: 0
@@ -52,28 +73,24 @@ class DepthController:
             out_pwm = MAX_PWM
         if out_pwm < MIN_PWM:
             out_pwm = MIN_PWM
-        self.desired_vertical_pwm ={'vfl':out_pwm,
-                                    'vfr':out_pwm,
-                                    'vbl':out_pwm,
-                                    'vbr':out_pwm}
+        self.desired_vertical_pwm ={'vfl':int(out_pwm),
+                                    'vfr':int(out_pwm),
+                                    'vbl':int(out_pwm),
+                                    'vbr':int(out_pwm)}
         self.submerge()
 
     def submerge(self):
         def publish_pwm(pwm_dict):
-            # self.hfl_pwm_publisher.publish(Int32(pwm_dict['hfl']))
-            # self.hfr_pwm_publisher.publish(Int32(pwm_dict['hfr']))
-            # self.hbl_pwm_publisher.publish(Int32(pwm_dict['hbl']))
-            # self.hbr_pwm_publisher.publish(Int32(pwm_dict['hbr']))
-
             self.vfl_pwm_publisher.publish(Int32(pwm_dict['vfl']))
             self.vfr_pwm_publisher.publish(Int32(pwm_dict['vfr']))
             self.vbl_pwm_publisher.publish(Int32(pwm_dict['vbl']))
             self.vbr_pwm_publisher.publish(Int32(pwm_dict['vbr']))
+            print(pwm_dict)
         if self.depth:
             print("up-down-movement")
             publish_pwm(self.desired_vertical_pwm)
             # print(f"sending pwm data {pwm_array} to motors")
-            print("currently depth is: "+ self.depth)
+            print(f"currently depth is: {self.depth}")
         else:
             print("no depth data")
             publish_pwm(self.default_pwm)
@@ -84,15 +101,17 @@ class DepthController:
 if __name__ == '__main__':
     rospy.init_node('depth_controller', anonymous=True)
     rate = rospy.Rate(50)  # 50Hz
-    Kp = 0.5
+    Kp = 100
     depth_controller = DepthController(Kp)
-    desired_depth = 2
+    depth_controller.timer.start()
     acceptable_error = 0.1
     while not rospy.is_shutdown():
-        try:
-            if abs(depth_controller.avg_depth - desired_depth) < acceptable_error:
-                print(f"reached desired depth of {depth_controller.avg_depth}")
-            depth_controller.depth_controller()
-        except Exception:
-            print("Error in depth controller")
+        if not depth_controller.avg_depth:
+            print("no depth_controller")
+        elif abs(depth_controller.avg_depth - depth_controller.desired_depth) < acceptable_error:
+            print(f"reached desired depth of {depth_controller.avg_depth}")
+        print(f"desired depth: {depth_controller.desired_depth}")
+        depth_controller.depth_controller(depth_controller.desired_depth)
+        # except Exception:
+        #     print("Error in depth controller")
         rate.sleep()
