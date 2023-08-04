@@ -1,0 +1,9 @@
+
+<launch>
+  <arg name="straight_forward_Kp" default="400"/>
+  <!-- True or False -->
+  <arg name="use_vision" default="True"/>
+  <param name="straight_forward_Kp" value="$(arg straight_forward_Kp)"/>
+  <param name="use_vision" value="$(arg use_vision)"/>
+  <node name="straight_forward" pkg="mission" type="StraightForward.py" output="screen" />
+</launch>

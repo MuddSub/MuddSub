@@ -91,9 +91,9 @@ class DepthController:
             self.vfr_pwm_publisher.publish(Int32(pwm_dict['vfr']))
             self.vbl_pwm_publisher.publish(Int32(pwm_dict['vbl']))
             self.vbr_pwm_publisher.publish(Int32(pwm_dict['vbr']))
-            print(pwm_dict)
+            # print(pwm_dict)
         if self.depth:
-            print("up-down-movement")
+            # print("up-down-movement")
             publish_pwm(self.desired_vertical_pwm)
             # print(f"sending pwm data {pwm_array} to motors")
             print(f"currently depth is: {self.depth}")
