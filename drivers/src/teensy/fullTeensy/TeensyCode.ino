@@ -1,18 +1,24 @@
-#include <Servo.h>
-#include <sstream>
-#include <vector>
-#include <string>
+/* This code is for the 2023 RoboSub Competition.
+    Features:
+      - Taking in serial commands from ROS, sending them to thrusters
+      - Sending depth sensor readings over serial to ROS
+      - Sending a serial message when a pin is asserted. This is to start the mission using the 'on'
+        switch.
+*/
 
+
+#include <Servo.h>
 #include <Wire.h>
 #include "MS5837.h"
 
-#include <SoftwareSerial.h>
+#define RX_PIN 21
+#define TX_PIN 20
 
-int rxPin = 21;
-int txPin = 20;
-SoftwareSerial sSerial = SoftwareSerial(rxPin, txPin);
+// on switch is active low
+#define ON_SWITCH_PIN 33
 
-MS5837 sensor;
+
+MS5837 depth_sensor;
 
 Servo thruster1;
 Servo thruster2;
@@ -29,14 +35,31 @@ String input = ",";
 
 float fluid_density, pressure_offset;
 
+/* runs when interrupt pin changes */
+void send_start_msg_isr()
+{
+  if(digitalRead(ON_SWITCH_PIN)) 
+  {
+    Serial.printf("switch,off\n");
+  }
+  else 
+  {
+    Serial.printf("switch,on\n");
+  }
+  return;
+}
+
 void setup()
 {
   // put your setup code here, to run once:
 
-  pinMode(rxPin, INPUT);
-  pinMode(txPin, OUTPUT);
+  pinMode(RX_PIN, INPUT);
+  pinMode(TX_PIN, OUTPUT);
+  pinMode(ON_SWITCH_PIN, INPUT_PULLUP);
 
-  sSerial.begin(115200);
+  // enable interrupt for pin ON_SWITCH_PIN
+  attachInterrupt(digitalPinToInterrupt(ON_SWITCH_PIN), send_start_msg_isr, CHANGE);
+
   Serial.begin(115200);
 
   Serial.println("Starting");
@@ -52,6 +75,7 @@ void setup()
   thruster7.attach(6);
   thruster8.attach(7);
 
+  // set thrusters to 1500, which corresponds to motors off
   thruster1.writeMicroseconds(1500);
   thruster2.writeMicroseconds(1500);
   thruster3.writeMicroseconds(1500);
@@ -61,7 +85,7 @@ void setup()
   thruster7.writeMicroseconds(1500);
   thruster8.writeMicroseconds(1500);
 
-  while (!sensor.begin(Wire))
+  while (!depth_sensor.begin(Wire))
   {
     Serial.println("Init failed!");
     Serial.println("Are SDA/SCL connected correctly?");
@@ -71,80 +95,57 @@ void setup()
   }
 
   fluid_density = 997; // kg/m^3
-  sensor.setFluidDensity(fluid_density);
-  sensor.setModel(MS5837::MS5837_30BA);
+  depth_sensor.setFluidDensity(fluid_density);
+  depth_sensor.setModel(MS5837::MS5837_30BA);
+
+  delay(500);
 
   // Get atmospheric pressure to prevent hard-coding offset
   // This takes the first reading, assuming the Teensy is first initally powered outside of water
-  sensor.read();
-  pressure_offset = sensor.pressure(MS5837::Pa); // offset in Pa
+  depth_sensor.read();
+  pressure_offset = depth_sensor.pressure(MS5837::Pa); // offset in Pa
 
   Serial.printf("Pressure offset is %f\r\n", pressure_offset);
 
   // If Teensy is started at a pressure above air pressure bounds, set it to standard air pressure
-  if (pressure_offset > 108400) // 108400 Pa is the highest recorded air pressure.
+  if (pressure_offset > 108400 || pressure_offset < 87000) // 108400 Pa is the highest recorded air pressure.
   {
     // use standard average air pressure
     pressure_offset = 101300;
   }
+  
+
+  
 }
 
 void loop()
 {
   // put your main code here, to run repeatedly:
 
-  sensor.read();
+  depth_sensor.read();
 
   // Calculate depth given pressure
   // depth is in meters
-  float depth = (sensor.pressure(MS5837::Pa) - pressure_offset) / (fluid_density * 9.80665);
+  float depth = (depth_sensor.pressure(MS5837::Pa) - pressure_offset) / (fluid_density * 9.80665);
 
-  Serial.print("depth,");
-  Serial.println(depth);
-
-  if (sSerial.available())
-  {
-    String msg = sSerial.readStringUntil('\n');
-    msg = msg.substring(3);
-    msg = String("DVL") + msg;
-    Serial.write(msg.c_str());
-  }
+  Serial.printf("depth,%f\n", depth);
+  // Serial.println(depth);
 
   if (Serial.available() > 0)
   {
-    Serial.println(Serial.available());
+
     input = Serial.readStringUntil('\n');
-    if (input.indexOf(',') == -1)
-    {
-      input = ",";
-    }
+
   }
+  Serial.clear();
 
-  std::string instruction = std::string(input.c_str());
 
-  std::stringstream ss(instruction);
-
-  std::vector<String> result;
-
-  while (ss.good())
-  {
-
-    std::string substr;
-    getline(ss, substr, ',');
-    result.emplace_back(substr.c_str());
-  }
-
-  if (result[0] == "thrust")
-  {
-
-    for (unsigned int i = 1; i < result.size(); i++)
-    {
-
-      Servo *thruster = thrusters[result[i].substring(0, 1).toInt()];
-
-      int val = result[i].substring(1).toInt();
-
-      thruster->writeMicroseconds(val);
+  int pwms[8];
+  // listen to a serial command of the following format, put the values in the pwms array
+  int result = sscanf(input.c_str(), "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d", &pwms[0], &pwms[1], &pwms[2], &pwms[3], &pwms[4], &pwms[5], &pwms[6], &pwms[7]);
+  if (result == 8) {
+    for (int i = 0; i < 8; i++) {
+      thrusters[i]->writeMicroseconds(pwms[i]);
     }
   }
 }
