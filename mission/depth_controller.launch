@@ -1,0 +1,9 @@
+
+<launch>
+  <arg name="depth_controller_Kp" default="800"/>
+  <arg name="desired_depth" default="0"/>
+  <!-- 0.9m = 3feet -->
+  <param name="desired_depth" value="$(arg desired_depth)"/>
+  <param name="depth_controller_Kp" value="$(arg depth_controller_Kp)"/>
+  <node name="depth_controller" pkg="mission" type="DepthController.py" output="screen" />
+</launch>

@@ -60,6 +60,8 @@ def parse_line(line):
     items = line.split(',')
     if items[0] == 'depth' and len(items) == 2:
         return 'depth', float(items[1])
+    elif items[0] == 'switch' and len(items) == 2:
+        return 'switch', items[1] == 'on'
     elif len(items) == 8:
         return 'dvl', items
     else:
@@ -78,7 +80,7 @@ if __name__ == '__main__':
         except: 
             rospy.logerr("Couldn't open serial")
             exit()
-            
+
         if not ser.is_open:
             rospy.logerr("Couldn't open serial")
             exit()
@@ -94,11 +96,6 @@ if __name__ == '__main__':
         vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, pulseToSerial, (1), queue_size=1)
 
         mission_started_publisher = rospy.Publisher('/robot/mission_started', Bool, queue_size=1)
-
-        depth_queue = [0] * 10
-        submerged = False
-        prev_submerged = False
-        start_time = time.time()
         mission_started = False
 
         dsp = DepthSensorPublisher()
@@ -110,8 +107,10 @@ if __name__ == '__main__':
                 ty, data = parse_line(line)
                 if ty == 'depth':
                     print('depth:', data)
-                    depth_queue = [data] + depth_queue[:-1]
                     dsp.publishDepth(data)
+                elif ty == 'switch':
+                    # print('switch', data)
+                    mission_started = data
                 elif ty == 'dvl':
                     dvl_msg = DVL()
                     dvl_msg.header.stamp = rospy.Time.now()
@@ -124,18 +123,18 @@ if __name__ == '__main__':
                     dvl_msg.status = bool(float(data[7]))
                     dvlp.publish(dvl_msg)
 
-            # Code to start mission
-            submerged = np.min(depth_queue) > 0.05
-            if submerged:
-                if not prev_submerged:
-                    print('Robot entered water')
-                    start_time = time.time()
+            # # Code to start mission
+            # submerged = np.min(depth_queue) > 0.05
+            # if submerged:
+            #     if not prev_submerged:
+            #         print('Robot entered water')
+            #         start_time = time.time()
                 
-                # Wait a minute afte                if :r submerging to start
-                mission_started = time.time() - start_time > 60
-            else:
-                mission_started = False
-            prev_submerged = submerged
+            #     # Wait a minute afte                if :r submerging to start
+            #     mission_started = time.time() - start_time > 60
+            # else:
+            #     mission_started = False
+            # prev_submerged = submerged
             mission_started_publisher.publish(mission_started)
 
             ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))

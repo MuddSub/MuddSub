@@ -13,7 +13,7 @@ TIMER_LIMIT = 1 #1 sec
 
 
 class DepthController:
-    def __init__(self, Kp):
+    def __init__(self, Kp, desired_depth):
         self.depth_sensor = rospy.Subscriber('/drivers/depth_sensor/depth', Depth, self.depth_sensor_callback)
         self.desired_depth = rospy.Subscriber('/mission/desired_depth', Float32, self.update_desired_depth_callback,)
         self.mission_start = rospy.Subscriber("/robot/mission_started", Bool, self.start_callback)
@@ -41,7 +41,7 @@ class DepthController:
         self.Kp = Kp
         self.avg_depth = 0
         self.depth = 0
-        self.desired_depth = 0
+        self.desired_depth = desired_depth
         self.default_desired_depth = 0
         self.timer = threading.Timer(TIMER_LIMIT, self.reset_desired_depth)
         self.start = False
@@ -105,10 +105,11 @@ class DepthController:
             
 
 if __name__ == '__main__':
-    rospy.init_node('depth_controller', anonymous=True)
+    rospy.init_node('depth_controller', anonymous=False)
     rate = rospy.Rate(50)  # 50Hz
-    Kp = 800
-    depth_controller = DepthController(Kp)
+    Kp = int(rospy.get_param("depth_controller_Kp"))
+    desired_depth = float(rospy.get_param("desired_depth"))
+    depth_controller = DepthController(Kp, desired_depth)
     depth_controller.timer.start()
     acceptable_error = 0.1
     while not rospy.is_shutdown():

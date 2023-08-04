@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import Image
-import torch
-from torchvision import transforms
-from torch.autograd import Variable
 import numpy as np
 
 from std_msgs.msg import Header, String, Float32
@@ -12,12 +9,8 @@ from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
 from vision_msgs.msg import BoundingBox2D
 from geometry_msgs.msg import Vector3, Pose2D
 
-from vision.YoloV5.yolov5.models.common import DetectMultiBackend
-from vision.YoloV5.yolov5.utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, colorstr, cv2,
-                           increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
-
 from vision.Camera_Utils import detect_lines
-
+import cv2
 from cv_bridge import CvBridge
 
 bridge = CvBridge()
@@ -30,8 +23,8 @@ class Camera:
         self.weights = weights
 
         rospy.loginfo(self.weights)
-        self.test_image = torch.tensor(cv2.imread(test_image_path)).permute(2,0,1).unsqueeze(0)
-        print("test_image: ", self.test_image.shape)
+        self.default_x_center = 0.5
+        self.center_all_x = 0.5
 
 
     def main(self):
@@ -51,15 +44,20 @@ class Camera:
     def callback(self, image):
         image_message = bridge.imgmsg_to_cv2(image, "bgr8")
         (H,W,C) = image_message.shape
+        # image_message = cv2.GaussianBlur(image_message, (3,3), 0)
         line_img, all_x = detect_lines(image_message, threshold=4, min_line_length=0)
         if len(all_x) >= 2: 
-            center_all_x = sum(all_x) / len(all_x)
-            normalized_x_center = center_all_x/W
+            self.center_all_x = 0.9 * self.center_all_x + 0.1* (sum(all_x) / len(all_x))
+            # self.center_all_x = sum(all_x) / len(all_x)
+            normalized_x_center = self.center_all_x/W
             # print(normalized_x_center)
             self.visionPublisher.publishGateCenter(Float32(normalized_x_center))
-            line_img = cv2.line(line_img, (int(center_all_x), 0), (int(center_all_x), H-1), (0, 255, 0), 2)  # Draw red lines
+            line_img = cv2.line(line_img, (int(self.center_all_x), 0), (int(self.center_all_x), H-1), (0, 255, 0), 2)  # Draw red lines
+
         else:
-            print(f"not enough data. length of x's is {len(center_all_x)}")
+            # print(f"not enough data. length of x's is {len(all_x)}")
+            self.visionPublisher.publishGateCenter(Float32(self.default_x_center))
+
         line_img = bridge.cv2_to_imgmsg(line_img, "bgr8")
         self.visionPublisher.publishModelOutput(line_img)
 
