@@ -4,5 +4,5 @@
   <arg name="namespace" value="drivers_server" />
   <node name="$(anon dump_params)" pkg="utils" type="DumpParams.py" args="$(arg dump_config_file) $(arg namespace)" />
   <rosparam file="$(arg load_config_file)" command="load" ns="$(arg namespace)" />
-  <node name="drivers_server" pkg="drivers" type="DriversServer.py" />
+  <node name="drivers_server" pkg="drivers" output="screen" type="DriversServer.py" />
 </launch>

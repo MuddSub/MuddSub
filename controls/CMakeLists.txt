@@ -140,7 +140,8 @@ add_executable(control_dispatch
     src/SixDegreePID.cc
     src/DecoupledLQR.cc
     src/ControlDispatch.cc
-    src/Controller.cc)
+    src/Controller.cc
+    src/ControlsPublisher.cc)
 add_dependencies(control_dispatch
 	${${PROJECT_NAME}_EXPORTED_TARGETS}
 	${catkin_EXPORTED_TARGETS}

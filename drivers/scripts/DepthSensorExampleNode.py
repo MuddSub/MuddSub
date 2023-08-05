@@ -29,7 +29,8 @@ def depthSensorExampleNode():
         header.frame_id = 'depth_sensor'
 
         # Create Depth message
-        depth = Depth(header, params["depth"])
+        # depth = Depth(header, params["depth"])
+        depth = params["depth"]
 
         # Create FluidPressure message
         pressure = FluidPressure(header, 3.0, 0.2)

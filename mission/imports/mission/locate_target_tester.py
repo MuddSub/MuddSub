@@ -5,8 +5,11 @@ from slam.msg import Map, Obstacle
 from std_msgs.msg import Bool
 from vision.msg import DetectionArray
 from nav_msgs.msg import Odometry
+from controls.msg import State
+from std_msgs.msg import Header
 from tf.transformations import euler_from_quaternion
 from functools import reduce
+import numpy as np
 # check if we found in camera
 
 '''
@@ -42,27 +45,31 @@ if the task_name != Gate
 class LocateTarget(smach.State):
   def __init__(self, task_name, camera_name, min_confidence, thresholds):
     rospy.loginfo("LocateTarget init")
-    smach.State.__init__(self, outcomes=['active', 'success', 'abort'], 
-                              input_keys = ['isWaiting_in',],
-                              output_keys = ['isWaiting_out'])
-    # self.locateTarget_subscriber = rospy.Subscriber('/mission/target', Bool, self.callback)
-    # self.detection_subscriber = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.detection_callback)
-    # self.error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
+    smach.State.__init__(self, outcomes=['active', 'succeeded', 'aborted'], 
+                              input_keys = ['isWaiting',],
+                              output_keys = ['isWaiting'])
+    self.detection_subscriber = rospy.Subscriber('vision/' + camera_name + '/detection_array', DetectionArray, self.detection_callback)
+    self.error_subscriber =  rospy.Subscriber('/controls/robot/error',Odometry,self.error_callback)
+    self.state_subscriber = rospy.Subscriber('/slam/robot/state', Odometry, self.state_callback)
+    self.setpoint_publisher = rospy.Publisher('/robot_setpoint', State)
     self.camera_name = camera_name
     self.found_target = False
     self.reached_requested_position = False
     self.spin_count = 0
     self.min_confidence = min_confidence
     self.threshold = thresholds
-    # self.startTime = rospy.get_time()
-    # self.lastSearch = self.startTime
     self.task_name = task_name # we are not doing anything which this yet!
+    self.current_state = None
+    self.numSpins = 8
+    self.centered = False
+    self.header_seq = 0
     rospy.loginfo("task_name is " + task_name)
 
   def detection_callback(self, data):
     for i in data.detections:
-      if i.name == 'gate' and i.confidence > self.min_confidence:
+      if i.name == 'Gate' and i.confidence > self.min_confidence:
         self.found_target = True
+        self.centered = abs(i.boundingBox.center.x - 0.5) < 0.01
         break
 
   def error_callback(self,data):
@@ -70,9 +77,12 @@ class LocateTarget(smach.State):
       # point (m), quarternion( rad), xyz (m/s), angle velocity (rad/s)
       # 1. x, y, z same threshold
       # 2. roll, pitch, yaw same threshold
-      point = data.pose.pose.position.x
+      point = data.pose.pose.position
       point = (point.x, point.y, point.z)
-      orientation = euler_from_quaternion(data.pose.pose.orientation)
+      orientation = data.pose.pose.orientation
+      orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+      orientation = euler_from_quaternion(orientation)
+      
       velocity = data.twist.twist.linear
       velocity = (velocity.x, velocity.y, velocity.z)      
       angular_velocity = data.twist.twist.angular
@@ -83,32 +93,65 @@ class LocateTarget(smach.State):
                                         self.check_threshold(angular_velocity, self.threshold[3])
 
   def check_threshold(self, position, threshold):
-    return reduce(lambda x, y: x and y, map(lambda x: x < threshold, position))
+    return reduce(lambda x, y: x and y, list(map(lambda x: x < threshold, position)))
 
+  def state_callback(self, msg):
+    pos = msg.pose.pose.position
+    orientation = msg.pose.pose.orientation
+    orientation = [orientation.w, orientation.x, orientation.y, orientation.z]
+    r,p,y = euler_from_quaternion(orientation)
+    vel = msg.twist.twist.linear
+    omega = msg.twist.twist.angular
+    self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
+    
   def execute(self, userdata):
-    detection_subscriber = rospy.Subscriber('vision/' + self.camera_name + '/detection_array', DetectionArray, self.detection_callback)
-    error_subscriber =  rospy.Subscriber('/controls/robot/error', Odometry, self.error_callback)
     if self.task_name == 'Gate':
-      if self.found_target:
+      if self.current_state is None:
+        rospy.loginfo(userdata.isWaiting)
+        return 'active'
+      if self.found_target and self.centered:
+        rospy.loginfo('Request to stop')
+        self.requestForwardMovement(0)
         return 'succeeded'
 
       # waiting for controls to move us
-      elif userdata.isWaiting_in:
+      elif userdata.isWaiting:
+        rospy.loginfo("---------------------stuck waiting--------")
         if self.reached_requested_position:
-          userdata.isWaiting_out = False
+          userdata.isWaiting = False
         return 'active'
 
       else:
         self.spin_count += 1
-        if self.spin_count < 4:
-          rospy.loginfo('Request to Spin')
-        elif self.spin_count == 4:
-          rospy.loginfo('Request to move 10 meters')
-        elif self.spin_count >= 4:
-          return 'abort'
-        userdata.isWaiting_out = True
+        if self.spin_count < self.numSpins:
+          self.requestSpin(np.pi / 2)
+        elif self.spin_count == self.numSpins:
+          self.requestForwardMovement(10)
+        elif self.spin_count >= self.numSpins:
+          return 'aborted'
+        userdata.isWaiting = True
         return 'active'
   
+  # def stateCallback(self, msg):
+  #   pos = msg.pose.pose.position
+  #   r,p,y = euler_from_quaternion(msg.pose.pose.orientation)
+  #   vel = msg.twist.twist.linear
+  #   omega = msg.twist.twist.angular
+  #   self.current_state = np.array([pos.x, pos.y, pos.z, r, p, y, vel.x, vel.y, vel.z, omega.x, omega.y, omega.z])
 
+  def requestSpin(self, angleOffset):
+    '''Requests a spin of angleOffset radians from controls'''
+    setpoint = self.current_state + np.array([0, 0, 0, 0, 0, angleOffset, 0, 0, 0, 0, 0, 0])
+    self.publishSetpoint(setpoint)
+  
+  def requestForwardMovement(self, distance):
+    '''Requests a movement of distance meters forward relative to the robot's bearing'''
+    setpoint = self.current_state + np.array([distance * np.cos(self.current_state[5]), distance * np.sin(self.current_state[5]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    self.publishSetpoint(setpoint)
 
-
+  def publishSetpoint(self, setpoint):
+    state = State()
+    state.header = Header(self.header_seq, rospy.Time.now(), 'BASE')
+    state.state = setpoint.tolist()
+    self.header_seq += 1
+    self.setpoint_publisher.publish(state)

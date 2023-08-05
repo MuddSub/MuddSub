@@ -6,6 +6,7 @@ namespace MuddSub::Controls
     n_(n)
   {
     wrenchPub_ = n_.advertise<geometry_msgs::WrenchStamped>("controls/robot/wrench", 1000);
+    errorPub_ = n_.advertise<nav_msgs::Odometry>("controls/robot/error", 1000);
     forcesPub_ = n_.advertise<controls::ThrusterForceArray>("controls/thruster/forces", 1000);
     pwmsPub_ = n_.advertise<controls::ThrusterForceArray>("controls/thruster/pwms", 1000);
   }

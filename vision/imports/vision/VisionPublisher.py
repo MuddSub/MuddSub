@@ -2,7 +2,8 @@
 import rospy
 #from sensor_msgs.msg import CameraInfo, Image, CompressedImage
 from vision.msg import Detection, DetectionArray, BoundingBoxArray, BoundingBox
-
+from std_msgs.msg import Float32
+from sensor_msgs.msg import Image
 class VisionPublisher:
     """
     Publishes vision messages describing obstacles detected by the computer vision algorithm.
@@ -24,11 +25,12 @@ class VisionPublisher:
         """Initialize VisionPublisher instance."""
         self._cameraName = cameraName
         # self._bboxesPub = rospy.Publisher('vision/' + cameraName + '/bounding_boxes', BoundingBox2DArray, queue_size=10)
-        self._detectionPub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=10)
-        self._detectionArrayPub = rospy.Publisher('vision/' + cameraName + '/detection_array', DetectionArray, queue_size=10)
-        self._boundingBoxPub = rospy.Publisher('vision/' + cameraName + '/bounding_box', BoundingBox, queue_size=10)
-        self._boundingBoxArrayPub = rospy.Publisher('vision/' + cameraName + '/bounding_box_array', BoundingBoxArray, queue_size=10)
-
+        self._detectionPub = rospy.Publisher('vision/' + cameraName + '/detection', Detection, queue_size=2)
+        self._detectionArrayPub = rospy.Publisher('vision/' + cameraName + '/detection_array', DetectionArray, queue_size=2)
+        self._boundingBoxPub = rospy.Publisher('vision/' + cameraName + '/bounding_box', BoundingBox, queue_size=2)
+        self._boundingBoxArrayPub = rospy.Publisher('vision/' + cameraName + '/bounding_box_array', BoundingBoxArray, queue_size=2)
+        self._gateCenterPub = rospy.Publisher('vision/' + cameraName + '/gate_center', Float32, queue_size=2)
+        self._modelOutputPub = rospy.Publisher('vision/' + cameraName + '/model_output', Image, queue_size=2)
     # def publishBoundingBoxes(self, boundingBoxes):
     #     """
     #     Publish a vision/BoundingBox2DArray message.
@@ -67,3 +69,22 @@ class VisionPublisher:
 
     def publishBoundingBoxArray(self, boundingBoxArray):
         self._boundingBoxArrayPub.publish(boundingBoxArray)
+    
+    def publishGateCenter(self, normalized_x_center):
+        """
+        Publishes a std_msgs/Float32 representing a normalized value for the horizontal center of the gate.
+
+        Args:
+            normalized_x_center: a float between 0 and 1
+        """
+        self._gateCenterPub.publish(normalized_x_center)
+    
+    def publishModelOutput(self, model_output):
+        """
+        Publishes a sensor_msgs/Image showing the output of the vision model
+
+        Args:
+            model_output: any outputs of type sensor_msgs/Image
+        """
+        self._modelOutputPub.publish(model_output)
+

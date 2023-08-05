@@ -8,3 +8,4 @@ hydrophones/data/*
 *.vscode
 docs/*
 slam/datasets/*
+*.pt

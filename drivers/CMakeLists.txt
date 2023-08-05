@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   sensor_msgs
   imu_vn_100
+  dynamic_reconfigure
 )
 
 # System dependencies are found with CMake's conventions
@@ -78,6 +79,7 @@ generate_messages(
 catkin_install_python(PROGRAMS
   scripts/DepthSensorExampleNode.py
   scripts/DriversServer.py
+  scripts/ThrustersTeleop.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -103,6 +105,7 @@ target_link_libraries(DepthSensorExampleNode ${catkin_LIBRARIES})
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
 generate_dynamic_reconfigure_options(
    cfg/Drivers.cfg
+   cfg/Thrusters.cfg
 )
 
 ###################################

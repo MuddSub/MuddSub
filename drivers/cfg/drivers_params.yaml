@@ -1,1 +1,13 @@
 depth: 0.9
+pwm:
+  thrusters:
+    horizontal:
+      bl: 1500
+      br: 1500
+      fl: 1500
+      fr: 1500
+    vertical:
+      bl: 1500
+      br: 1500
+      fl: 1500
+      fr: 1500

@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="rosbag" type="record" name="rosbag_record"
+    args="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/" />
+</launch>
