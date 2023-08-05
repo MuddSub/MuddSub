@@ -69,7 +69,7 @@ class RunMRCLAMDataset():
       initial_pose = initial_pose,
       initial_pose_cov = self.initial_pose_cov,
       landmark_constants = LandmarkConstants(),
-      localization_only = False,
+      localization_only = True,
       verbose = 2 if self.verbose else 0, 
       fast_slam_version = self.fast_slam_version,
     )

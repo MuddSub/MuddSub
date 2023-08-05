@@ -5,8 +5,8 @@ namespace MuddSub::Controls
 
 
 ControlDispatch::ControlDispatch() :
-  nh_(),
-  controlsPublisher_(nh_)
+  nh_{},
+  controlsPublisher_{nh_}
 {
   controller_ = std::make_shared<SixDegreePID>();
   dynamics_.setController(controller_);
