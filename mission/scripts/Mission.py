@@ -78,7 +78,7 @@ class StraightForward(State):
     yaw = 0
     def update_yaw(msg):
         StraightForward.yaw = msg.yaw_z_radian
-    rospy.Subscriber('/drivers/IMU/euler_orientation')
+    rospy.Subscriber('/drivers/IMU/euler_orientation', EulerOrientation, update_yaw)
     # rospy.Subscriber('/vectornav/IMU')
 
     hfl_pwm_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=1)
@@ -117,10 +117,9 @@ class RotateInPlace(State):
     MIN_PWM = 900
 
     yaw = 0
-
     def update_yaw(msg):
         RotateInPlace.yaw = msg.yaw_z_radian
-    rospy.Subscriber('/drivers/IMU/euler_orientation')
+    rospy.Subscriber('/drivers/IMU/euler_orientation', EulerOrientation, update_yaw)
 
     hfl_pwm_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=1)
     hfr_pwm_publisher = rospy.Publisher('/robot/pwm/hfr', Int32, queue_size=1)

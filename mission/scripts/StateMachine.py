@@ -51,20 +51,23 @@ class Sequence(State):
         if self._current_state.is_running():
             self._current_state.run()
         if self._current_state.is_finished():
-            self._current_state_idx += 1
-            self._current_state = self._states[self._current_state_idx]
             if self._current_state_idx == len(self._states) - 1:
                 self.end()
+            else:
+                self._current_state_idx += 1
+                self._current_state = self._states[self._current_state_idx]
     
     def reset(self):
         super().reset()
         for state in self._states:
             state.reset()
+        self._current_state_idx = 0
+        self._current_state = self._states[0]
 
 class _ParallelStateGroup(State):
     def __init__(self, states, wait_for_all=True):
         super().__init__()
-        self._wait_for_all = True
+        self._wait_for_all = wait_for_all
         self._states = states
 
     def start(self):
@@ -151,7 +154,7 @@ class Timer(State):
 
 class Lambda(State):
     def __init__(self, func):
-        super().__init()
+        super().__init__()
         self._func = func
     
     def run(self):
