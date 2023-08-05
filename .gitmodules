@@ -45,3 +45,6 @@
 [submodule "drivers/scripts/Adafruit_Python_GPIO"]
 	path = drivers/scripts/Adafruit_Python_GPIO
 	url = https://github.com/MuddSub/Adafruit_Python_GPIO
+[submodule "thirdparty/vectornav"]
+	path = thirdparty/vectornav
+	url = https://github.com/dawonn/vectornav.git
