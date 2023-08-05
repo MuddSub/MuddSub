@@ -1,0 +1,10 @@
+<launch>
+    <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
+
+    <param name="depth_Kp" value=""/>
+    <param name="desired_depth" value=""/>
+    <param name="yaw_Kp" value=""/>
+    <node name="mission" pkg="mission" type="Mission.py"  />
+
+    <node pkg="rosbag" type="record" name="rosbag_record" arg="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/" />
+</launch>

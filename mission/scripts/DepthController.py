@@ -15,7 +15,7 @@ TIMER_LIMIT = 1 #1 sec
 class DepthController:
     def __init__(self, Kp, desired_depth):
         self.depth_sensor = rospy.Subscriber('/drivers/depth_sensor/depth', Depth, self.depth_sensor_callback)
-        self.desired_depth = rospy.Subscriber('/mission/desired_depth', Float32, self.update_desired_depth_callback,)
+        self.desired_depth = rospy.Subscriber('/mission/desired_depth', Float32, self.update_desired_depth_callback)
         self.mission_start = rospy.Subscriber("/robot/mission_started", Bool, self.start_callback)
 
         # self.camera_detections = rospy.Subscriber(bounding_box_array_topic, BoundingBoxArray)
@@ -101,8 +101,6 @@ class DepthController:
             print("no depth data")
             publish_pwm(self.default_pwm)
             # print(f"sending pwm data {default_pwm_array} to motors")
-
-            
 
 if __name__ == '__main__':
     rospy.init_node('depth_controller', anonymous=False)
