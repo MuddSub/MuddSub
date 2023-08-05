@@ -11,9 +11,15 @@
     <!-- <node name="straight_forward" pkg="mission" type="StraightForward.py" output="screen" /> -->
     <include file="$(find mission)/depth_controller.launch">
         <arg name="depth_controller_Kp" value="800" />
-        <arg name="desired_depth" value="0.9" />
+        <arg name="desired_depth" value="0.5" />
     </include >
     <include file="$(find vision)/complete_left_camera.launch" />
-    <!-- <node pkg="rosbag" type="record" name="rosbag_record"
-    arg="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/" /> -->
+    
+    <node pkg="rosbag" type="record" name="rosbag_record"
+    arg="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/" />
+
+    <include file="$(find vectornav)/vectornav.launch">
+    </include>
+
+    <node name="imu_wrapper" pkg="drivers" type="imu_wrapper.py" output="screen"/>
 </launch>
