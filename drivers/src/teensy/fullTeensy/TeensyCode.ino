@@ -17,6 +17,17 @@
 // on switch is active low
 #define ON_SWITCH_PIN 33
 
+// delay period in ms
+#define DELAY_PERIOD 30
+
+// memory buffer size for input serial commands
+#define RX_BUF_SIZE 128
+
+// experimental max and min PWM values for these thrusters
+// the max PWM the thrusters responded to was 2200, but this is set
+// to 2100 for symmetry with the 900 lower bound
+#define MIN_PWM 900
+#define MAX_PWM 2100
 
 MS5837 depth_sensor;
 
@@ -31,7 +42,8 @@ Servo thruster8;
 
 Servo *thrusters[] = {&thruster1, &thruster2, &thruster3, &thruster4, &thruster5, &thruster6, &thruster7, &thruster8};
 
-String input = ",";
+// String input = ",";
+char serial_cmd_input[RX_BUF_SIZE];
 
 float fluid_density, pressure_offset;
 
@@ -114,8 +126,6 @@ void setup()
     pressure_offset = 101300;
   }
   
-
-  
 }
 
 void loop()
@@ -129,23 +139,39 @@ void loop()
   float depth = (depth_sensor.pressure(MS5837::Pa) - pressure_offset) / (fluid_density * 9.80665);
 
   Serial.printf("depth,%f\n", depth);
-  // Serial.println(depth);
 
-  if (Serial.available() > 0)
+  int input_len = 0;
+  // receive incoming bytes from serial
+  while (Serial.available() && input_len < (RX_BUF_SIZE - 1))
   {
-
-    input = Serial.readStringUntil('\n');
-
+    // put incoming byte into serial_cmd_input char array
+    serial_cmd_input[input_len] = Serial.read();
+    input_len++;
   }
-  Serial.clear();
+  serial_cmd_input[input_len] = '\0';
 
+  if (input_len > 0) 
+  {
+    int pwms[8];
+    // listen to a serial command of the following format, put the values in the pwms array
+    int result = sscanf(serial_cmd_input, "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d", 
+        &pwms[0], &pwms[1], &pwms[2], &pwms[3], &pwms[4], &pwms[5], &pwms[6], &pwms[7]);
+    
+    if (result == 8)
+    {
+      for (int i = 0; i < 8; i++)
+      {
+        // bound PWM
+        if(pwms[i] > MAX_PWM) pwms[i] = MAX_PWM;
+        if(pwms[i] < MIN_PWM) pwms[i] = MIN_PWM;
 
-  int pwms[8];
-  // listen to a serial command of the following format, put the values in the pwms array
-  int result = sscanf(input.c_str(), "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d", &pwms[0], &pwms[1], &pwms[2], &pwms[3], &pwms[4], &pwms[5], &pwms[6], &pwms[7]);
-  if (result == 8) {
-    for (int i = 0; i < 8; i++) {
-      thrusters[i]->writeMicroseconds(pwms[i]);
+        // write to thrusters
+        thrusters[i]->writeMicroseconds(pwms[i]);
+      }
     }
   }
+
+  Serial.clear();
+  delay(DELAY_PERIOD);
+
 }
