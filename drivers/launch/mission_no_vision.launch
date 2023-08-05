@@ -1,0 +1,25 @@
+<launch>
+    <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
+    <!-- <node name="depth_controller" pkg="drivers" type="DepthController.py" output="screen" /> -->
+    
+    <include file="$(find mission)/straight_forward.launch">
+        <arg name="straight_forward_Kp" value="400" />
+        <!-- True or False -->
+        <arg name="use_vision" value="False" />
+    </include>
+    
+    <!-- <node name="straight_forward" pkg="mission" type="StraightForward.py" output="screen" /> -->
+    <include file="$(find mission)/depth_controller.launch">
+        <arg name="depth_controller_Kp" value="800" />
+        <arg name="desired_depth" value="0.5" />
+    </include >
+    <include file="$(find vision)/complete_left_camera.launch" />
+
+    <node pkg="rosbag" type="record" name="rosbag_record"
+    arg="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/" />
+
+    <include file="$(find vectornav)/vectornav.launch">
+    </include>
+
+    <node name="imu_wrapper" pkg="drivers" type="imu_wrapper.py" output="screen"/>
+</launch>
