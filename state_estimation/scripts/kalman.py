@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 import numpy as np
 
 
@@ -72,3 +73,82 @@ class KalmanFilter:
         if self._z is None:
             self._z = self.prec() @ self._x
         return self._z
+
+
+class KinematicKalmanFilter:
+    """An Extended Kalman filter tailored to simple kinematics."""
+
+    def __init__(self, drift: np.ndarray, dim: int=None):
+        """Creates a Kinematic Kalman filter.
+        
+        Args:
+            drift: A float array representing the rate at which the
+                covariance of the velocity accumulates per unit time.
+                This may be a scalar, for an isotropic distribution,
+                a vector where each element gives the covariance of
+                a different component of the velocity, or a full
+                covariance matrix. (Required)
+            dim: If drift is a scalar, this specifies the dimensionality
+                of the state and velocity vectors. Otherwise, this is
+                ignored. (Default None)
+        """
+        dim = dim if dim is not None else drift.shape[-1]
+        if isinstance(drift, np.ndarray) and len(drift.shape) == 2:
+            self.drift = drift
+        else:
+            self.drift = np.eye(dim) * drift
+        self.position_filter = KalmanFilter(dim)
+        self.velocity_filter = KalmanFilter(dim)
+    
+    def step(self, timestep: float) -> None:
+        """Increments the Kalman filter by one time step.
+        
+        Args:
+            timestep: A float, the time increment of the step. (Required)
+        """
+        self.position_filter.step(timestep, self.velocity_filter.pred(), self.velocity_filter.cov())
+        self.velocity_filter.step(timestep, np.zeros((self.drift.shape[-1],)), self.drift)
+    
+    def add_velocity(self, vel: np.ndarray, prec: np.ndarray) -> None:
+        """Updates the Kalman filter with a new velocity measurement.
+        
+        Args:
+            vel: A float array, the velocity measurement. (Required)
+            prec: A float array, the precision matrix of the velocity
+                measurement. (Required)
+        """
+        self.velocity_filter.add(vel, prec)
+    
+    def add_position(self, pos: np.ndarray, prec: np.ndarray) -> None:
+        """Updates the Kalman filter with a new position measurement.
+        
+        Args:
+            pos: A float array, the position measurement. (Required)
+            prec: A float array, the precision matrix of the position
+                measurement. (Required)
+        """
+        self.position_filter.add(pos, prec)
+    
+    def get_position(self) -> np.ndarray:
+        """Returns the current estimate of the position."""
+        return self.position_filter.pred()
+    
+    def get_velocity(self) -> np.ndarray:
+        """Returns the current estimate of the velocity."""
+        return self.velocity_filter.pred()
+    
+    def get_position_cov(self) -> np.ndarray:
+        """Returns the covariance of the current estimate of the position."""
+        return self.position_filter.cov()
+    
+    def get_position_prec(self) -> np.ndarray:
+        """Returns the precision of the current estimate of the position."""
+        return self.position_filter.prec()
+    
+    def get_velocity_cov(self) -> np.ndarray:
+        """Returns the covariance of the current estimate of the velocity."""
+        return self.velocity_filter.cov()
+    
+    def get_velocity_prec(self) -> np.ndarray:
+        """Returns the precision of the current estimate of the velocity."""
+        return self.velocity_filter.prec()
