@@ -1,4 +1,5 @@
 #! /usr/bin/python3
+# This module defines Kalman-filter based state estimation classes
 import numpy as np
 
 
