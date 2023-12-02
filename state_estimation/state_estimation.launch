@@ -1,0 +1,10 @@
+<launch>
+    <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
+    <node name="state_estimation" pkg="state_estimation" type="state_estimation.py" output="screen" />
+    <node name="dvl_jetson" pkg="drivers" type="dvl_jetson.py" output="screen" />
+
+    <include file="$(find vectornav)/vectornav.launch">
+    </include>
+
+    <node name="imu_wrapper" pkg="drivers" type="imu_wrapper.py" output="screen" />
+</launch>
