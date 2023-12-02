@@ -46,8 +46,9 @@ def rotate(vector: np.ndarray, rotation: np.ndarray) -> np.ndarray:
 
 
 def parse_dvl(dvl: DVL, orientation: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    vel = np.array([dvl.velocity.x, dvl.velocity.y, dvl.velocity.z])
     return (
-        rotate(np.array([dvl.velocity.x, dvl.velocity.y, dvl.velocity.z]), orientation),
+        rotate(vel / np.linalg.norm(vel), orientation) * np.linalg.norm(vel),
         np.eye(3) * DVL_PREC
     )
 
@@ -67,7 +68,7 @@ def run_state_estimation():
         nonlocal orientation
         orientation = new_orientation
     filter = KinematicKalmanFilter(np.eye(3) * DRIFT, 3)
-    dvl_sub = rospy.Subscriber("drivers/dvl", DVL, lambda m: filter.add_velocity(*parse_dvl(m)))
+    dvl_sub = rospy.Subscriber("drivers/dvl", DVL, lambda m: filter.add_velocity(*parse_dvl(m, orientation)))
     imu_sub = rospy.Subscriber("/vectornav/IMU", Imu,
         lambda m: set_orientation(np.array([m.orientation.w, m.orientation.x, m.orientation.y, m.orientation.z])))
     pose_pub = rospy.Publisher("state/pose", PoseWithCovariance, queue_size=1)
