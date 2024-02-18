@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find sim)/launch/DynamicSimulation.launch"/>
-  <node name="autotune" pkg="controls" type="AutotunePID.py" output="screen" />
-</launch>

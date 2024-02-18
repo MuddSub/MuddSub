@@ -87,7 +87,7 @@ generate_messages(
   vision_msgs
 
 )
-catkin_install_python(PROGRAMS scripts/VisionExampleNode.py scripts/VisionSubscriber.py
+catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

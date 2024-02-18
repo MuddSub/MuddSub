@@ -1,8 +1,0 @@
-<launch>
-  <arg name="load_config_file" default="$(find motion_planning)/cfg/motion_planning_params.yaml" />
-  <arg name="dump_config_file" default="$(find motion_planning)/cfg/motion_planning_params.yaml" />
-  <arg name="namespace" value="motion_planning_server" />
-  <node name="$(anon dump_params)" pkg="utils" type="DumpParams.py" args="$(arg dump_config_file) $(arg namespace)" />
-  <rosparam file="$(arg load_config_file)" command="load" ns="$(arg namespace)" />
-  <node name="motion_planning_server" pkg="motion_planning" type="MotionPlanningServer.py" />
-</launch>
