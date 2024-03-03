@@ -110,14 +110,16 @@ class WaitForAny(_ParallelStateGroup):
         super().__init__(states, wait_for_all=False)
 
 class Repeat(State):
-    def __init__(self, state):
+    def __init__(self, state):    def __init__(self, states):
+        super().__init__(states, wait_for_all=False)
+
         super().__init__()
         self._state = state
     
     def start(self):
         super().start()
         self._state.start()
-    
+
     def run(self):
         if self._state.is_idle():
             self._state.start()

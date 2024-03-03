@@ -54,7 +54,7 @@ void send_start_msg_isr()
   {
     Serial.printf("switch,off\n");
   }
-  else 
+  else
   {
     Serial.printf("switch,on\n");
   }
@@ -71,6 +71,8 @@ void setup()
 
   // enable interrupt for pin ON_SWITCH_PIN
   attachInterrupt(digitalPinToInterrupt(ON_SWITCH_PIN), send_start_msg_isr, CHANGE);
+#define MIN_PWM 900
+#define MAX_PWM 2100
 
   Serial.begin(115200);
 
@@ -154,7 +156,8 @@ void loop()
   {
     int pwms[8];
     // listen to a serial command of the following format, put the values in the pwms array
-    int result = sscanf(serial_cmd_input, "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d", 
+    // serial_cmd_input = "thrust,01500,11500,21500,31500,41500,51500,61500,71500"
+    int result = sscanf(serial_cmd_input, "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d",
         &pwms[0], &pwms[1], &pwms[2], &pwms[3], &pwms[4], &pwms[5], &pwms[6], &pwms[7]);
     
     if (result == 8)

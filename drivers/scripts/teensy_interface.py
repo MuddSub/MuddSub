@@ -13,7 +13,7 @@ global ser
 line_buffer = b''
 thrusters = [1500]*8
 
-def readline():
+def readline() -> str:
     '''
     Wrapper over serial.Serial.readline with some extra functionality to
     handle being called repeatedly in a while loop.
@@ -45,8 +45,10 @@ def readline():
             return ''
     return ''
 
-def readlines():
-    # Read all available lines and process them
+def readlines() -> [str]:
+    '''
+    Read all available lines and process them
+    '''
     lines = []
     line = readline()
     while len(line) != 0:
@@ -57,6 +59,9 @@ def readlines():
     return lines
 
 def parse_line(line):
+    '''
+    Read a line from serial and split it into the type of command and arguments
+    '''
     items = line.split(',')
     if items[0] == 'depth' and len(items) == 2:
         return 'depth', float(items[1])
@@ -68,7 +73,10 @@ def parse_line(line):
         print('Recieved:', line)
         return None, None
 
-def pulseToSerial(msg, i):
+def pulseToSerial(msg, i: int) -> None:
+    '''
+    Reads the data into the global thrusters array
+    '''
     pulse = msg.data
     thrusters[i] = pulse
 
@@ -84,7 +92,7 @@ if __name__ == '__main__':
         if not ser.is_open:
             rospy.logerr("Couldn't open serial")
             exit()
-
+        # What code publishes to robot/pwm
         hfl_subscriber = rospy.Subscriber('/robot/pwm/hfl', Int32, pulseToSerial, (6), queue_size=1)
         hfr_subscriber = rospy.Subscriber('/robot/pwm/hfr', Int32, pulseToSerial, (2), queue_size=1)
         hbl_subscriber = rospy.Subscriber('/robot/pwm/hbl', Int32, pulseToSerial, (5), queue_size=1)
@@ -130,7 +138,7 @@ if __name__ == '__main__':
             #         print('Robot entered water')
             #         start_time = time.time()
                 
-            #     # Wait a minute afte                if :r submerging to start
+            #     # Wait a minute after submerging to start
             #     mission_started = time.time() - start_time > 60
             # else:
             #     mission_started = False
@@ -139,5 +147,3 @@ if __name__ == '__main__':
 
             ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
             rate.sleep()
-            
-

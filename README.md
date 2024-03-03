@@ -47,3 +47,21 @@ With that said, this is a good opportunity to build!
 catkin build muddsub_sim
 ```
 This may take a few minutes! Note: If you didn't install `ros-melodic-uwsim`, you can still build, but with `catkin build muddsub_primary` instead. This builds everything but the simulator.
+
+### Overview of system
+
+Important files:
+- drivers/src/teensy/fullTeensy/TeensyCode.ino:
+    - The teensy sends PWMs to the electronic speed controllers (ESCs).
+    - It reads the PWMs from a serial port and prints depth sensor values (in meters) to the same serial port.
+    - Reads from mission on/off switch which when on starts our state machine.
+
+- drivers/scripts/teensy_interface.py
+    - Opens Serial Connection to teensy.
+    - Writes thruster pwm values from ros topics robot/pwm/... and formats as string to send to Teensy.
+    - Publishes the on/off switch's state to robot/mission_started.
+    - 
+
+- mission/scripts/Mission.py
+    - Contains the code that actually controls the robot
+    - Publishes to the pwm topics
