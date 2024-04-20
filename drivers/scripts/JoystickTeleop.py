@@ -3,6 +3,7 @@
 import rospy
 import numpy as np
 import select
+import os
 
 def convert(n):
     if n <= 127:
@@ -10,13 +11,26 @@ def convert(n):
     else:
         return (n - 256) / 128
 
+def threshold(n):
+    if n < 0.1 and n > -0.1:
+        return 0.0
+    else:
+        return n
+
 if __name__ == "__main__":
     # Open the js0 device as if it were a file in read mode.
-    pipe = open('/dev/input/js0', 'r')
+    pipe_path = '/home/muddsub/joystick_pipe'
+    if os.path.isfile(pipe_path):
+        print("pipe path already exists")
+        raise ValueError(f'Please remove file {pipe_path}')
+    if not os.path.exists(pipe_path):
+        os.mkfifo(pipe_path)
+        print("Making pipe path")
+    pipe = open(pipe_path, 'r')
 
     # Create an empty list to store read characters.
     msg = []
-    
+    print("hello")
     rospy.init_node('joystick_teleop')
 
     def set_speeds(speeds):
@@ -84,16 +98,17 @@ if __name__ == "__main__":
                     
                     # joy_axes event if 6th byte is 2
                     elif msg[6] == 2:
+                        old_val = msg[5]
                         if msg[7] in updown_axes:
-                            msg[5] = -convert(msg[5])
+                            msg[5] = threshold(-convert(msg[5]))
                         else:
-                            msg[5] = convert(msg[5])
-                        print('joy_axes', msg[7], msg[5])
+                            msg[5] = threshold(convert(msg[5]))
+                        print('joy_axes', msg[7], msg[5], 'old value:', old_val)
                         joy_axes[msg[7]] = msg[5]
 
                     # Reset msg as an empty list.
                     msg = []
-
+        
         speeds = np.zeros([2, 4])
         speeds += up * joy_buttons[5] 
         speeds += up * -1 * joy_buttons[4]
@@ -102,6 +117,6 @@ if __name__ == "__main__":
         speeds += right * joy_axes[0]
         speeds = np.clip(speeds, -max_speed, max_speed) * 1500 + 1500
         set_speeds(speeds)
-        
+
 
     set_speeds(np.zeros([2, 4]))

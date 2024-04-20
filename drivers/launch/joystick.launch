@@ -3,5 +3,5 @@
     <node name="pwm_publisher" pkg="drivers" type="PWMPublisher.py" />
     <node name="joystick_teleop" pkg="drivers" type="JoystickTeleop.py" output="screen" />
     <include file="$(find drivers)/drivers_cfg.launch" />
-    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" args="-s reconfigure" />
+    <!-- <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" args="-s reconfigure" /> -->
 </launch>

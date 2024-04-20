@@ -84,12 +84,14 @@ if __name__ == '__main__':
         rospy.init_node('teensy_interface', anonymous=True)
         
         try:
-            ser = serial.Serial('/dev/ttyACM0', timeout=0.1) # open serial port
-        except: 
+            ser = serial.Serial('/dev/ttyACM0', timeout=10.0) # open serial port
+        except:
+            print(f"not /dev/ttyACM0")
             rospy.logerr("Couldn't open serial")
             exit()
 
         if not ser.is_open:
+            print(f"can't open ser")
             rospy.logerr("Couldn't open serial")
             exit()
         # What code publishes to robot/pwm
