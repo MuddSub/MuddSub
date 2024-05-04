@@ -48,3 +48,9 @@
 [submodule "thirdparty/vectornav"]
 	path = thirdparty/vectornav
 	url = https://github.com/dawonn/vectornav.git
+[submodule "thirdparty/YOLOv6"]
+	path = thirdparty/YOLOv6
+	url = https://github.com/meituan/YOLOv6
+[submodule "thirdparty/zed-sdk"]
+	path = thirdparty/zed-sdk
+	url = https://github.com/stereolabs/zed-sdk.git
