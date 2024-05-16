@@ -110,9 +110,7 @@ class WaitForAny(_ParallelStateGroup):
         super().__init__(states, wait_for_all=False)
 
 class Repeat(State):
-    def __init__(self, state):    def __init__(self, states):
-        super().__init__(states, wait_for_all=False)
-
+    def __init__(self, state):
         super().__init__()
         self._state = state
     
