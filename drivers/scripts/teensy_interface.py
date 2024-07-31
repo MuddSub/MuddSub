@@ -82,14 +82,15 @@ def pulseToSerial(msg, i: int) -> None:
 
 if __name__ == '__main__':
         rospy.init_node('teensy_interface', anonymous=True)
-        
+
         try:
+            print(f"Opening Serial...")
             ser = serial.Serial('/dev/ttyACM0', timeout=10.0) # open serial port
         except:
             print(f"not /dev/ttyACM0")
             rospy.logerr("Couldn't open serial")
             exit()
-
+        
         if not ser.is_open:
             print(f"can't open ser")
             rospy.logerr("Couldn't open serial")
