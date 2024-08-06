@@ -98,12 +98,12 @@ if __name__ == '__main__':
         # What code publishes to robot/pwm
         hfl_subscriber = rospy.Subscriber('/robot/pwm/hfl', Int32, pulseToSerial, (6), queue_size=1)
         hfr_subscriber = rospy.Subscriber('/robot/pwm/hfr', Int32, pulseToSerial, (2), queue_size=1)
-        hbl_subscriber = rospy.Subscriber('/robot/pwm/hbl', Int32, pulseToSerial, (5), queue_size=1)
+        hbl_subscriber = rospy.Subscriber('/robot/pwm/hbl', Int32, pulseToSerial, (7), queue_size=1)
         hbr_subscriber = rospy.Subscriber('/robot/pwm/hbr', Int32, pulseToSerial, (3), queue_size=1)
 
         vfl_subscriber = rospy.Subscriber('/robot/pwm/vfl', Int32, pulseToSerial, (4), queue_size=1)
         vfr_subscriber = rospy.Subscriber('/robot/pwm/vfr', Int32, pulseToSerial, (0), queue_size=1)
-        vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, pulseToSerial, (7), queue_size=1)
+        vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, pulseToSerial, (5), queue_size=1)
         vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, pulseToSerial, (1), queue_size=1)
 
         mission_started_publisher = rospy.Publisher('/robot/mission_started', Bool, queue_size=1)
