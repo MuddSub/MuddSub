@@ -1,5 +1,5 @@
 <launch>
     <node pkg="rosbag" type="record" name="rosbag_record"
-        args="record -a -j -o /media/muddsub/3338-3831/muddsub_recordings/ -x '/usb_cam.*'" />
+        args="record -a -j -o /media/muddsub/writable/muddsub_recordings/ -x '/usb_cam.*'" />
     <include file="$(find vision)/launch/cams.launch" />
 </launch>
