@@ -176,11 +176,11 @@ if __name__ == '__main__':
     #                     Timer(5),  # How long we wait for the robot to submerge
     #                     WaitForAny([
     #                         Timer(25),  # How long we wait for the robot to get to the gate
-    #                         InitWrapper(StraightForward, [yaw_Kp], params)
+    #                         InitWrapper(StraightForward, yaw_Kp, **params)
     #                     ]),
     #                     Timer(5),  # How long we wait before starting rotations
     #                     # Add 2 full rotations
-    #                     InitWrapper(StraightForward, [yaw_Kp], params)  # Move forward indefinitely
+    #                     InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
     #                 ])
     #             ])
     #         ])
