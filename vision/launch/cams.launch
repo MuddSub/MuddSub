@@ -8,7 +8,18 @@
     <param name="io_method" value="mmap"/>
     <param name="framerate" value="5" />
   </node>
+  <node name="usb_cam_1" pkg="usb_cam" type="usb_cam_node" output="screen" >
+   	<param name="video_device" value="/dev/video1" />
+   	<param name="image_width" value="640" />
+   	<param name="image_height" value="480" />
+   	<param name="pixel_format" value="yuyv" />
+   	<param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="framerate" value="5" />
+  </node>
 
   <node pkg="rosbag" type="record" name="rosbag_record"
     args="record -o /mnt/front_camera /usb_cam_0/image_compressed" />
+  <node pkg="rosbag" type="record" name="rosbag_record"
+    args="record -o /mnt/belly_camera /usb_cam_1/image_compressed" />
 </launch>
