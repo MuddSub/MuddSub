@@ -38,6 +38,7 @@ class Submerge(State):
     IDLE_PWM = 1500
     MAX_PWM = 2100
     MIN_PWM = 900
+    USE_ALL_PWMS = True
 
     depth = 0
     def update_depth(msg):
@@ -49,6 +50,7 @@ class Submerge(State):
     vbl_pwm_publisher = rospy.Publisher('/robot/pwm/vbl', Int32, queue_size=1)
     vbr_pwm_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=1)
 
+    @staticmethod
     def publish_vertical_pwms(pwms):
         Submerge.vfl_pwm_publisher.publish(Int32(pwms[0]))
         Submerge.vfr_pwm_publisher.publish(Int32(pwms[1]))
@@ -59,12 +61,16 @@ class Submerge(State):
         super().__init__()
         self.desired_depth = desired_depth
         self.Kp = Kp
-    
+
     def run(self):
         delta = self.depth - desired_depth
         out_pwm = self.Kp * delta + Submerge.IDLE_PWM
-        out_pwm = min(Submerge.MAX_PWM, max(Submerge.MIN_PWM), out_pwm)
-        self.publish_vertical_pwms([out_pwm, 0, 0, out_pwm])
+        out_pwm = min(Submerge.MAX_PWM, max(Submerge.MIN_PWM, out_pwm))
+        if Submerge.USE_ALL_PWMS:
+            Submerge.publish_vertical_pwms([out_pwm] * 4)
+        else:
+            Submerge.publish_vertical_pwms([out_pwm, 0, 0, out_pwm])
+
 
     def end(self):
         super().end()
@@ -96,7 +102,7 @@ class StraightForward(State):
         self.yaw_error_threshold = yaw_error_threshold
         self.desired_yaw = desired_yaw
         self.Kp = Kp
-    
+
     def run(self):
         yaw_error = wrap_to_pi(self.desired_yaw - StraightForward.yaw)
         if np.abs(yaw_error) < self.yaw_error_threshold:
@@ -105,8 +111,9 @@ class StraightForward(State):
             forward_effort = 0
         angular_effort = self.Kp * yaw_error
         pwms = np.array([StraightForward.DEFAULT_PWM + forward_effort] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+        pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
         StraightForward.publish_horizontal_pwms(pwms)
-    
+
     def end(self):
         super().end()
         Submerge.publish_vertical_pwms([StraightForward.IDLE_PWM] * 4)
@@ -131,7 +138,7 @@ class RotateInPlace(State):
         RotateInPlace.hfr_pwm_publisher.publish(Int32(pwms[1]))
         RotateInPlace.hbl_pwm_publisher.publish(Int32(pwms[2]))
         RotateInPlace.hbr_pwm_publisher.publish(Int32(pwms[3]))
-    
+
     def __init__(self, target_delta_yaw, Kp):
         super().__init__()
         self.target_delta_yaw = target_delta_yaw
@@ -139,17 +146,18 @@ class RotateInPlace(State):
         self.previous_yaw = 0
         self.delta_yaw = 0
         self.Kp = Kp
-    
+
     def start(self):
         super().start
         start_yaw = RotateInPlace.yaw
-    
+
     def run(self):
         current_yaw = RotateInPlace.yaw
         self.delta_yaw += wrap_to_pi(current_yaw - self.previous_yaw)
         error = self.target_delta_yaw - self.delta_yaw
         angular_effort = self.Kp * error
         pwms = np.array([RotateInPlace.DEFAULT_PWM ] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+        pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
         RotateInPlace.publish_horizontal_pwms(pwms)
         self.previous_yaw = current_yaw
 
@@ -159,7 +167,7 @@ if __name__ == '__main__':
     depth_Kp = int(rospy.get_param("depth_Kp"))
     desired_depth = float(rospy.get_param("desired_depth"))
     yaw_Kp = int(rospy.get_param("yaw_Kp"))
-    
+
     params = {'desired_yaw': 0}
     def record_yaw():
         params['desired_yaw'] = StraightForward.yaw
