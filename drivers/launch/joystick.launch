@@ -2,6 +2,10 @@
     <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
     <node name="pwm_publisher" pkg="drivers" type="PWMPublisher.py" />
     <node name="joystick_teleop" pkg="drivers" type="JoystickTeleop.py" output="screen" />
+    <node name="dvl_jetson" pkg="drivers" type="dvl_jetson.py" />
+    <node name="imu_wrapper" pkg="drivers" type="imu_wrapper.py" output="screen"/>
+    <include file="$(find vectornav)/launch/vectornav.launch" />
     <include file="$(find drivers)/drivers_cfg.launch" />
-    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" args="-s reconfigure" />
+    <include file="$(find drivers)/launch/mission_record_everything.launch" />
+    <!-- <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" args="-s reconfigure" /> -->
 </launch>

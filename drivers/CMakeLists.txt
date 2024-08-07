@@ -53,6 +53,7 @@ add_message_files(
   Depth.msg
   DVL.msg
   EulerOrientation.msg
+  ImuLinAccel.msg
 )
 
 ## Generate services in the 'srv' folder

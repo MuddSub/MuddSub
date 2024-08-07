@@ -82,25 +82,28 @@ def pulseToSerial(msg, i: int) -> None:
 
 if __name__ == '__main__':
         rospy.init_node('teensy_interface', anonymous=True)
-        
+
         try:
-            ser = serial.Serial('/dev/ttyACM0', timeout=0.1) # open serial port
-        except: 
+            print(f"Opening Serial...")
+            ser = serial.Serial('/dev/ttyACM0', timeout=10.0) # open serial port
+        except:
+            print(f"not /dev/ttyACM0")
             rospy.logerr("Couldn't open serial")
             exit()
-
+        
         if not ser.is_open:
+            print(f"can't open ser")
             rospy.logerr("Couldn't open serial")
             exit()
         # What code publishes to robot/pwm
         hfl_subscriber = rospy.Subscriber('/robot/pwm/hfl', Int32, pulseToSerial, (6), queue_size=1)
         hfr_subscriber = rospy.Subscriber('/robot/pwm/hfr', Int32, pulseToSerial, (2), queue_size=1)
-        hbl_subscriber = rospy.Subscriber('/robot/pwm/hbl', Int32, pulseToSerial, (5), queue_size=1)
+        hbl_subscriber = rospy.Subscriber('/robot/pwm/hbl', Int32, pulseToSerial, (7), queue_size=1)
         hbr_subscriber = rospy.Subscriber('/robot/pwm/hbr', Int32, pulseToSerial, (3), queue_size=1)
 
         vfl_subscriber = rospy.Subscriber('/robot/pwm/vfl', Int32, pulseToSerial, (4), queue_size=1)
         vfr_subscriber = rospy.Subscriber('/robot/pwm/vfr', Int32, pulseToSerial, (0), queue_size=1)
-        vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, pulseToSerial, (7), queue_size=1)
+        vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, pulseToSerial, (5), queue_size=1)
         vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, pulseToSerial, (1), queue_size=1)
 
         mission_started_publisher = rospy.Publisher('/robot/mission_started', Bool, queue_size=1)

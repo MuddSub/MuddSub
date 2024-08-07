@@ -3,27 +3,22 @@
 import rospy
 from std_msgs.msg import Header
 from sensor_msgs.msg import Imu
-from drivers.msg import EulerOrientation, ImuAcceleration
-
+from drivers.msg import EulerOrientation, ImuLinAccel
 import math
 class Imu_Wrapper():
     def __init__(self):
-        self.raw_imu = rospy.Subscriber("/vectornav/IMU", Imu, self.convert_to_euler)
+        self.raw_imu_euler = rospy.Subscriber("/vectornav/IMU", Imu, self.convert_to_euler)
         self.euler_publisher = rospy.Publisher("/drivers/IMU/euler_orientation", EulerOrientation, queue_size=1)
 
-        self.raw_imu_acc = rospy.Subscriber("/vectornav/IMU", Imu, self.get_imu_acceleration)
-        self.acceleration_publisher = rospy.Publisher("/drivers/IMU/imu_acceleration", ImuAcceleration, queue_size=1) # Is queue of 1 necessary?
+        self.raw_imu_lin_acc = rospy.Subscriber("/vectornav/IMU", Imu, self.get_lin_acc)
+        self.lin_accel_publisher = rospy.Publisher("/drivers/IMU/linear_acceleration", ImuLinAccel,queue_size=1)
 
-    def get_imu_acceleration(self, msg):
-        x_a = msg.linear_acceleration.x
-        y_a = msg.linear_acceleration.y
-        z_a = msg.linear_acceleration.z
-        
-        acceleration_msg = ImuAcceleration(Header(), x_a, y_a, z_a)
-        self.acceleration_publisher.publish(acceleration_msg)
-        
+    def get_lin_acc(self, msg):
+        lin_accel = msg.linear_acceleration
 
-    
+        lin_acc_msg = ImuLinAccel(Header(), lin_accel.x, lin_accel.y, lin_accel.z)
+        self.lin_accel_publisher.publish(lin_acc_msg)
+
     # for the vectornav imu
     # the range is from -pi/2 to pi/2
     def convert_to_euler(self, msg):
@@ -58,6 +53,11 @@ class Imu_Wrapper():
             yaw_z = math.atan2(t3, t4)
         
             return roll_x, pitch_y, yaw_z # in radians
+
+    
+
+
+
 
 
 if __name__ == "__main__":
