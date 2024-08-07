@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
     while not rospy.is_shutdown():
         while True:
-            rlist, _, _ = select.select([pipe], [], [], 1)
+            rlist, _, _ = select.select([pipe], [], [], 0)
             if len(rlist) == 0:
                 break
 

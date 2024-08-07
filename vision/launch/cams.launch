@@ -8,8 +8,9 @@
     <param name="io_method" value="mmap"/>
     <param name="framerate" value="5" />
   </node>
+  <!-- video1 is a metadata device -->
   <node name="usb_cam_1" pkg="usb_cam" type="usb_cam_node" output="screen" >
-   	<param name="video_device" value="/dev/video1" />
+   	<param name="video_device" value="/dev/video2" />
    	<param name="image_width" value="640" />
    	<param name="image_height" value="480" />
    	<param name="pixel_format" value="yuyv" />
@@ -18,8 +19,8 @@
     <param name="framerate" value="5" />
   </node>
 
-  <node pkg="rosbag" type="record" name="rosbag_record_camera0"
-    args="record -o /media/muddsub/writeable/muddsub_recordings/front_camera /usb_cam_0/image_raw/compressed" />
-  <node pkg="rosbag" type="record" name="rosbag_record_camera1"
-    args="record -o /media/muddsub/writeable/muddsub_recordings/belly_camera /usb_cam_1/image_raw/compressed" />
+  <node pkg="rosbag" type="record" name="rosbag_record_cameras"
+    args="record -o /media/muddsub/writable/muddsub_recordings/cameras
+      /usb_cam_0/image_raw/compressed
+      /usb_cam_1/image_raw/compressed" />
 </launch>

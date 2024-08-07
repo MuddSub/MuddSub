@@ -38,7 +38,7 @@ class Submerge(State):
     IDLE_PWM = 1500
     MAX_PWM = 2100
     MIN_PWM = 900
-    USE_ALL_PWMS = True
+    USE_ALL_PWMS = False
 
     depth = 0
     def update_depth(msg):

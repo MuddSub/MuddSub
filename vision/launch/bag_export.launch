@@ -1,6 +1,14 @@
 <launch>
-  <node pkg="rosbag" type="play" name="rosbag" required="true" args="$(find image_view)/front_camera_2021-07-20-15-53-43.bag"/>
-  <node name="extract" pkg="image_view" type="extract_images" respawn="false" required="true" output="screen" cwd="ROS_HOME">
-    <remap from="image" to="usb_cam_0/image"/>
+  <arg name="camera" />
+  <arg name="bagfile" />
+  <node pkg="rosbag" type="play" name="rosbag" required="true" args="$(arg bagfile) -r 10" output="screen" /> <!-- playback the bag at 10x speed-->
+  <!-- extract the compressed images -->
+  <node name="extract" pkg="image_view" type="extract_images" respawn="false" required="true" output="screen" >
+    <remap from="image" to="$(arg camera)/image_raw"/> <!-- send the image data to /image_view/image -->
+    <param name="image_transport" value="compressed" />
+  </node>
+  <!-- save the extracted images -->
+  <node name="save" pkg="image_view" type="image_saver" respawn="false"  output="screen" >
+    <remap from="image" to="$(arg camera)/image_raw" />
   </node>
 </launch>
