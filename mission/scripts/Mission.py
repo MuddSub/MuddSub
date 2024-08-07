@@ -161,6 +161,19 @@ class RotateInPlace(State):
         RotateInPlace.publish_horizontal_pwms(pwms)
         self.previous_yaw = current_yaw
 
+class WaitForReset(State):
+    DEPTH_LIMIT = 0
+
+    currentDepth = 0
+    @staticmethod
+    def update_depth(msg):
+        WaitForReset.currentDepth = msg.depth
+    rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth)
+
+    def run(self):
+        if WaitForReset.currentDepth < WaitForReset.DEPTH_LIMIT:
+            self.end()
+
 if __name__ == '__main__':
     rospy.init_node('mission', anonymous=False)
     rate = rospy.Rate(50)  # 50Hz
@@ -174,10 +187,10 @@ if __name__ == '__main__':
 
     # state_machine = Repeat(
     #     Sequence([
-    #         WaitForMissionStart(),
+    #         # WaitForMissionStart(),
     #         Lambda(record_yaw),
     #         WaitForAny([
-    #             WaitForMissionEnd(),
+    #             # WaitForMissionEnd(),
     #             WaitForAny([
     #                 Submerge(depth_Kp, desired_depth),
     #                 Sequence([
@@ -196,12 +209,27 @@ if __name__ == '__main__':
     # )
     # state_machine.start()
 
+    # state_machine = Repeat(
+    #     Sequence([
+    #         WaitForMissionStart(),
+    #         WaitForAny([
+    #             WaitForMissionEnd(),
+    #             RotateInPlace(0, yaw_Kp)
+    #         ])
+    #     ])
+    # )
+    # state_machine.start()
+
     state_machine = Repeat(
         Sequence([
-            WaitForMissionStart(),
+            Timer(15),
             WaitForAny([
-                WaitForMissionEnd(),
-                RotateInPlace(0, yaw_Kp)
+                WaitForReset(),
+                # state_machine
+                Sequence([
+                    Lambda(lambda: print("MISSION START!!!!")),
+                    Repeat(Timer(100))
+                ])
             ])
         ])
     )
