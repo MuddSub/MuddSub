@@ -19,7 +19,7 @@
   </node>
 
   <node pkg="rosbag" type="record" name="rosbag_record"
-    args="record -o /mnt/front_camera /usb_cam_0/image_compressed" />
+    args="record -o /mnt/front_camera /usb_cam_0/image_raw/compressed" />
   <node pkg="rosbag" type="record" name="rosbag_record"
-    args="record -o /mnt/belly_camera /usb_cam_1/image_compressed" />
+    args="record -o /mnt/belly_camera /usb_cam_1/image_raw/compressed" />
 </launch>
