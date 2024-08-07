@@ -1,6 +1,6 @@
 import pygame
 import sys
-
+# This code pipes std outputs to the jetson via ssh
 # Make sure to pipe the outputs of this script into a named pipe:
 # python3 windowsJoystick.py | ssh muddsub@192.168.1.2 "cat > ~/joystick_pipe"
 
