@@ -73,20 +73,19 @@ if __name__ == "__main__":
 
     while not rospy.is_shutdown():
         while True:
-            rlist, _, _ = select.select([pipe], [], [], 0)
+            rlist, _, _ = select.select([pipe], [], [], 1)
             if len(rlist) == 0:
                 break
 
             for char in pipe.buffer.read(8):
                 # print(type(char))
-                
-                
+
                 # append the integer representation of the unicode character read to the msg list.
                 msg += [char]
-                
+
                 # If the length of the msg list is 8...
                 if len(msg) == 8:
-                
+
                 # Button event if 6th byte is 1
                     if msg[6] == 1:
                         if msg[4]  == 1:
@@ -95,7 +94,7 @@ if __name__ == "__main__":
                         else:
                             print('button', msg[7], 'up')
                             joy_buttons[msg[7]] = 0
-                    
+
                     # joy_axes event if 6th byte is 2
                     elif msg[6] == 2:
                         old_val = msg[5]
@@ -108,12 +107,12 @@ if __name__ == "__main__":
 
                     # Reset msg as an empty list.
                     msg = []
-        
+
         speeds = np.zeros([2, 4])
-        speeds += up * joy_buttons[5] 
+        speeds += up * joy_buttons[5]
         speeds += up * -1 * joy_buttons[4]
         speeds += clockwise * joy_axes[2]
-        speeds += forward * joy_axes[1] 
+        speeds += forward * joy_axes[1]
         speeds += right * joy_axes[0]
         speeds = np.clip(speeds, -max_speed, max_speed) * 1500 + 1500
         set_speeds(speeds)
