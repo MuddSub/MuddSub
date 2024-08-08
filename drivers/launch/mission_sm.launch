@@ -1,8 +1,8 @@
 <launch>
     <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="screen" />
 
-    <param name="depth_Kp" value="100"/>
-    <param name="desired_depth" value="0.5"/>
+    <param name="depth_Kp" value="800"/>
+    <param name="desired_depth" value="1"/>
     <param name="yaw_Kp" value="60"/>
     <node name="mission" pkg="mission" type="Mission.py" output="screen" />
 

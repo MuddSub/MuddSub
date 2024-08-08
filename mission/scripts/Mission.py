@@ -5,6 +5,9 @@ from StateMachine import State, Sequence, WaitForAll, WaitForAny, Repeat, Lambda
 from drivers.msg import Depth, EulerOrientation
 import numpy as np
 
+PWM_RANGE = 600
+IDLE_PWM = 1500
+
 def wrap_to_pi(theta):
     return ((theta - np.pi) % (2 * np.pi)) - np.pi
 
@@ -35,9 +38,8 @@ class WaitForMissionEnd(_MissionSwitchMonitor):
         super().__init__(end_on_mission_start=False)
 
 class Submerge(State):
-    IDLE_PWM = 1500
-    MAX_PWM = 1525
-    MIN_PWM = 1475
+    MAX_PWM = IDLE_PWM + PWM_RANGE
+    MIN_PWM = IDLE_PWM - PWM_RANGE
     # MAX_PWM = 2100
     # MIN_PWM = 900
     USE_ALL_PWMS = False
@@ -65,24 +67,21 @@ class Submerge(State):
 
     def run(self):
         delta = self.depth - desired_depth
-        out_pwm = self.Kp * delta + Submerge.IDLE_PWM
+        out_pwm = self.Kp * delta + IDLE_PWM
         out_pwm = min(Submerge.MAX_PWM, max(Submerge.MIN_PWM, out_pwm))
         if Submerge.USE_ALL_PWMS:
             Submerge.publish_vertical_pwms([out_pwm] * 4)
         else:
-            Submerge.publish_vertical_pwms([out_pwm, Submerge.IDLE_PWM, Submerge.IDLE_PWM, out_pwm])
+            Submerge.publish_vertical_pwms([out_pwm, IDLE_PWM, IDLE_PWM, out_pwm])
 
 
     def end(self):
         super().end()
-        Submerge.publish_vertical_pwms([Submerge.IDLE_PWM] * 4)
+        Submerge.publish_vertical_pwms([IDLE_PWM] * 4)
 
 class StraightForward(State):
-    IDLE_PWM = 1500
-    # MAX_PWM = 2100
-    # MIN_PWM = 900
-    MAX_PWM = 1525
-    MIN_PWM = 1475
+    MAX_PWM = IDLE_PWM + PWM_RANGE
+    MIN_PWM = IDLE_PWM - PWM_RANGE
 
     yaw = 0
     def update_yaw(msg):
@@ -113,18 +112,18 @@ class StraightForward(State):
         else:
             forward_effort = 0
         angular_effort = self.Kp * yaw_error
-        pwms = np.array([StraightForward.IDLE_PWM + forward_effort] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+        # rospy.loginfo(angular_effort)
+        pwms = np.array([IDLE_PWM + forward_effort] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
         pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
         StraightForward.publish_horizontal_pwms(pwms)
 
     def end(self):
         super().end()
-        Submerge.publish_vertical_pwms([StraightForward.IDLE_PWM] * 4)
+        Submerge.publish_vertical_pwms([IDLE_PWM] * 4)
 
 class RotateInPlace(State):
-    IDLE_PWM = 1500
-    MAX_PWM = 1525
-    MIN_PWM = 1475
+    MAX_PWM = IDLE_PWM + PWM_RANGE
+    MIN_PWM = IDLE_PWM - PWM_RANGE
     # MAX_PWM = 2100
     # MIN_PWM = 900
 
@@ -153,7 +152,7 @@ class RotateInPlace(State):
         self.Kp = Kp
 
     def start(self):
-        super().start
+        super().start()
         start_yaw = RotateInPlace.yaw
 
     def run(self):
@@ -161,22 +160,27 @@ class RotateInPlace(State):
         self.delta_yaw += wrap_to_pi(current_yaw - self.previous_yaw)
         error = self.target_delta_yaw - self.delta_yaw
         angular_effort = self.Kp * error
-        pwms = np.array([RotateInPlace.IDLE_PWM ] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
-        pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
+        # rospy.loginfo(angular_effort)
+        pwms = np.array([IDLE_PWM ] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+        pwms = np.clip(pwms, RotateInPlace.MIN_PWM, RotateInPlace.MAX_PWM)
         RotateInPlace.publish_horizontal_pwms(pwms)
         self.previous_yaw = current_yaw
 
 class WaitForReset(State):
-    DEPTH_LIMIT = -0.1
+    DEPTH_LIMIT = -0.04
 
     currentDepth = 0
     def update_depth(msg):
         WaitForReset.currentDepth = msg.depth
     rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth)
 
+    def __init__(self):
+        super().__init__()
+        self.lastDepth = 100
+
     def run(self):
-        
-        if WaitForReset.currentDepth < WaitForReset.DEPTH_LIMIT:
+        self.lastDepth = WaitForReset.currentDepth
+        if WaitForReset.currentDepth < WaitForReset.DEPTH_LIMIT and self.lastDepth < WaitForReset.DEPTH_LIMIT:
             self.end()
 
 if __name__ == '__main__':
@@ -193,6 +197,7 @@ if __name__ == '__main__':
 
     state_machine = Repeat(
         Sequence([
+        
             # WaitForMissionStart(),
             Lambda(record_yaw),
             WaitForAny([
@@ -202,15 +207,18 @@ if __name__ == '__main__':
                     Sequence([
                         Timer(10),  # How long we wait for the robot to submerge
                         WaitForAny([
-                            Timer(5),  # How long we wait for the robot to get to the gate # TODO change to 25
+                            Timer(7),  # How long we wait for the robot to get to the gate # TODO change to 25
                             InitWrapper(StraightForward, yaw_Kp, **params)
                         ]),
-                        Timer(5),  # How long we wait before starting rotations
+                        Timer(0)  # How long we wait before starting rotations
                         # Add 2 full rotations
-                        InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
+                        # RotateInPlace(1, yaw_Kp)
+                        # RotateInPlace(5, yaw_Kp)
+                        # InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
                     ])
                 ])
-            ])
+            ]),
+            Repeat(Timer(100))
         ])
     )
     # state_machine.start()
@@ -228,9 +236,9 @@ if __name__ == '__main__':
     
     state_machine = Repeat(
         Sequence([
-            Timer(2),
+            Timer(200),
             WaitForAny([
-                # WaitForReset(),
+                #Sequence([Lambda(lambda: rospy.loginfo("RESET!")), Timer(2), WaitForReset()]),
                 state_machine
                 # Sequence([
                 #     Lambda(lambda: rospy.loginfo("MISSION START!!!!")),
