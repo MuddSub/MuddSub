@@ -64,6 +64,11 @@ class Sequence(State):
         self._current_state_idx = 0
         self._current_state = self._states[0]
 
+    def end(self):
+        super().end()
+        if not self._current_state.is_finished():
+            self._current_state.end()
+
 class _ParallelStateGroup(State):
     def __init__(self, states, wait_for_all=True):
         super().__init__()

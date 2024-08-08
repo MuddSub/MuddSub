@@ -36,8 +36,10 @@ class WaitForMissionEnd(_MissionSwitchMonitor):
 
 class Submerge(State):
     IDLE_PWM = 1500
-    MAX_PWM = 2100
-    MIN_PWM = 900
+    MAX_PWM = 1525
+    MIN_PWM = 1475
+    # MAX_PWM = 2100
+    # MIN_PWM = 900
     USE_ALL_PWMS = False
 
     depth = 0
@@ -50,12 +52,11 @@ class Submerge(State):
     vbl_pwm_publisher = rospy.Publisher('/robot/pwm/vbl', Int32, queue_size=1)
     vbr_pwm_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=1)
 
-    @staticmethod
     def publish_vertical_pwms(pwms):
-        Submerge.vfl_pwm_publisher.publish(Int32(pwms[0]))
-        Submerge.vfr_pwm_publisher.publish(Int32(pwms[1]))
-        Submerge.vbl_pwm_publisher.publish(Int32(pwms[2]))
-        Submerge.vbr_pwm_publisher.publish(Int32(pwms[3]))
+        Submerge.vfl_pwm_publisher.publish(Int32(int(pwms[0])))
+        Submerge.vfr_pwm_publisher.publish(Int32(int(pwms[1])))
+        Submerge.vbl_pwm_publisher.publish(Int32(int(pwms[2])))
+        Submerge.vbr_pwm_publisher.publish(Int32(int(pwms[3])))
 
     def __init__(self, Kp, desired_depth):
         super().__init__()
@@ -69,7 +70,7 @@ class Submerge(State):
         if Submerge.USE_ALL_PWMS:
             Submerge.publish_vertical_pwms([out_pwm] * 4)
         else:
-            Submerge.publish_vertical_pwms([out_pwm, 0, 0, out_pwm])
+            Submerge.publish_vertical_pwms([out_pwm, Submerge.IDLE_PWM, Submerge.IDLE_PWM, out_pwm])
 
 
     def end(self):
@@ -78,8 +79,10 @@ class Submerge(State):
 
 class StraightForward(State):
     IDLE_PWM = 1500
-    MAX_PWM = 2100
-    MIN_PWM = 900
+    # MAX_PWM = 2100
+    # MIN_PWM = 900
+    MAX_PWM = 1525
+    MIN_PWM = 1475
 
     yaw = 0
     def update_yaw(msg):
@@ -93,10 +96,10 @@ class StraightForward(State):
     hbr_pwm_publisher = rospy.Publisher('/robot/pwm/hbr', Int32, queue_size=1)
 
     def publish_horizontal_pwms(pwms):
-        StraightForward.hfl_pwm_publisher.publish(Int32(pwms[0]))
-        StraightForward.hfr_pwm_publisher.publish(Int32(pwms[1]))
-        StraightForward.hbl_pwm_publisher.publish(Int32(pwms[2]))
-        StraightForward.hbr_pwm_publisher.publish(Int32(pwms[3]))
+        StraightForward.hfl_pwm_publisher.publish(Int32(int(pwms[0])))
+        StraightForward.hfr_pwm_publisher.publish(Int32(int(pwms[1])))
+        StraightForward.hbl_pwm_publisher.publish(Int32(int(pwms[2])))
+        StraightForward.hbr_pwm_publisher.publish(Int32(int(pwms[3])))
 
     def __init__(self, Kp, desired_yaw, yaw_error_threshold=0.05):
         self.yaw_error_threshold = yaw_error_threshold
@@ -110,7 +113,7 @@ class StraightForward(State):
         else:
             forward_effort = 0
         angular_effort = self.Kp * yaw_error
-        pwms = np.array([StraightForward.DEFAULT_PWM + forward_effort] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+        pwms = np.array([StraightForward.IDLE_PWM + forward_effort] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
         pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
         StraightForward.publish_horizontal_pwms(pwms)
 
@@ -120,8 +123,10 @@ class StraightForward(State):
 
 class RotateInPlace(State):
     IDLE_PWM = 1500
-    MAX_PWM = 2100
-    MIN_PWM = 900
+    MAX_PWM = 1525
+    MIN_PWM = 1475
+    # MAX_PWM = 2100
+    # MIN_PWM = 900
 
     yaw = 0
     def update_yaw(msg):
@@ -134,10 +139,10 @@ class RotateInPlace(State):
     hbr_pwm_publisher = rospy.Publisher('/robot/pwm/hbr', Int32, queue_size=1)
 
     def publish_horizontal_pwms(pwms):
-        RotateInPlace.hfl_pwm_publisher.publish(Int32(pwms[0]))
-        RotateInPlace.hfr_pwm_publisher.publish(Int32(pwms[1]))
-        RotateInPlace.hbl_pwm_publisher.publish(Int32(pwms[2]))
-        RotateInPlace.hbr_pwm_publisher.publish(Int32(pwms[3]))
+        RotateInPlace.hfl_pwm_publisher.publish(Int32(int(pwms[0])))
+        RotateInPlace.hfr_pwm_publisher.publish(Int32(int(pwms[1])))
+        RotateInPlace.hbl_pwm_publisher.publish(Int32(int(pwms[2])))
+        RotateInPlace.hbr_pwm_publisher.publish(Int32(int(pwms[3])))
 
     def __init__(self, target_delta_yaw, Kp):
         super().__init__()
@@ -156,21 +161,21 @@ class RotateInPlace(State):
         self.delta_yaw += wrap_to_pi(current_yaw - self.previous_yaw)
         error = self.target_delta_yaw - self.delta_yaw
         angular_effort = self.Kp * error
-        pwms = np.array([RotateInPlace.DEFAULT_PWM ] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+        pwms = np.array([RotateInPlace.IDLE_PWM ] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
         pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
         RotateInPlace.publish_horizontal_pwms(pwms)
         self.previous_yaw = current_yaw
 
 class WaitForReset(State):
-    DEPTH_LIMIT = 0
+    DEPTH_LIMIT = -0.1
 
     currentDepth = 0
-    @staticmethod
     def update_depth(msg):
         WaitForReset.currentDepth = msg.depth
     rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth)
 
     def run(self):
+        
         if WaitForReset.currentDepth < WaitForReset.DEPTH_LIMIT:
             self.end()
 
@@ -180,33 +185,34 @@ if __name__ == '__main__':
     depth_Kp = int(rospy.get_param("depth_Kp"))
     desired_depth = float(rospy.get_param("desired_depth"))
     yaw_Kp = int(rospy.get_param("yaw_Kp"))
+    rospy.loginfo("logged info ")
 
     params = {'desired_yaw': 0}
     def record_yaw():
         params['desired_yaw'] = StraightForward.yaw
 
-    # state_machine = Repeat(
-    #     Sequence([
-    #         # WaitForMissionStart(),
-    #         Lambda(record_yaw),
-    #         WaitForAny([
-    #             # WaitForMissionEnd(),
-    #             WaitForAny([
-    #                 Submerge(depth_Kp, desired_depth),
-    #                 Sequence([
-    #                     Timer(5),  # How long we wait for the robot to submerge
-    #                     WaitForAny([
-    #                         Timer(25),  # How long we wait for the robot to get to the gate
-    #                         InitWrapper(StraightForward, yaw_Kp, **params)
-    #                     ]),
-    #                     Timer(5),  # How long we wait before starting rotations
-    #                     # Add 2 full rotations
-    #                     InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
-    #                 ])
-    #             ])
-    #         ])
-    #     ])
-    # )
+    state_machine = Repeat(
+        Sequence([
+            # WaitForMissionStart(),
+            Lambda(record_yaw),
+            WaitForAny([
+                # WaitForMissionEnd(),
+                WaitForAny([
+                    Submerge(depth_Kp, desired_depth),
+                    Sequence([
+                        Timer(10),  # How long we wait for the robot to submerge
+                        WaitForAny([
+                            Timer(5),  # How long we wait for the robot to get to the gate # TODO change to 25
+                            InitWrapper(StraightForward, yaw_Kp, **params)
+                        ]),
+                        Timer(5),  # How long we wait before starting rotations
+                        # Add 2 full rotations
+                        InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
+                    ])
+                ])
+            ])
+        ])
+    )
     # state_machine.start()
 
     # state_machine = Repeat(
@@ -219,22 +225,25 @@ if __name__ == '__main__':
     #     ])
     # )
     # state_machine.start()
-
+    
     state_machine = Repeat(
         Sequence([
-            Timer(15),
+            Timer(2),
             WaitForAny([
-                WaitForReset(),
-                # state_machine
-                Sequence([
-                    Lambda(lambda: print("MISSION START!!!!")),
-                    Repeat(Timer(100))
-                ])
+                # WaitForReset(),
+                state_machine
+                # Sequence([
+                #     Lambda(lambda: rospy.loginfo("MISSION START!!!!")),
+                #     Repeat(Timer(100))
+                # ])
             ])
         ])
     )
     state_machine.start()
 
-    while not rospy.is_shutdown():
-        state_machine.run()
-        rate.sleep()
+    try:
+        while not rospy.is_shutdown():
+            state_machine.run()
+            rate.sleep()
+    finally:
+        state_machine.end() # Should stop 

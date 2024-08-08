@@ -9,9 +9,11 @@ import numpy as np
 import time
 from std_msgs.msg import Bool
 
+IDLE_PWM = 1500
+
 global ser
 line_buffer = b''
-thrusters = [1500]*8
+thrusters = [IDLE_PWM]*8
 
 def readline() -> str:
     '''
@@ -113,41 +115,47 @@ if __name__ == '__main__':
         dsp = DepthSensorPublisher()
         dvlp = rospy.Publisher('/drivers/dvl', DVL, queue_size=1)
         rate = rospy.Rate(30)
-        while not rospy.is_shutdown():
-            lines = readlines()
-            for line in lines:
-                ty, data = parse_line(line)
-                if ty == 'depth':
-                    print('depth:', data)
-                    dsp.publishDepth(data)
-                elif ty == 'switch':
-                    # print('switch', data)
-                    mission_started = data
-                elif ty == 'dvl':
-                    dvl_msg = DVL()
-                    dvl_msg.header.stamp = rospy.Time.now()
-                    dvl_msg.velocity.x = float(data[1])
-                    dvl_msg.velocity.y = float(data[2])
-                    dvl_msg.velocity.z = float(data[3])
-                    dvl_msg.fom = float(data[4])
-                    dvl_msg.altitude = float(data[5])
-                    dvl_msg.valid = data[6] == 'y'
-                    dvl_msg.status = bool(float(data[7]))
-                    dvlp.publish(dvl_msg)
+        try:
+            while not rospy.is_shutdown():
+                lines = readlines()
+                for line in lines:
+                    ty, data = parse_line(line)
+                    if ty == 'depth':
+                        print('depth:', data)
+                        dsp.publishDepth(data)
+                    elif ty == 'switch':
+                        # print('switch', data)
+                        mission_started = data
+                    elif ty == 'dvl':
+                        dvl_msg = DVL()
+                        dvl_msg.header.stamp = rospy.Time.now()
+                        dvl_msg.velocity.x = float(data[1])
+                        dvl_msg.velocity.y = float(data[2])
+                        dvl_msg.velocity.z = float(data[3])
+                        dvl_msg.fom = float(data[4])
+                        dvl_msg.altitude = float(data[5])
+                        dvl_msg.valid = data[6] == 'y'
+                        dvl_msg.status = bool(float(data[7]))
+                        dvlp.publish(dvl_msg)
 
-            # # Code to start mission
-            # submerged = np.min(depth_queue) > 0.05
-            # if submerged:
-            #     if not prev_submerged:
-            #         print('Robot entered water')
-            #         start_time = time.time()
+                # # Code to start mission
+                # submerged = np.min(depth_queue) > 0.05
+                # if submerged:
+                #     if not prev_submerged:
+                #         print('Robot entered water')
+                #         start_time = time.time()
+                    
+                #     # Wait a minute after submerging to start
+                #     mission_started = time.time() - start_time > 60
+                # else:
+                #     mission_started = False
+                # prev_submerged = submerged
+                mission_started_publisher.publish(mission_started)
+
+                ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
+                rate.sleep()
+        finally:
+            for i in range(8):
+                thrusters[i] = IDLE_PWM
                 
-            #     # Wait a minute after submerging to start
-            #     mission_started = time.time() - start_time > 60
-            # else:
-            #     mission_started = False
-            # prev_submerged = submerged
-            mission_started_publisher.publish(mission_started)
-
             ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
-            rate.sleep()
