@@ -8,7 +8,7 @@
     <param name="io_method" value="mmap"/>
     <param name="framerate" value="5" />
   </node>
-  <!-- video1 is a metadata device -->
+  <!-- /dev/video1 is a metadata device -->
   <node name="usb_cam_1" pkg="usb_cam" type="usb_cam_node" output="screen" >
    	<param name="video_device" value="/dev/video2" />
    	<param name="image_width" value="640" />

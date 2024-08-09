@@ -154,8 +154,11 @@ class Timer(State):
         self._start_time = time.time()
 
     def run(self):
-        if time.time() - self._start_time > self._duration:
+        elapsed_time = time.time() - self._start_time
+        if elapsed_time > self._duration:
             self.end()
+        if abs(round(elapsed_time) - elapsed_time) < 0.03:
+            print(f'Timer: {round(self._duration - elapsed_time)} seconds remaining')
 
 class Lambda(State):
     def __init__(self, func):

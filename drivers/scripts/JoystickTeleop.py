@@ -5,6 +5,9 @@ import numpy as np
 import select
 import os
 
+IDLE_PWM = 1500
+PWM_RANGE = 600
+
 def convert(n):
     if n <= 127:
         return n / 127
@@ -47,7 +50,38 @@ if __name__ == "__main__":
             'fr': int(speeds[1, 3])
         })
 
-    max_speed = 0.1  # Percentage of full speed
+    max_speed = 1.0  # Percentage of full speed
+    tank_right = np.array([
+        [0, 1, 0, 1],
+        [0, 0, 0, 0]
+    ])
+
+    tank_left = np.array([
+        [1, 0, 1, 0],
+        [0, 0, 0, 0]
+    ])
+
+    back_left = np.array([
+        [1, 0, 0, 0],
+        [0, 0, 0, 0]
+    ])
+
+    back_right = np.array([
+        [0, 1, 0, 0],
+        [0, 0, 0, 0]
+    ])
+
+    front_right = np.array([
+        [0, 0, 0, 1],
+        [0, 0, 0, 0]
+    ])
+
+    front_left = np.array([
+        [0, 0, 1, 0],
+        [0, 0, 0, 0]
+    ])
+
+
     forward = np.array([
         [1, 1, 1, 1],
         [0, 0, 0, 0]
@@ -66,7 +100,7 @@ if __name__ == "__main__":
     ])
     speeds = np.zeros([2, 4])
     joy_axes = [0, 0, 0, 0, 0, 0] #[LJoyHor, LJoyVert, RJoyHor, RJoyVert, DPadHor, DPadVert]
-    joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0] #[1, 2, 3, 4, LB, RB, LT, RT, 9, 10]
+    joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #[1, 2, 3, 4, LB, RB, LT, RT, 9, 10]
 
     updown_axes = [1, 3]
     leftright_axes = [0, 2]
@@ -94,6 +128,7 @@ if __name__ == "__main__":
                         else:
                             print('button', msg[7], 'up')
                             joy_buttons[msg[7]] = 0
+                            
 
                     # joy_axes event if 6th byte is 2
                     elif msg[6] == 2:
@@ -107,14 +142,29 @@ if __name__ == "__main__":
 
                     # Reset msg as an empty list.
                     msg = []
+        
+        # speeds = np.zeros([2, 4])
+        # speeds += up * joy_buttons[5]
+        # speeds += up * -1 * joy_buttons[4]
+        # speeds += clockwise * joy_axes[2]
+        # speeds += forward * joy_axes[1]
+        # speeds += right * joy_axes[0]
+        # speeds = np.clip(speeds, -max_speed, max_speed) * PWM_RANGE + IDLE_PWM
 
+
+        #[LJoyHor, LJoyVert, RJoyHor, RJoyVert, DPadHor, DPadVert]
+         #[1, 2, 3, 4, LB, RB, LT, RT, 9, 10]
+         # rospy.loginfo(f"Tank_left: {joy_axes[1]}, Tank_right: {joy_axes[3]}")
         speeds = np.zeros([2, 4])
-        speeds += up * joy_buttons[5]
-        speeds += up * -1 * joy_buttons[4]
-        speeds += clockwise * joy_axes[2]
-        speeds += forward * joy_axes[1]
-        speeds += right * joy_axes[0]
-        speeds = np.clip(speeds, -max_speed, max_speed) * 1500 + 1500
+        speeds += back_left * joy_buttons[4]
+        speeds += back_right * joy_buttons[5]
+        speeds += front_left * joy_buttons[6]
+        speeds += front_right * joy_buttons[7]
+        speeds += up * joy_axes[5]
+        speeds += tank_left * joy_axes[1]
+        speeds += tank_right * joy_axes[3]
+
+        speeds = speeds * max_speed * PWM_RANGE + IDLE_PWM
         set_speeds(speeds)
 
 

@@ -5,7 +5,8 @@ from StateMachine import State, Sequence, WaitForAll, WaitForAny, Repeat, Lambda
 from drivers.msg import Depth, EulerOrientation
 import numpy as np
 
-PWM_RANGE = 25
+PWM_RANGE_V = 600
+PWM_RANGE_H = 100
 IDLE_PWM = 1500
 
 def wrap_to_pi(theta):
@@ -38,8 +39,8 @@ class WaitForMissionEnd(_MissionSwitchMonitor):
         super().__init__(end_on_mission_start=False)
 
 class Submerge(State):
-    MAX_PWM = IDLE_PWM + PWM_RANGE
-    MIN_PWM = IDLE_PWM - PWM_RANGE
+    MAX_PWM = IDLE_PWM + PWM_RANGE_V
+    MIN_PWM = IDLE_PWM - PWM_RANGE_V
     # MAX_PWM = 2100
     # MIN_PWM = 900
     USE_ALL_PWMS = False
@@ -47,7 +48,7 @@ class Submerge(State):
     depth = 0
     def update_depth(msg):
         Submerge.depth = msg.depth
-    rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth)
+    rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth, queue_size=1)
 
     vfl_pwm_publisher = rospy.Publisher('/robot/pwm/vfl', Int32, queue_size=1)
     vfr_pwm_publisher = rospy.Publisher('/robot/pwm/vfr', Int32, queue_size=1)
@@ -83,7 +84,7 @@ class WaitUntilSubmerged(State):
     currentDepth = 0
     def update_depth(msg):
         WaitUntilSubmerged.currentDepth = msg.depth
-    rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth)
+    rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth, queue_size=1)
 
     def __init__(self, depth_limit):
         super().__init__()
@@ -94,8 +95,8 @@ class WaitUntilSubmerged(State):
             self.end()
 
 class StraightForward(State):
-    MAX_PWM = IDLE_PWM + PWM_RANGE
-    MIN_PWM = IDLE_PWM - PWM_RANGE
+    MAX_PWM = IDLE_PWM + PWM_RANGE_H
+    MIN_PWM = IDLE_PWM - PWM_RANGE_H
 
     yaw = 0
     def update_yaw(msg):
@@ -120,7 +121,8 @@ class StraightForward(State):
         self.Kp = Kp
 
     def run(self):
-        yaw_error = wrap_to_pi(self.desired_yaw - StraightForward.yaw)
+        # yaw_error = wrap_to_pi(self.desired_yaw - StraightForward.yaw)
+        yaw_error = 0
         if np.abs(yaw_error) < self.yaw_error_threshold:
             forward_effort = 200
         else:
@@ -136,8 +138,8 @@ class StraightForward(State):
         StraightForward.publish_horizontal_pwms([IDLE_PWM] * 4)
 
 class RotateInPlace(State):
-    MAX_PWM = IDLE_PWM + PWM_RANGE
-    MIN_PWM = IDLE_PWM - PWM_RANGE
+    MAX_PWM = IDLE_PWM + PWM_RANGE_H
+    MIN_PWM = IDLE_PWM - PWM_RANGE_H
     # MAX_PWM = 2100
     # MIN_PWM = 900
 
@@ -197,35 +199,48 @@ class WaitForReset(State):
         if WaitForReset.currentDepth < WaitForReset.DEPTH_LIMIT and self.lastDepth < WaitForReset.DEPTH_LIMIT:
             self.end()
 
+class Log(State):
+    def __init__(self, msg):
+        super().__init__()
+        self.msg = msg
+
+    def run(self):
+        rospy.loginfo(self.msg)
+        self.end()
+
 if __name__ == '__main__':
     rospy.init_node('mission', anonymous=False)
     rate = rospy.Rate(5)  # 50Hz
+    startup_delay_secs = float(rospy.get_param("startup_delay_secs"))
+    forward_time_secs = float(rospy.get_param("forward_time_secs"))
+    drift_time_secs = float(rospy.get_param("drift_time_secs"))
     depth_Kp = int(rospy.get_param("depth_Kp"))
     desired_depth = float(rospy.get_param("desired_depth"))
     yaw_Kp = int(rospy.get_param("yaw_Kp"))
-    rospy.loginfo("logged info ")
 
     params = {'desired_yaw': 0}
     def record_yaw():
         params['desired_yaw'] = StraightForward.yaw
 
-    state_machine = Repeat(
-        Sequence([
-            Timer(5),
-            Lambda(record_yaw), 
-            WaitForAny([
-                Submerge(depth_Kp, desired_depth),
-                Sequence([
-                    WaitUntilSubmerged(desired_depth),
-                    WaitForAny([
-                        Timer(15),
-                        InitWrapper(StraightForward, yaw_Kp, **params)
-                    ]),
-                    Timer(10)
-                ])
+    state_machine = Sequence([
+        Timer(startup_delay_secs),
+        Lambda(record_yaw),
+        Log("Submerging..."),
+        WaitForAny([
+            Submerge(depth_Kp, desired_depth),
+            Sequence([
+                WaitUntilSubmerged(desired_depth),
+                Log("Sumberged! Driving forward..."),
+                WaitForAny([
+                    InitWrapper(StraightForward, yaw_Kp, **params),
+                    Timer(forward_time_secs)
+                ]),
+                Log("Stopping..."),
+                Timer(drift_time_secs),
+                Log("Drift complete!")
             ])
         ])
-    )
+    ])
 
     # state_machine = Repeat(
     #     Sequence([
@@ -265,22 +280,34 @@ if __name__ == '__main__':
     #     ])
     # )
     # state_machine.start()
-    """  
-    state_machine = Repeat(
-        Sequence([
-            # Timer(200),
-            WaitForAny([
-                #Sequence([Lambda(lambda: rospy.loginfo("RESET!")), Timer(2), WaitForReset()]),
-                state_machine
-                # Sequence([
-                #     Lambda(lambda: rospy.loginfo("MISSION START!!!!")),
-                #     Repeat(Timer(100))
-                # ])
-            ])
-        ])
-    )
-    state_machine.start()
-    s"""
+
+    # state_machine = Repeat(
+    #     Sequence([
+    #         # Timer(200),
+    #         WaitForAny([
+    #             #Sequence([Lambda(lambda: rospy.loginfo("RESET!")), Timer(2), WaitForReset()]),
+    #             state_machine
+    #             # Sequence([
+    #             #     Lambda(lambda: rospy.loginfo("MISSION START!!!!")),
+    #             #     Repeat(Timer(100))
+    #             # ])
+    #         ])
+    #     ])
+    # )
+
+    state_machine = Repeat(Sequence([
+        Log("Waiting for mission start..."),
+        WaitForMissionStart(),
+        Log("Starting mission..."),
+        WaitForAny([
+            state_machine,
+            WaitForMissionEnd()
+        ]),
+        Log("Mission Ended! Waiting for explicit restart..."),
+        WaitForMissionEnd(),
+        Log("Restarting...")
+    ]))
+
     state_machine.start()
     # rospy.loginfo(state_machine._status)
     try:

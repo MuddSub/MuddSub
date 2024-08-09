@@ -52,11 +52,11 @@ void send_start_msg_isr()
 {
   if(digitalRead(ON_SWITCH_PIN)) 
   {
-    Serial.printf("switch,off\n");
+    Serial.printf("switch,on\n");
   }
   else
   {
-    Serial.printf("switch,on\n");
+    Serial.printf("switch,off\n");
   }
   return;
 }
@@ -67,7 +67,7 @@ void setup()
 
   pinMode(RX_PIN, INPUT);
   pinMode(TX_PIN, OUTPUT);
-  pinMode(ON_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(ON_SWITCH_PIN, INPUT);
 
   // enable interrupt for pin ON_SWITCH_PIN
   attachInterrupt(digitalPinToInterrupt(ON_SWITCH_PIN), send_start_msg_isr, CHANGE);
