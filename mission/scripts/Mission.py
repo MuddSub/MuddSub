@@ -5,7 +5,7 @@ from StateMachine import State, Sequence, WaitForAll, WaitForAny, Repeat, Lambda
 from drivers.msg import Depth, EulerOrientation
 import numpy as np
 
-PWM_RANGE = 600
+PWM_RANGE = 25
 IDLE_PWM = 1500
 
 def wrap_to_pi(theta):
@@ -79,6 +79,20 @@ class Submerge(State):
         super().end()
         Submerge.publish_vertical_pwms([IDLE_PWM] * 4)
 
+class WaitUntilSubmerged(State):
+    currentDepth = 0
+    def update_depth(msg):
+        WaitUntilSubmerged.currentDepth = msg.depth
+    rospy.Subscriber('/drivers/depth_sensor/depth', Depth, update_depth)
+
+    def __init__(self, depth_limit):
+        super().__init__()
+        self.depth_limit = depth_limit
+
+    def run(self):
+        if WaitUntilSubmerged.currentDepth > self.depth_limit:
+            self.end()
+
 class StraightForward(State):
     MAX_PWM = IDLE_PWM + PWM_RANGE
     MIN_PWM = IDLE_PWM - PWM_RANGE
@@ -119,7 +133,7 @@ class StraightForward(State):
 
     def end(self):
         super().end()
-        Submerge.publish_vertical_pwms([IDLE_PWM] * 4)
+        StraightForward.publish_horizontal_pwms([IDLE_PWM] * 4)
 
 class RotateInPlace(State):
     MAX_PWM = IDLE_PWM + PWM_RANGE
@@ -185,7 +199,7 @@ class WaitForReset(State):
 
 if __name__ == '__main__':
     rospy.init_node('mission', anonymous=False)
-    rate = rospy.Rate(50)  # 50Hz
+    rate = rospy.Rate(5)  # 50Hz
     depth_Kp = int(rospy.get_param("depth_Kp"))
     desired_depth = float(rospy.get_param("desired_depth"))
     yaw_Kp = int(rospy.get_param("yaw_Kp"))
@@ -197,30 +211,48 @@ if __name__ == '__main__':
 
     state_machine = Repeat(
         Sequence([
-        
-            # WaitForMissionStart(),
-            Lambda(record_yaw),
+            Timer(5),
+            Lambda(record_yaw), 
             WaitForAny([
-                # WaitForMissionEnd(),
-                WaitForAny([
-                    Submerge(depth_Kp, desired_depth),
-                    Sequence([
-                        Timer(10),  # How long we wait for the robot to submerge
-                        WaitForAny([
-                            Timer(7),  # How long we wait for the robot to get to the gate # TODO change to 25
-                            InitWrapper(StraightForward, yaw_Kp, **params)
-                        ]),
-                        Timer(0)  # How long we wait before starting rotations
-                        # Add 2 full rotations
-                        # RotateInPlace(1, yaw_Kp)
-                        # RotateInPlace(5, yaw_Kp)
-                        # InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
-                    ])
+                Submerge(depth_Kp, desired_depth),
+                Sequence([
+                    WaitUntilSubmerged(desired_depth),
+                    WaitForAny([
+                        Timer(15),
+                        InitWrapper(StraightForward, yaw_Kp, **params)
+                    ]),
+                    Timer(10)
                 ])
-            ]),
-            Repeat(Timer(100))
+            ])
         ])
     )
+
+    # state_machine = Repeat(
+    #     Sequence([
+        
+    #         # WaitForMissionStart(),
+    #         Lambda(record_yaw),
+    #         WaitForAny([
+    #             # WaitForMissionEnd(),
+    #             WaitForAny([
+    #                 Submerge(depth_Kp, desired_depth),
+    #                 Sequence([
+    #                     Timer(10),  # How long we wait for the robot to submerge
+    #                     WaitForAny([
+    #                         Timer(7),  # How long we wait for the robot to get to the gate # TODO change to 25
+    #                         InitWrapper(StraightForward, yaw_Kp, **params)
+    #                     ]),
+    #                     Timer(0)  # How long we wait before starting rotations
+    #                     # Add 2 full rotations
+    #                     # RotateInPlace(1, yaw_Kp)
+    #                     # RotateInPlace(5, yaw_Kp)
+    #                     # InitWrapper(StraightForward, yaw_Kp, **params)  # Move forward indefinitely
+    #                 ])
+    #             ])
+    #         ]),
+    #         Repeat(Timer(100))
+    #     ])
+    # )
     # state_machine.start()
 
     # state_machine = Repeat(
@@ -233,10 +265,10 @@ if __name__ == '__main__':
     #     ])
     # )
     # state_machine.start()
-    
+    """  
     state_machine = Repeat(
         Sequence([
-            Timer(200),
+            # Timer(200),
             WaitForAny([
                 #Sequence([Lambda(lambda: rospy.loginfo("RESET!")), Timer(2), WaitForReset()]),
                 state_machine
@@ -248,7 +280,9 @@ if __name__ == '__main__':
         ])
     )
     state_machine.start()
-
+    s"""
+    state_machine.start()
+    # rospy.loginfo(state_machine._status)
     try:
         while not rospy.is_shutdown():
             state_machine.run()

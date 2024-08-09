@@ -121,7 +121,7 @@ if __name__ == '__main__':
                 for line in lines:
                     ty, data = parse_line(line)
                     if ty == 'depth':
-                        print('depth:', data)
+                        # print('depth:', data)
                         dsp.publishDepth(data)
                     elif ty == 'switch':
                         # print('switch', data)
