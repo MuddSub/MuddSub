@@ -10,6 +10,7 @@ PWM_RANGE_H = 100
 IDLE_PWM = 1500
 
 def wrap_to_pi(theta):
+    # return (theta % (2 * np.pi)) - np.pi
     return ((theta - np.pi) % (2 * np.pi)) - np.pi
 
 class _MissionSwitchMonitor(State):
@@ -128,6 +129,7 @@ class StraightForward(State):
         else:
             forward_effort = 0
         angular_effort = self.Kp * yaw_error
+        rospy.loginfo(f"desired_yaw: {self.desired_yaw}, current_yaw: {StraightForward.yaw}, yaw_error: {yaw_error}")
         # rospy.loginfo(angular_effort)
         pwms = np.array([IDLE_PWM + forward_effort] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
         pwms = np.clip(pwms, StraightForward.MIN_PWM, StraightForward.MAX_PWM)
@@ -199,6 +201,38 @@ class WaitForReset(State):
         if WaitForReset.currentDepth < WaitForReset.DEPTH_LIMIT and self.lastDepth < WaitForReset.DEPTH_LIMIT:
             self.end()
 
+class DoABarrelRoll(State):
+    PWM_RANGE = 200
+    MAX_PWM = IDLE_PWM + PWM_RANGE
+    MIN_PWM = IDLE_PWM - PWM_RANGE
+    # MAX_PWM = 2100
+    # MIN_PWM = 900
+    USE_ALL_PWMS = False
+
+    vfl_pwm_publisher = rospy.Publisher('/robot/pwm/vfl', Int32, queue_size=1)
+    vfr_pwm_publisher = rospy.Publisher('/robot/pwm/vfr', Int32, queue_size=1)
+    vbl_pwm_publisher = rospy.Publisher('/robot/pwm/vbl', Int32, queue_size=1)
+    vbr_pwm_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=1)
+
+    def publish_vertical_pwms(pwms):
+        DoABarrelRoll.vfl_pwm_publisher.publish(Int32(int(pwms[0])))
+        DoABarrelRoll.vfr_pwm_publisher.publish(Int32(int(pwms[1])))
+        DoABarrelRoll.vbl_pwm_publisher.publish(Int32(int(pwms[2])))
+        DoABarrelRoll.vbr_pwm_publisher.publish(Int32(int(pwms[3])))
+
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        if DoABarrelRoll.USE_ALL_PWMS:
+            DoABarrelRoll.publish_vertical_pwms([DoABarrelRoll.MAX_PWM, DoABarrelRoll.MIN_PWM, DoABarrelRoll.MAX_PWM, DoABarrelRoll.MIN_PWM])
+        else:
+            DoABarrelRoll.publish_vertical_pwms([0, DoABarrelRoll.MIN_PWM, 0, DoABarrelRoll.MIN_PWM])
+
+    def end(self):
+        super().end()
+        Submerge.publish_vertical_pwms([IDLE_PWM] * 4)
+
 class Log(State):
     def __init__(self, msg):
         super().__init__()
@@ -214,6 +248,7 @@ if __name__ == '__main__':
     startup_delay_secs = float(rospy.get_param("startup_delay_secs"))
     forward_time_secs = float(rospy.get_param("forward_time_secs"))
     drift_time_secs = float(rospy.get_param("drift_time_secs"))
+    roll_time_secs = float(rospy.get_param("roll_time_secs"))
     depth_Kp = int(rospy.get_param("depth_Kp"))
     desired_depth = float(rospy.get_param("desired_depth"))
     yaw_Kp = int(rospy.get_param("yaw_Kp"))
@@ -221,6 +256,7 @@ if __name__ == '__main__':
     params = {'desired_yaw': 0}
     def record_yaw():
         params['desired_yaw'] = StraightForward.yaw
+        rospy.loginfo(f'Setting Desired Yaw: {StraightForward.yaw}')
 
     state_machine = Sequence([
         Timer(startup_delay_secs),
@@ -232,13 +268,18 @@ if __name__ == '__main__':
                 WaitUntilSubmerged(desired_depth),
                 Log("Sumberged! Driving forward..."),
                 WaitForAny([
-                    InitWrapper(StraightForward, yaw_Kp, **params),
+                    InitWrapper(StraightForward, [yaw_Kp], params),
                     Timer(forward_time_secs)
                 ]),
                 Log("Stopping..."),
                 Timer(drift_time_secs),
                 Log("Drift complete!")
             ])
+        ]),
+        Log("Rooooool <^>v<^>v"),
+        WaitForAny([
+            DoABarrelRoll(),
+            Timer(roll_time_secs)
         ])
     ])
 

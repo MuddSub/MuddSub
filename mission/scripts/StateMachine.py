@@ -170,7 +170,7 @@ class Lambda(State):
         self.end()
 
 class InitWrapper(State):
-    def __init__(self, state_type, *args, **kwargs):
+    def __init__(self, state_type, args, kwargs):
         super().__init__()
         self._state = None
         self._state_args = args

@@ -3,11 +3,13 @@
     <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="$(arg output)" respawn="true" />
 
     <include file="$(find vectornav)/launch/vectornav.launch" />
-    <node name="imu_wrapper" pkg="drivers" type="imu_wrapper.py" output="screen"/>
+    <node name="imu_wrapper" pkg="drivers"
+     type="imu_wrapper.py" output="screen"/>
 
-    <param name="startup_delay_secs" value="15"/>
-    <param name="forward_time_secs" value="15"/>
-    <param name="drift_time_secs" value="10"/>
+    <param name="startup_delay_secs" value="7"/>
+    <param name="forward_time_secs" value="17"/>
+    <param name="drift_time_secs" value="0"/>
+    <param name="roll_time_secs" value="13"/>
     <param name="depth_Kp" value="800"/>
     <param name="desired_depth" value="0.75"/>
     <param name="yaw_Kp" value="60"/>
