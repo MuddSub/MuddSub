@@ -128,7 +128,7 @@ if __name__ == "__main__":
                         else:
                             print('button', msg[7], 'up')
                             joy_buttons[msg[7]] = 0
-                            
+
 
                     # joy_axes event if 6th byte is 2
                     elif msg[6] == 2:
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
                     # Reset msg as an empty list.
                     msg = []
-        
+
         # speeds = np.zeros([2, 4])
         # speeds += up * joy_buttons[5]
         # speeds += up * -1 * joy_buttons[4]

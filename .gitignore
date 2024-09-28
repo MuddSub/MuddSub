@@ -1,11 +1,7 @@
 *.vscode*
 *.pyc
 *.o
-sim/scenes/GateScene.xml
-core/descriptions/alfie.urdf
-hydrophones/data/*
 *__pycache__*
 *.vscode
-docs/*
-slam/datasets/*
 *.pt
+*.bag

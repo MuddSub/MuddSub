@@ -60,7 +60,6 @@ Important files:
     - Opens Serial Connection to teensy.
     - Writes thruster pwm values from ros topics robot/pwm/... and formats as string to send to Teensy.
     - Publishes the on/off switch's state to robot/mission_started.
-    - 
 
 - mission/scripts/Mission.py
     - Contains the code that actually controls the robot

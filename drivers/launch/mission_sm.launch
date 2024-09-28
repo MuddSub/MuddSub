@@ -2,7 +2,6 @@
     <arg name="output" default="screen"/>
     <node name="teensy_interface" pkg="drivers" type="teensy_interface.py" output="$(arg output)" respawn="true" />
 
-    <include file="$(find vectornav)/launch/vectornav.launch" />
     <node name="imu_wrapper" pkg="drivers"
      type="imu_wrapper.py" output="screen"/>
 
@@ -15,6 +14,5 @@
     <param name="yaw_Kp" value="60"/>
     <node name="mission" pkg="mission" type="Mission.py" output="$(arg output)" />
 
-    <include file="$(find drivers)/drivers_cfg.launch" />
     <include file="$(find drivers)/launch/mission_record_everything.launch" />
 </launch>

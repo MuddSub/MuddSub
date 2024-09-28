@@ -1,6 +1,0 @@
-<launch>
-    <include file="$(find vectornav)/launch/vectornav.launch">
-    </include>
-
-    <node name="imu_wrapper" pkg="drivers" type="imu_wrapper.py" output="screen"/>
-</launch>

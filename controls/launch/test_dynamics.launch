@@ -1,4 +1,0 @@
-<launch>
-  <include file="$(find core)/launch/alfie_config.launch" />
-  <node name="test_dynamics" pkg="controls" type="test_dynamics" output="screen" />
-</launch>

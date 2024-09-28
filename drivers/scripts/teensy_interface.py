@@ -93,7 +93,7 @@ if __name__ == '__main__':
             rospy.logerr("Couldn't open serial")
             exit()
         print(" success")
-        
+
         if not ser.is_open:
             print(f"can't open ser")
             rospy.logerr("Couldn't open serial")
@@ -144,7 +144,7 @@ if __name__ == '__main__':
                 #     if not prev_submerged:
                 #         print('Robot entered water')
                 #         start_time = time.time()
-                    
+
                 #     # Wait a minute after submerging to start
                 #     mission_started = time.time() - start_time > 60
                 # else:
@@ -157,5 +157,5 @@ if __name__ == '__main__':
         finally:
             for i in range(8):
                 thrusters[i] = IDLE_PWM
-                
+
             ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
