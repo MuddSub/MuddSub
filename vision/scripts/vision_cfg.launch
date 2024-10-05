@@ -1,8 +1,0 @@
-<launch>
-  <arg name="load_config_file" default="$(find vision)/cfg/vision_params.yaml" />
-  <arg name="dump_config_file" default="$(find vision)/cfg/vision_params.yaml" />
-  <arg name="namespace" value="vision_server" />
-  <node name="$(anon dump_params)" pkg="utils" type="DumpParams.py" args="$(arg dump_config_file) $(arg namespace)" />
-  <rosparam file="$(arg load_config_file)" command="load" ns="$(arg namespace)" />
-  <node name="vision_server" pkg="vision" type="VisionServer.py" />
-</launch>
