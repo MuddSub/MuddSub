@@ -1,3 +1,6 @@
+[submodule "thirdparty/control-toolbox"]
+	path = thirdparty/control-toolbox
+	url = https://github.com/muddsub/control-toolbox
 [submodule "thirdparty/kindr"]
 	path = thirdparty/kindr
 	url = https://github.com/ANYbotics/kindr.git
