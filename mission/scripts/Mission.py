@@ -6,7 +6,7 @@ from drivers.msg import Depth, EulerOrientation
 import numpy as np
 
 PWM_RANGE_V = 600
-PWM_RANGE_H = 100
+PWM_RANGE_H = 300
 IDLE_PWM = 1500
 
 def wrap_to_pi(theta):
@@ -122,10 +122,10 @@ class StraightForward(State):
         self.Kp = Kp
 
     def run(self):
-        # yaw_error = wrap_to_pi(self.desired_yaw - StraightForward.yaw)
-        yaw_error = 0
+        yaw_error = wrap_to_pi(self.desired_yaw - StraightForward.yaw)
+        # yaw_error = 0
         if np.abs(yaw_error) < self.yaw_error_threshold:
-            forward_effort = 200
+            forward_effort = 100
         else:
             forward_effort = 0
         angular_effort = self.Kp * yaw_error
@@ -138,6 +138,51 @@ class StraightForward(State):
     def end(self):
         super().end()
         StraightForward.publish_horizontal_pwms([IDLE_PWM] * 4)
+
+# class GoToBuoy(State):
+#     MAX_PWM = IDLE_PWM + PWM_RANGE_H
+#     MIN_PWM = IDLE_PWM - PWM_RANGE_H
+
+#     yaw = 0
+#     def update_yaw(msg):
+#         GoToBuoy.yaw = msg.yaw_z_radian
+#     rospy.Subscriber('/drivers/CV/buoy_pos', BuoyPosition, update_yaw)
+#     # rospy.Subscriber('/drivers/IMU/euler_orientation', EulerOrientation, update_yaw)
+
+#     hfl_pwm_publisher = rospy.Publisher('/robot/pwm/hfl', Int32, queue_size=1)
+#     hfr_pwm_publisher = rospy.Publisher('/robot/pwm/hfr', Int32, queue_size=1)
+#     hbl_pwm_publisher = rospy.Publisher('/robot/pwm/hbl', Int32, queue_size=1)
+#     hbr_pwm_publisher = rospy.Publisher('/robot/pwm/hbr', Int32, queue_size=1)
+
+#     def publish_horizontal_pwms(pwms):
+#         GoToBuoy.hfl_pwm_publisher.publish(Int32(int(pwms[0])))
+#         GoToBuoy.hfr_pwm_publisher.publish(Int32(int(pwms[1])))
+#         GoToBuoy.hbl_pwm_publisher.publish(Int32(int(pwms[2])))
+#         GoToBuoy.hbr_pwm_publisher.publish(Int32(int(pwms[3])))
+    
+#     def __init__(self, target_delta_yaw, Kp):
+#         super().__init__()
+#         self.target_delta_yaw = target_delta_yaw
+#         self.start_yaw = 0
+#         self.previous_yaw = 0
+#         self.delta_yaw = 0
+#         self.Kp = Kp
+
+#     def start(self):
+#         super().start()
+#         start_yaw = GoToBuoy.yaw
+
+#     def run(self):
+#         current_yaw = GoToBuoy.yaw
+#         self.delta_yaw += wrap_to_pi(current_yaw - self.previous_yaw)
+#         error = self.target_delta_yaw - self.delta_yaw
+#         angular_effort = self.Kp * error
+#         # rospy.loginfo(angular_effort)
+#         pwms = np.array([IDLE_PWM ] * 4, dtype='float64') + np.array([1., -1., 1., -1.]) * angular_effort
+#         pwms = np.clip(pwms, GoToBuoy.MIN_PWM, GoToBuoy.MAX_PWM)
+#         GoToBuoy.publish_horizontal_pwms(pwms)
+#         self.previous_yaw = current_yaw
+
 
 class RotateInPlace(State):
     MAX_PWM = IDLE_PWM + PWM_RANGE_H
@@ -278,7 +323,7 @@ if __name__ == '__main__':
         ]),
         Log("Rooooool <^>v<^>v"),
         WaitForAny([
-            DoABarrelRoll(),
+            # DoABarrelRoll(),
             Timer(roll_time_secs)
         ])
     ])
