@@ -12,14 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  ct_core
   rospack
   roslib
   genmsg
-  actionlib_msgs
-  actionlib
   message_generation
-#  slam
   dynamic_reconfigure
   vision
 )
@@ -50,18 +46,18 @@ generate_dynamic_reconfigure_options(
 
 #add_action_files(DIRECTORY action FILES Navigation.action)
 
-add_message_files(
-  FILES
-  RotationalMovement.msg
-  SinTraversalPath.msg
-)
+# add_message_files(
+#   FILES
+#   RotationalMovement.msg
+#   SinTraversalPath.msg
+# )
 
-generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
+generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
 #  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
- CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime slam vision
+ CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime vision
 #	DEPENDS system_lib
 )
 

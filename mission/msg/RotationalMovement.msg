@@ -1,5 +1,0 @@
-Header header
-float64 inital_degree
-float64 degrees_to_rotate
-float64 angular_velocity
-float64 pause_degree

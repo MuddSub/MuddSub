@@ -57,10 +57,7 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  DetectionArray.msg
-  Detection.msg
-  BoundingBoxArray.msg
-  BoundingBox.msg
+  BuoyPos.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -87,13 +84,11 @@ generate_messages(
   vision_msgs
 
 )
-catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
+catkin_install_python(PROGRAMS
+  scripts/VisionServer.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-add_executable(VisionExampleNode src/VisionExampleNode.cc src/VisionPublisher.cc)
-target_link_libraries(VisionExampleNode ${catkin_LIBRARIES})
-add_dependencies(VisionExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

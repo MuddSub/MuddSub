@@ -79,16 +79,12 @@ generate_messages(
 )
 
 catkin_install_python(PROGRAMS
-  scripts/DepthSensorExampleNode.py
+  # scripts/DepthSensorExampleNode.py
   scripts/DriversServer.py
-  scripts/ThrustersTeleop.py
-  scripts/JoystickTeleop.py
+  # scripts/ThrustersTeleop.py
+  # scripts/JoystickTeleop.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-add_executable(DepthSensorExampleNode src/DepthSensorExampleNode.cc src/DepthSensorPublisher.cc)
-add_dependencies(DepthSensorExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(DepthSensorExampleNode ${catkin_LIBRARIES})
 
 
 ################################################
