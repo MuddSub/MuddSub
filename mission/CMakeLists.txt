@@ -19,7 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   message_generation
-  slam
+#  slam
   dynamic_reconfigure
   vision
 )
