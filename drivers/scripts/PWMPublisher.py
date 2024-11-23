@@ -13,12 +13,15 @@ def main():
     vfr_publisher = rospy.Publisher('/robot/pwm/vfr', Int32, queue_size=1)
     vbl_publisher = rospy.Publisher('/robot/pwm/vbl', Int32, queue_size=1)
     vbr_publisher = rospy.Publisher('/robot/pwm/vbr', Int32, queue_size=1)
+    
+    servo0_publisher = rospy.Publisher('/robot/pwm/servo/0', Int32, queue_size=1)
 
     rospy.init_node('pwm_publisher', anonymous=True)
     rate = rospy.Rate(20)  # 20Hz
     while not rospy.is_shutdown():
         horizontal_thrusters = rospy.get_param('drivers_server/pwm/thrusters/horizontal', {'bl': 1500, 'br': 1500, 'fl': 1500, 'fr': 1500})
         vertical_thrusters = rospy.get_param('drivers_server/pwm/thrusters/vertical', {'bl': 1500, 'br': 1500, 'fl': 1500, 'fr': 1500})
+        servo0 = rospy.get_param('drivers_server/pwm/servo', {'0': 1500})
         
         hfl_publisher.publish(Int32(horizontal_thrusters['fl']))
         hfr_publisher.publish(Int32(horizontal_thrusters['fr']))
@@ -29,6 +32,8 @@ def main():
         vfr_publisher.publish(Int32(vertical_thrusters['fr']))
         vbl_publisher.publish(Int32(vertical_thrusters['bl']))
         vbr_publisher.publish(Int32(vertical_thrusters['br']))
+        
+        servo0_publisher.publish(Int32(servo0))
         
         rate.sleep()
 

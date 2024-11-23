@@ -109,6 +109,7 @@ if __name__ == '__main__':
         vbl_subscriber = rospy.Subscriber('/robot/pwm/vbl', Int32, pulseToSerial, (7), queue_size=1)
         vbr_subscriber = rospy.Subscriber('/robot/pwm/vbr', Int32, pulseToSerial, (1), queue_size=1)
 
+        servo_subscriber = rospy.Subscriber('robot/pwm/servo/0')
         mission_started_publisher = rospy.Publisher('/robot/mission_started', Bool, queue_size=1)
         mission_started = False
 
@@ -152,10 +153,10 @@ if __name__ == '__main__':
                 # prev_submerged = submerged
                 mission_started_publisher.publish(mission_started)
 
-                ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
+                ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{},servo0{}\n'.format(*thrusters).encode('utf_8'))
                 rate.sleep()
         finally:
             for i in range(8):
                 thrusters[i] = IDLE_PWM
                 
-            ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{}\n'.format(*thrusters).encode('utf_8'))
+            ser.write('thrust,0{},1{},2{},3{},4{},5{},6{},7{},servo0{}\n'.format(*thrusters).encode('utf_8'))

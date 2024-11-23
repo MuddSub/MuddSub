@@ -120,7 +120,7 @@ void loop() {
     int servoPWM;
     // listen to a serial command of the following format, put the values in the pwms array
     // serial_cmd_input = "thrust,01500,11500,21500,31500,41500,51500,61500,71500"
-    int result = sscanf(serial_cmd_input, "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d,servo,0%d",
+    int result = sscanf(serial_cmd_input, "thrust,0%d,1%d,2%d,3%d,4%d,5%d,6%d,7%d,servo0%d",
         &pwms[0], &pwms[1], &pwms[2], &pwms[3], &pwms[4], &pwms[5], &pwms[6], &pwms[7], &servoPWM);
 
     if (result >= 8) {

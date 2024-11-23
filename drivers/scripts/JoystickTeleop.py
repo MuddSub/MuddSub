@@ -19,6 +19,15 @@ def threshold(n):
         return 0.0
     else:
         return n
+    
+def set_servo_angle(angle):
+    """
+    Set the servo angle between -90° and 90°.
+
+    :param angle: The desired angle (-90 to 90).
+    """
+    # Map the angle (-90 to 90) to pulse width (1000 to 2000 µs)
+    return 1500 + (angle * 500 / 90)
 
 if __name__ == "__main__":
     # Open the js0 device as if it were a file in read mode.
@@ -48,6 +57,11 @@ if __name__ == "__main__":
             'br': int(speeds[1, 1]),
             'fl': int(speeds[1, 2]),
             'fr': int(speeds[1, 3])
+        })
+    
+    def set_servo(servo_speed):
+        rospy.set_param('drivers_server/pwm/servo', {
+            '0': int(servo_speed)
         })
 
     max_speed = 1.0  # Percentage of full speed
@@ -163,9 +177,25 @@ if __name__ == "__main__":
         speeds += up * joy_axes[5]
         speeds += tank_left * joy_axes[1]
         speeds += tank_right * joy_axes[3]
-
+        
+        # Set Thruster Speeds   
         speeds = speeds * max_speed * PWM_RANGE + IDLE_PWM
         set_speeds(speeds)
-
-
+        
+        # Set servo position
+        try:
+            button_idx = joy_buttons.index(1)
+        except ValueError:
+            button_idx = -1  
+        servo_speed = 0
+        match button_idx:
+            case 0:
+                servo_angle = set_servo_angle(0) # Move to 0
+            case 1:
+                servo_speed = set_servo_angle(90) # Move to 90
+            case 2:
+                servo_speed = set_servo_angle(-90) # Move to 180
+            case _:
+                # No button presses registered
+                pass
     set_speeds(np.zeros([2, 4]))
