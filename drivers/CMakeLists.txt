@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(drivers)
 
+add_subdirectory(../thirdparty/imu_vn_100 imu_vn_100)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -119,9 +121,8 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES drivers
-#  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
+ CATKIN_DEPENDS roscpp rospy std_msgs message_runtime imu_vn_100
 #  DEPENDS system_lib
-  CATKIN_DEPENDS message_runtime
 )
 
 ###########
@@ -131,6 +132,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
+  # include
   ${catkin_INCLUDE_DIRS}
 )
