@@ -7,5 +7,6 @@
     <include file="$(find vectornav)/launch/vectornav.launch" />
     <include file="$(find drivers)/drivers_cfg.launch" />
     <include file="$(find drivers)/launch/mission_record_everything.launch" />
+    <node name="NaiveSLAM" pkg="drivers" type="NaiveSLAM.py"/>
     <!-- <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" args="-s reconfigure" /> -->
 </launch>
