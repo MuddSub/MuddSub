@@ -17,6 +17,7 @@
 // Driving these pins to a 3.3V signal will move the servo
 #define SERVO_PIN_POSITIVE 14  // Pin for +1 to +90 degrees
 #define SERVO_PIN_NEGATIVE 15  // Pin for -1 to -90 degrees
+#define SERVO_PIN_RESET 16
 
 // Define servo PWM limits in microseconds
 #define SERVO_MIN_PWM 900     // -90 degrees
@@ -32,6 +33,7 @@ Servo extraServo;
 float degree_diff_1 =  10; // attached to pin 14
 float degree_diff_2 = -10; // attached to pin 15
 
+float pos = 0;
 
 /**
  * Converts angle in degrees to PWM value in microseconds
@@ -55,6 +57,8 @@ void setup() {
   // Configure control pins
   pinMode(SERVO_PIN_POSITIVE, INPUT_PULLDOWN);
   pinMode(SERVO_PIN_NEGATIVE, INPUT_PULLDOWN);
+  pinMode(SERVO_PIN_RESET, INPUT_PULLDOWN);
+  pinMode(13, OUTPUT);
 
 
   Serial.begin(115200);
@@ -63,7 +67,8 @@ void setup() {
 
   Wire.begin();
   
-  if (!extraServo.attach(SERVO_PIN)) {
+  extraServo.attach(SERVO_PIN);
+  if (!extraServo.attached()) {
     Serial.println("Failed to attach servo!");
     while(1) {
       // Halt program if servo fails to attach
@@ -79,18 +84,22 @@ void setup() {
 void loop() {
 
   // Check control pins and set servo position
-   if (digitalRead(SERVO_PIN_POSITIVE) == HIGH) {
-        extraServo.writeMicroseconds(degreesToPWM(degree_diff_1));
-        Serial.printf("Moving to %.1f degrees\n", degree_diff_1);
-    } 
-    else if (digitalRead(SERVO_PIN_NEGATIVE) == HIGH) {
-        extraServo.writeMicroseconds(degreesToPWM(degree_diff_2));
-        Serial.printf("Moving to %.1f degrees\n", degree_diff_2);
-    }
-    else {
-        extraServo.writeMicroseconds(degreesToPWM(0));
-        Serial.printf("Moving to %.1f degrees\n", 0);
-    }
+  bool toggle_1 = false;
+  if (digitalRead(SERVO_PIN_POSITIVE) == HIGH && !toggle_1) {
+    toggle_1 = true; 
+    pos = 90.0;
+    digitalWrite(13, HIGH);
+  } else if (digitalRead(SERVO_PIN_NEGATIVE) == HIGH && !toggle_1) {
+      pos = -90.0;
+      digitalWrite(13, LOW);
+      toggle_1 = true;
+  } else if (digitalRead(SERVO_PIN_RESET) == HIGH) {
+    pos = 0;
+    toggle_1 = false;
+  }
+
+  extraServo.writeMicroseconds(degreesToPWM(pos));
+  Serial.printf("Moving to %.1f degrees\n", pos);
 
   delay(DELAY_PERIOD);
 
