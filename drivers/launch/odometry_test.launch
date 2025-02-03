@@ -1,0 +1,4 @@
+<launch>
+    <node name="dvl_debugging" pkg="drivers" type="dvl_debugging.py" output="screen" />
+    <node name="naive_SLAM" pkg="drivers" type="naive_SLAM.py" output="screen" />
+</launch>

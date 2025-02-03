@@ -54,6 +54,7 @@ add_message_files(
   DVL.msg
   EulerOrientation.msg
   ImuLinAccel.msg
+  Position.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -83,6 +84,8 @@ catkin_install_python(PROGRAMS
   scripts/DriversServer.py
   scripts/ThrustersTeleop.py
   scripts/JoystickTeleop.py
+  scripts/dvl_debugging.py
+  scripts/naive_SLAM.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
