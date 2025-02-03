@@ -6,13 +6,13 @@ from drivers.msg import DVL, Position
 
 class NaiveSLAM:
     def __init__(self):
-        #self.dvl_subscriber = rospy.Subscriber('drivers/dvl', DVL, self.velocity_receiver)
-        self.dvl_subscriber = rospy.Subscriber('drivers/dvl_debug', DVL, self.velocity_receiver)
-        #self.mission_start = rospy.Subscriber("/robot/mission_started", Bool, self.start_callback)
+        self.dvl_subscriber = rospy.Subscriber('drivers/dvl', DVL, self.velocity_receiver)
+        #self.dvl_subscriber = rospy.Subscriber('drivers/dvl_debug', DVL, self.velocity_receiver) # uncomment to test
+        self.mission_start = rospy.Subscriber("/robot/mission_started", Bool, self.start_callback)
         self.position_publisher = rospy.Publisher('drivers/position', Position, queue_size=1)
 
-        #self.started = False
-        self.started = True
+        self.started = False
+        #self.started = True #uncomment to test
         self.last_x_pos = 0
         self.last_y_pos = 0
         self.last_vel_read = 0
