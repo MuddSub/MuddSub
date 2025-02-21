@@ -48,18 +48,16 @@ generate_dynamic_reconfigure_options(
 
 #add_action_files(DIRECTORY action FILES Navigation.action)
 
-# add_message_files(
-#   FILES
-#   RotationalMovement.msg
-#   SinTraversalPath.msg
-# )
+add_message_files(
+  FILES
+)
 
 # generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
 #  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
- CATKIN_DEPENDS nav_msgs rospy std_msgs vision
+ CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime vision #slam
 #	DEPENDS system_lib
 )
 

@@ -5,18 +5,16 @@ import sys
 # python3 windowsJoystick.py | ssh muddsub@192.168.1.2 "cat > ~/joystick_pipe"
 
 # Initialize Pygame
-pygame.init() 
+pygame.init()
 
 # Initialize the joystick module
 pygame.joystick.init() # TO DO: Get rid of initial print message that pygame prints out
 
+# Convert joystick axis reading (-1-1) to a byte value (0-254) (256 would overflow and this way 0 is an even 127)
+# This transformation is linear
 def convert(x):
-    if x < 0:
-        return int(x * 128 + 256)
-    else:
-        return int(x * 127)
-
-    
+    x = min(max(x, -1), 1)  # Clamp x to be between -1 and 1
+    return int(127 * (x + 1))
 
 # Check for joysticks
 if pygame.joystick.get_count() > 0:
@@ -41,8 +39,8 @@ if pygame.joystick.get_count() > 0:
                 msg[5] = convert(event.value)
                 msg[7] = event.axis
 
-    
-                
+
+
                 # print(f"Joystick Axis Moved: {event.axis} Value: {event.value}")
 
             if event.type == pygame.JOYBUTTONDOWN:
@@ -57,13 +55,13 @@ if pygame.joystick.get_count() > 0:
                 msg[7] = event.button
 
                 # print(f"Joystick Button Up: {event.button}")
-                
+
                 # byte 6 is if 1 is a button event, 2 axis event
                 # byte 4 and 5, value of message
                 # byte 7 identifies the button or axis number
-            # my_list = [bytes(item) for item in msg]  
+            # my_list = [bytes(item) for item in msg]
             sys.stdout.buffer.write(bytes(msg))
             sys.stdout.flush()
             # print(my_list)
-            
+
 pygame.quit()
