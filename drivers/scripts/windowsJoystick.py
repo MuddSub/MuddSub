@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 # This code pipes std outputs to the jetson via ssh
 # Make sure to pipe the outputs of this script into a named pipe:
 # python3 windowsJoystick.py | ssh muddsub@192.168.1.2 "cat > ~/joystick_pipe"
@@ -16,6 +17,9 @@ def convert(x):
     x = min(max(x, -1), 1)  # Clamp x to be between -1 and 1
     return int(127 * (x + 1))
 
+last_bytes = None
+last_time = None
+
 # Check for joysticks
 if pygame.joystick.get_count() > 0:
     # Use the first joystick
@@ -24,10 +28,21 @@ if pygame.joystick.get_count() > 0:
 
     print(f"Initialized Joystick : {joystick.get_name()}")
     msg = [0, 0, 0, 0, 0, 0, 0, 0]
+    
+    last_time = time.time() # records last time a message was sent
 
     # Main loop
     running = True
     while running:
+        if time.time() - last_time > 0.1: # if 0.1 seconds have passed since last message, resend message
+            
+            if pygame.joystick.get_init() == False: # if joystick is disconnected send 0s
+                msg = [0, 0, 0, 0, 0, 3, 0, 0]
+                
+            sys.stdout.buffer.write(bytes(msg)) 
+            sys.stdout.flush()
+            last_time = time.time() # update last time message was sent
+            
         for event in pygame.event.get():
             msg = [0] * 8
             if event.type == pygame.QUIT:

@@ -118,14 +118,24 @@ if __name__ == "__main__":
 
     updown_axes = [1, 3]
     leftright_axes = [0, 2]
+    
+    last_time = rospy.get_time()
 
     while not rospy.is_shutdown():
         while True:
             rlist, _, _ = select.select([pipe], [], [], 0)
+            
             if len(rlist) == 0:
+                
+                if rospy.get_time() - last_time > 2.0:
+                    print('No data available for 2 seconds, reseting PWM Values')
+                    joy_axes = [0, 0, 0, 0, 0, 0]
+                    joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                 break
 
             for char in pipe.buffer.read(8):
+                last_time = rospy.get_time()
+                
                 # print(type(char))
 
                 # append the integer representation of the unicode character read to the msg list.
@@ -153,6 +163,11 @@ if __name__ == "__main__":
                             msg[5] = threshold(convert(msg[5]))
                         print('Received: joy_axes', msg[7], msg[5], 'old value:', old_val)
                         joy_axes[msg[7]] = msg[5]
+                    
+                    elif msg[6] == 3:
+                        # clear out arrays
+                        joy_axes = [0, 0, 0, 0, 0, 0]
+                        joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
                     # Reset msg as an empty list.
                     msg = []
