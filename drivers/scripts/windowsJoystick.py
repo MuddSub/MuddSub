@@ -1,3 +1,5 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"  # Disable pygame welcome message
 import pygame
 import sys
 import time
@@ -26,7 +28,7 @@ if pygame.joystick.get_count() > 0:
     joystick = pygame.joystick.Joystick(0)
     joystick.init()
 
-    print(f"Initialized Joystick : {joystick.get_name()}")
+    # print(f"Initialized Joystick : {joystick.get_name()}")
     msg = [0, 0, 0, 0, 0, 0, 0, 0]
     
     last_time = time.time() # records last time a message was sent
@@ -74,9 +76,10 @@ if pygame.joystick.get_count() > 0:
                 # byte 6 is if 1 is a button event, 2 axis event
                 # byte 4 and 5, value of message
                 # byte 7 identifies the button or axis number
-            # my_list = [bytes(item) for item in msg]
             sys.stdout.buffer.write(bytes(msg))
             sys.stdout.flush()
-            # print(my_list)
+
+            # my_list = [bytes(item) for item in msg]
+            # print(f'{msg} -> {bytes(msg)}')
 
 pygame.quit()
