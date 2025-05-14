@@ -147,10 +147,10 @@ if __name__ == "__main__":
                 # Button event if 6th byte is 1
                     if msg[6] == 1:
                         if msg[4]  == 1:
-                            print('button', msg[7], 'down')
+                            # print('button', msg[7], 'down')
                             joy_buttons[msg[7]] = 1
                         else:
-                            print('button', msg[7], 'up')
+                            # print('button', msg[7], 'up')
                             joy_buttons[msg[7]] = 0
 
 
@@ -161,13 +161,17 @@ if __name__ == "__main__":
                             msg[5] = threshold(-convert(msg[5]))
                         else:
                             msg[5] = threshold(convert(msg[5]))
-                        print('Received: joy_axes', msg[7], msg[5], 'old value:', old_val)
+                        # print('Received: joy_axes', msg[7], msg[5], 'old value:', old_val)
                         joy_axes[msg[7]] = msg[5]
                     
                     elif msg[6] == 3:
                         # clear out arrays
                         joy_axes = [0, 0, 0, 0, 0, 0]
                         joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+                    else:
+                        # print(f'Recieved unknown msg[6]={msg[6]}')
+                        pass
 
                     # Reset msg as an empty list.
                     msg = []
