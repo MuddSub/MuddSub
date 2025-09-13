@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(mission)
 
-add_compile_options(-std=c++14)
+# add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,14 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  ct_core
   rospack
   roslib
-  genmsg
-  actionlib_msgs
-  actionlib
-  message_generation
-  slam
+  # genmsg
+  # message_generation
   dynamic_reconfigure
   vision
 )
@@ -48,20 +44,20 @@ generate_dynamic_reconfigure_options(
   cfg/Mission.cfg
 )
 
+# add_dependencies(mission mission_gencfg)
+
 #add_action_files(DIRECTORY action FILES Navigation.action)
 
 add_message_files(
   FILES
-  RotationalMovement.msg
-  SinTraversalPath.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs actionlib_msgs)
+# generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
 #  CATKIN_DEPENDS actionlib_msgs
 #	INCLUDE_DIRS include
- CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime slam vision
+ CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime vision #slam
 #	DEPENDS system_lib
 )
 
@@ -70,7 +66,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-#catkin_install_python(PROGRAMS
-#  scripts/go_to_target.py
-#  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#)
+catkin_install_python(PROGRAMS
+  src/mission/MissionServer.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

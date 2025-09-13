@@ -9,7 +9,6 @@ project(vision)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   nav_msgs
-  roscpp
   rospy
   std_msgs
   message_generation
@@ -57,10 +56,7 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  DetectionArray.msg
-  Detection.msg
-  BoundingBoxArray.msg
-  BoundingBox.msg
+  BuoyPos.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -85,15 +81,8 @@ generate_messages(
   geometry_msgs
   sensor_msgs
   vision_msgs
-
-)
-catkin_install_python(PROGRAMS scripts/VisionExampleNode.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-add_executable(VisionExampleNode src/VisionExampleNode.cc src/VisionPublisher.cc)
-target_link_libraries(VisionExampleNode ${catkin_LIBRARIES})
-add_dependencies(VisionExampleNode ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -126,7 +115,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES vision
-  CATKIN_DEPENDS nav_msgs roscpp rospy std_msgs message_runtime geometry_msgs sensor_msgs vision_msgs
+  CATKIN_DEPENDS nav_msgs rospy std_msgs message_runtime geometry_msgs sensor_msgs vision_msgs
 #  DEPENDS system_lib
 )
 
@@ -137,7 +126,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
+  # include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -184,6 +173,11 @@ include_directories(
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
+
+catkin_install_python(PROGRAMS
+  src/vision/VisionServer.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

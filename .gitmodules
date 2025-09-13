@@ -1,0 +1,6 @@
+[submodule "thirdparty/imu_vn_100"]
+	path = thirdparty/imu_vn_100
+	url = https://github.com/muddsub/imu_vn_100
+[submodule "thirdparty/vectornav"]
+	path = thirdparty/vectornav
+	url = https://github.com/dawonn/vectornav.git
