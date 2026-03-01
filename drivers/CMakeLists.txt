@@ -83,7 +83,7 @@ generate_messages(
 
 catkin_install_python(PROGRAMS
   # scripts/DepthSensorExampleNode.py
-  scripts/DriversServer.py
+  # scripts/DriversServer.py
   # scripts/ThrustersTeleop.py
   # scripts/JoystickTeleop.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

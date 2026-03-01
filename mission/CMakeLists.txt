@@ -48,9 +48,9 @@ generate_dynamic_reconfigure_options(
 
 #add_action_files(DIRECTORY action FILES Navigation.action)
 
-add_message_files(
-  FILES
-)
+#add_message_files(
+#  FILES
+#)
 
 # generate_messages(DEPENDENCIES std_msgs)
 
