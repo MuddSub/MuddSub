@@ -122,59 +122,58 @@ if __name__ == "__main__":
     last_time = rospy.get_time()
 
     while not rospy.is_shutdown():
-        while True:
-            rlist, _, _ = select.select([pipe], [], [], 0)
+        rlist, _, _ = select.select([pipe], [], [], 0)
+        
+        if len(rlist) == 0:
             
-            if len(rlist) == 0:
+            if rospy.get_time() - last_time > 2.0:
+                print('No data available for 2 seconds, reseting PWM Values')
+                joy_axes = [0, 0, 0, 0, 0, 0]
+                joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            break
+
+        for char in pipe.buffer.read(8):
+            last_time = rospy.get_time()
+            
+            # print(type(char))
+
+            # append the integer representation of the unicode character read to the msg list.
+            msg += [char]
+
+            # If the length of the msg list is 8...
+            if len(msg) == 8:
+
+            # Button event if 6th byte is 1
+                if msg[6] == 1:
+                    if msg[4]  == 1:
+                        # print('button', msg[7], 'down')
+                        joy_buttons[msg[7]] = 1
+                    else:
+                        # print('button', msg[7], 'up')
+                        joy_buttons[msg[7]] = 0
+
+
+                # joy_axes event if 6th byte is 2
+                elif msg[6] == 2:
+                    old_val = msg[5]
+                    if msg[7] in updown_axes:  # Vertical axes are inverted from what we'd expect
+                        msg[5] = threshold(-convert(msg[5]))
+                    else:
+                        msg[5] = threshold(convert(msg[5]))
+                    # print('Received: joy_axes', msg[7], msg[5], 'old value:', old_val)
+                    joy_axes[msg[7]] = msg[5]
                 
-                if rospy.get_time() - last_time > 2.0:
-                    print('No data available for 2 seconds, reseting PWM Values')
+                elif msg[6] == 3:
+                    # clear out arrays
                     joy_axes = [0, 0, 0, 0, 0, 0]
                     joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-                break
 
-            for char in pipe.buffer.read(8):
-                last_time = rospy.get_time()
-                
-                # print(type(char))
+                else:
+                    # print(f'Recieved unknown msg[6]={msg[6]}')
+                    pass
 
-                # append the integer representation of the unicode character read to the msg list.
-                msg += [char]
-
-                # If the length of the msg list is 8...
-                if len(msg) == 8:
-
-                # Button event if 6th byte is 1
-                    if msg[6] == 1:
-                        if msg[4]  == 1:
-                            # print('button', msg[7], 'down')
-                            joy_buttons[msg[7]] = 1
-                        else:
-                            # print('button', msg[7], 'up')
-                            joy_buttons[msg[7]] = 0
-
-
-                    # joy_axes event if 6th byte is 2
-                    elif msg[6] == 2:
-                        old_val = msg[5]
-                        if msg[7] in updown_axes:  # Vertical axes are inverted from what we'd expect
-                            msg[5] = threshold(-convert(msg[5]))
-                        else:
-                            msg[5] = threshold(convert(msg[5]))
-                        # print('Received: joy_axes', msg[7], msg[5], 'old value:', old_val)
-                        joy_axes[msg[7]] = msg[5]
-                    
-                    elif msg[6] == 3:
-                        # clear out arrays
-                        joy_axes = [0, 0, 0, 0, 0, 0]
-                        joy_buttons = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-                    else:
-                        # print(f'Recieved unknown msg[6]={msg[6]}')
-                        pass
-
-                    # Reset msg as an empty list.
-                    msg = []
+                # Reset msg as an empty list.
+                msg = []
 
         # speeds = np.zeros([2, 4])
         # speeds += up * joy_buttons[5]
