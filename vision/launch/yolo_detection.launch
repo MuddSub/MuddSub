@@ -1,0 +1,31 @@
+<launch>
+    <arg name="camera_name" default="left_camera"/>
+    <arg name="model_path" default="$(find vision)/models/yolo26s_muddsub.pt"/>
+    <arg name="confidence_threshold" default="0.25"/>
+    <arg name="iou_threshold" default="0.45"/>
+    <arg name="publish_debug_image" default="true"/>
+    <arg name="launch_camera" default="true"/>
+
+    <!-- Camera driver (skipped when launched via complete_left_camera.launch
+         which starts the camera separately via left_camera.launch) -->
+    <group if="$(arg launch_camera)">
+        <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen">
+            <param name="video_device" value="/dev/video0"/>
+            <param name="camera_name" value="$(arg camera_name)"/>
+            <param name="image_width" value="640"/>
+            <param name="image_height" value="480"/>
+            <param name="pixel_format" value="yuyv"/>
+            <param name="io_method" value="mmap"/>
+            <param name="framerate" value="30"/>
+        </node>
+    </group>
+
+    <!-- YOLO detector -->
+    <node name="yolo_detector" pkg="vision" type="yolo_detector.py" output="screen">
+        <param name="camera_name" value="$(arg camera_name)"/>
+        <param name="model_path" value="$(arg model_path)"/>
+        <param name="confidence_threshold" value="$(arg confidence_threshold)"/>
+        <param name="iou_threshold" value="$(arg iou_threshold)"/>
+        <param name="publish_debug_image" value="$(arg publish_debug_image)"/>
+    </node>
+</launch>
