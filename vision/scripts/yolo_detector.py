@@ -4,6 +4,7 @@
 Subscribes to a camera image topic, runs YOLO26s inference,
 and publishes detections using the existing VisionPublisher.
 """
+import traceback
 import rospy
 from ultralytics import YOLO
 from cv_bridge import CvBridge
@@ -124,7 +125,7 @@ class YoloDetector:
                 self.vision_pub.publishModelOutput(debug_msg)
 
         except Exception as e:
-            rospy.logerr(f"Error processing frame: {e}")
+            rospy.logerr(f"Error processing frame: {e}\n{traceback.format_exc()}")
 
     def run(self):
         rospy.spin()

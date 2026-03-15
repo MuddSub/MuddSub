@@ -1,3 +1,4 @@
+# Legacy reference — yolo_detector.py reads class names from the model directly
 shark
 sawfish
 hole
