@@ -1,0 +1,13 @@
+# MuddSub RoboSub 2025 dataset config for YOLO26s training
+# Usage: model.train(data="muddsub2025.yaml", epochs=100, imgsz=640)
+
+path: ../datasets/muddsub2025
+train: images/train
+val: images/val
+
+names:
+  0: shark
+  1: sawfish
+  2: hole
+  3: marker_red
+  4: marker_blue
